@@ -15,4 +15,9 @@ class Pendaftaran extends Model
         'status',
         'alamat'
 ];
+
+    public function tahunAjaran()
+    {
+        return $this->belongsTo(TahunAjaran::class);
+    }
 }
