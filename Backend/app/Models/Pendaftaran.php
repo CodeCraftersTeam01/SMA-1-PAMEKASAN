@@ -6,5 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pendaftaran extends Model
 {
-    //
+    protected $fillable = [
+        'tahun_ajaran_id',
+        'no_pendaftaran',
+        'nisn',
+        'nama_lengkap',
+        'asal_sekolah',
+        'status',
+        'alamat'
+];
 }
