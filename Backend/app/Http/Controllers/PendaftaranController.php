@@ -10,7 +10,13 @@ class PendaftaranController extends Controller
     // READ semua data
     public function index()
     {
-        return response()->json(Pendaftaran::all());
+       if(Pendaftaran::all()->count() > 0){
+           return response()->json(Pendaftaran::all());
+       }else{
+           return response()->json([
+               'message' => 'Data pendaftaran tidak ditemukan'
+           ], 404);
+       }
     }
 
     // CREATE data pendaftaran
