@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import LoginPage from './pages/auth/login';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/dashboard';
+import Pendaftar from './pages/pendaftar';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Komponen pembantu untuk animasi transisi halaman
@@ -42,6 +43,20 @@ const AnimatedRoutes = () => {
                   className="w-full h-full"
                 >
                   <Dashboard />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/pendaftar" 
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <Pendaftar />
                 </motion.div>
               } 
             />

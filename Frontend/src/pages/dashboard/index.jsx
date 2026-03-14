@@ -5,7 +5,7 @@ const Dashboard = () => {
     <div className="space-y-6">
       
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg shadow-blue-500/20 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg shadow-blue-500/20 relative overflow-hidden animate-fade-up">
         <div className="relative z-10">
           <h2 className="text-2xl sm:text-3xl font-bold mb-2">Selamat Datang di Sistem Informasi!</h2>
           <p className="text-blue-100 text-sm max-w-xl">
@@ -18,7 +18,7 @@ const Dashboard = () => {
       </div>
 
       {/* Grid Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-fade-up delay-75">
         {/* Stat Card 1 */}
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow">
           <div className="flex items-center justify-between mb-4">
@@ -90,7 +90,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Recent Activity Table */}
-        <div className="bg-white rounded-2xl p-6 lg:col-span-2 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+        <div className="bg-white rounded-2xl p-6 lg:col-span-2 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-150">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[16px] font-bold text-[#1e293b]">Aktivitas Terkini</h3>
             <button className="text-[12px] font-semibold text-blue-500 hover:text-blue-600 transition-colors">
@@ -110,17 +110,17 @@ const Dashboard = () => {
               </thead>
               <tbody className="text-[13px] text-slate-600">
                 {[
-                  { act: 'Update Data Siswa', by: 'Admin Utama', date: 'Hari ini', status: 'Sukses', statusColor: 'emerald' },
-                  { act: 'Backup Database', by: 'Sistem', date: 'Kemarin', status: 'Selesai', statusColor: 'blue' },
-                  { act: 'Sinkronisasi Ujian', by: 'Admin CBT', date: 'Kemarin', status: 'Gagal', statusColor: 'red' },
-                  { act: 'Upload Modul Ajar', by: 'Guru A', date: '12 Nov 2026', status: 'Sukses', statusColor: 'emerald' },
+                  { act: 'Update Data Siswa', by: 'Admin Utama', date: 'Hari ini', status: 'Sukses', statusColor: 'bg-emerald-50 text-emerald-500 border-emerald-100' },
+                  { act: 'Backup Database', by: 'Sistem', date: 'Kemarin', status: 'Selesai', statusColor: 'bg-blue-50 text-blue-500 border-blue-100' },
+                  { act: 'Sinkronisasi Ujian', by: 'Admin CBT', date: 'Kemarin', status: 'Gagal', statusColor: 'bg-red-50 text-red-500 border-red-100' },
+                  { act: 'Upload Modul Ajar', by: 'Guru A', date: '12 Nov 2026', status: 'Sukses', statusColor: 'bg-emerald-50 text-emerald-500 border-emerald-100' },
                 ].map((item, i) => (
                   <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 pl-2 font-medium text-slate-700">{item.act}</td>
                     <td className="py-4">{item.by}</td>
                     <td className="py-4 text-slate-400 text-[12px]">{item.date}</td>
                     <td className="py-4 text-right pr-2">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider bg-${item.statusColor}-50 text-${item.statusColor}-500 border border-${item.statusColor}-100`}>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${item.statusColor}`}>
                         {item.status}
                       </span>
                     </td>
@@ -132,16 +132,16 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions Panel */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
+        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-300">
           <h3 className="text-[16px] font-bold text-[#1e293b] mb-6">Tindakan Cepat</h3>
           <div className="space-y-3">
             {[
-              { icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', label: 'Tambah Siswa Baru', color: 'blue' },
-              { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', label: 'Laporan Kehadiran', color: 'emerald' },
-              { icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', label: 'Pengaturan Sistem', color: 'slate' }
+              { icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', label: 'Tambah Siswa Baru', colorClass: 'bg-blue-50 text-blue-500 group-hover:bg-blue-100' },
+              { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', label: 'Laporan Kehadiran', colorClass: 'bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100' },
+              { icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', label: 'Pengaturan Sistem', colorClass: 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' }
             ].map((action, i) => (
               <button key={i} className="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 hover:shadow-sm transition-all text-left group">
-                <span className={`w-10 h-10 rounded-lg bg-${action.color}-50 text-${action.color}-500 flex items-center justify-center group-hover:bg-${action.color}-100 transition-colors`}>
+                <span className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${action.colorClass}`}>
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={action.icon} />
                   </svg>
