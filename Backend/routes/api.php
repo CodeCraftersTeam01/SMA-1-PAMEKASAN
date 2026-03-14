@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PendaftaranController;
 
+use App\Http\Controllers\TahunAjaranController;
+
 Route::post('/register', [AuthController::class , 'register']);
 Route::post('/login', [AuthController::class , 'login']);
 Route::get('/', function () {
@@ -21,4 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Routes untuk Pendaftaran
     Route::apiResource('pendaftaran', PendaftaranController::class);
+    
+    // Routes untuk Tahun Ajaran
+    Route::apiResource('tahun-ajaran', TahunAjaranController::class);
 });
