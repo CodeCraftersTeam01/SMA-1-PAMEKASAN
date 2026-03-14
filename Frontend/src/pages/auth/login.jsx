@@ -27,6 +27,10 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (response.ok && (data.success || data.token || data)) {
+        localStorage.setItem('token', data.token || 'login_success');
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
         navigate('/dashboard');
       } else {
         setError('Email atau kata sandi salah');
