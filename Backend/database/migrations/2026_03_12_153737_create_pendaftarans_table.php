@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('pendaftars', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tahun_ajaran_id')->constrained();
             $table->string('no_pendaftaran')->unique();
             $table->string('nisn', 10)->unique();
             $table->string('nama_lengkap');

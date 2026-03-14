@@ -10,20 +10,20 @@ class PendaftaranController extends Controller
     // READ semua data
     public function index()
     {
-       if(Pendaftaran::all()->count() > 0){
-           return response()->json(Pendaftaran::all());
-       }else{
-           return response()->json([
-               'message' => 'Data pendaftaran tidak ditemukan'
-           ], 404);
-       }
+        if (Pendaftaran::all()->count() > 0) {
+            return response()->json(Pendaftaran::all());
+        }
+        else {
+            return response()->json([
+                'message' => 'Data pendaftaran tidak ditemukan'
+            ], 404);
+        }
     }
 
     // CREATE data pendaftaran
     public function store(Request $request)
     {
         $request->validate([
-            'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
             'no_pendaftaran' => 'required|unique:pendaftars',
             'nisn' => 'required|unique:pendaftars',
             'nama_lengkap' => 'required',
