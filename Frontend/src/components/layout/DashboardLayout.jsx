@@ -6,6 +6,11 @@ const DashboardLayout = () => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // For mobile responsiveness
 
+  // Parse user data from local storage
+  const userString = localStorage.getItem('user');
+  const user = userString ? JSON.parse(userString) : { name: 'Admin', email: 'admin@sman1.com', role: 'Admin' };
+  const userInitial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -66,11 +71,11 @@ const DashboardLayout = () => {
           <div className="px-4 mt-auto">
             <div className="p-4 bg-slate-50 rounded-xl mb-4 border border-slate-100 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                A
+                {userInitial}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-slate-700 truncate">Admin User</p>
-                <p className="text-[10px] text-slate-500 truncate">admin@sman1.com</p>
+                <p className="text-[13px] font-bold text-slate-700 truncate">{user.name}</p>
+                <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
               </div>
             </div>
             
@@ -119,10 +124,10 @@ const DashboardLayout = () => {
             {/* User Profile Mini */}
             <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-200">
               <div className="text-right">
-                <p className="text-[12px] font-bold text-slate-700">Admin</p>
-                <p className="text-[10px] text-slate-500">Superuser</p>
+                <p className="text-[12px] font-bold text-slate-700">{user.name}</p>
+                <p className="text-[10px] text-slate-500">{user.role || 'Admin'}</p>
               </div>
-              <img src="https://ui-avatars.com/api/?name=Admin&background=eff6ff&color=blue" alt="Avatar" className="w-9 h-9 rounded-full border border-slate-200" />
+              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=eff6ff&color=blue`} alt="Avatar" className="w-9 h-9 rounded-full border border-slate-200" />
             </div>
           </div>
         </header>
