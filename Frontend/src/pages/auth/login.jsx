@@ -1,7 +1,42 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && (data.success || data.token || data)) {
+        navigate('/dashboard');
+      } else {
+        setError('Email atau kata sandi salah');
+      }
+    } catch (err) {
+      setError('Email atau kata sandi salah');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#f4f7f9] p-4 font-sans text-slate-800">
@@ -54,15 +89,24 @@ const LoginPage = () => {
               </p>
             </div>
 
-            <form className="space-y-3.5">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-[11px] rounded-lg text-center font-medium">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-3.5">
               {/* Input Registration ID */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block ml-1">
                   Akun email
                 </label>
                 <input 
-                  type="text" 
-                  placeholder="Enter your ID"
+                  type="email" 
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   className="w-full px-3.5 py-3 rounded-lg bg-[#f8fafc] border border-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-[12px] text-slate-600 placeholder:text-slate-300"
                 />
               </div>
@@ -81,6 +125,9 @@ const LoginPage = () => {
                   <input 
                     type={showPassword ? "text" : "password"} 
                     placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
                     className="w-full px-3.5 py-3 rounded-lg bg-[#f8fafc] border border-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-[12px] text-slate-600 placeholder:text-slate-300 tracking-widest"
                   />
                   {/* Optional eye icon toggle */}
@@ -116,16 +163,17 @@ const LoginPage = () => {
               <div className="pt-2">
                 <button 
                   type="submit"
-                  className="w-full bg-[#4685ff] hover:bg-[#3b75e6] text-white text-[11px] font-bold py-3.5 rounded-[6px] transition-all border border-[#2d68e1] shadow-[0_3px_0_0_#2d68e1] active:translate-y-[3px] active:shadow-none uppercase tracking-[0.1em]"
+                  disabled={isLoading}
+                  className={`w-full bg-[#4685ff] hover:bg-[#3b75e6] text-white text-[11px] font-bold py-3.5 rounded-[6px] transition-all border border-[#2d68e1] uppercase tracking-[0.1em] ${isLoading ? 'opacity-70 cursor-not-allowed shadow-none translate-y-[3px]' : 'shadow-[0_3px_0_0_#2d68e1] active:translate-y-[3px] active:shadow-none'}`}
                 >
-                  Masuk
+                  {isLoading ? 'Memproses...' : 'Masuk'}
                 </button>
               </div>
             </form>
 
             <div className="mt-12 text-center">
               <p className="text-[10px] text-[#cbd5e1]">
-                © 2026 SMAN 1 Pamekasan | PENS PSDKU SUMENEP
+                © 2026 SMAN 1 Pamekasan | <a href="#">PENS PSDKU SUMENEP</a>
               </p>
             </div>
           </div>
