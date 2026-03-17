@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -9,6 +10,7 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,12 +29,9 @@ const LoginPage = () => {
 
       const data = await response.json();
 
-      if (response.ok && (data.success || data.token || data)) {
-        const storage = rememberMe ? localStorage : sessionStorage;
-        storage.setItem('token', data.token || 'login_success');
-        if (data.user) {
-          storage.setItem('user', JSON.stringify(data.user));
-        }
+      if (response.ok && data.token) {
+        // Let AuthContext handle storage — only token is stored, NOT user JSON
+        login(data.user, data.token, rememberMe);
         navigate('/dashboard');
       } else {
         setError('Email atau kata sandi salah');

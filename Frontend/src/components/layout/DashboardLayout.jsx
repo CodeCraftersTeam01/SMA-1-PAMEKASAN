@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // For mobile responsiveness
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Parse user data from local storage or session storage
-  const userString = localStorage.getItem('user') || sessionStorage.getItem('user');
-  const user = userString ? JSON.parse(userString) : { name: 'Admin', email: 'admin@sman1.com', role: 'Admin' };
-  const userInitial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
+  // User data always comes from the server-verified AuthContext, not localStorage
+  const { user, logout } = useAuth();
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : 'A';
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+  const handleLogout = async () => {
+    await logout();
     navigate('/login');
   };
 
@@ -36,10 +33,10 @@ const DashboardLayout = () => {
 
       {/* Sidebar - Desktop */}
       <aside
-        className={`fixed inset-y-0 left-0 z-20 w-[260px] bg-white transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 28px), 50% 100%, 0 calc(100% - 28px))' }} // Mimicking the auth card shape faintly, but maybe better to just use rounded corners for sidebar
+        className={`fixed inset-y-0 left-0 z-20 w-[260px] transition-transform bg-white/60 duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ borderTopRightRadius: '20px', clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 28px), 50% 100%, 0 calc(100% - 28px))' }} // Mimicking the auth card shape faintly, but maybe better to just use rounded corners for sidebar
       >
-        <div className="h-full flex flex-col pt-8 pb-12 rounded-r-[24px] shadow-[4px_0_24px_rgba(0,0,0,0.02)] border-r border-slate-100 bg-white">
+        <div className="h-full flex flex-col pt-8 pb-12 rounded-r-[24px] shadow-[4px_0_24px_rgba(0,0,0,0.02)] border-r border-slate-100">
 
           {/* Logo & Branding */}
           <div className="px-8 pb-6 mb-4 border-b border-slate-100/60">
