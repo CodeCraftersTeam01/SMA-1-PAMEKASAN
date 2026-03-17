@@ -5,16 +5,14 @@ const Dashboard = () => {
     <div className="space-y-6">
       
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg shadow-blue-500/20 relative overflow-hidden animate-fade-up">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
         <div className="relative z-10">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-2">Selamat Datang di Sistem Informasi!</h2>
-          <p className="text-blue-100 text-sm max-w-xl">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[#1e293b]">Selamat Datang di Sistem Informasi!</h2>
+          <p className="text-slate-500 text-sm max-w-xl">
             Sistem Informasi SMAN 1 Pamekasan. Kelola data sekolah dengan efisiensi dan mudah melalui platform terpadu.
           </p>
         </div>
-        {/* Decorative background circles */}
-        <div className="absolute top-0 right-0 -m-8 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-0 right-32 -m-8 w-32 h-32 bg-indigo-900/20 rounded-full blur-xl"></div>
       </div>
 
       {/* Grid Stats */}

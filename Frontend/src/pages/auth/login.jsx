@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,9 +28,10 @@ const LoginPage = () => {
       const data = await response.json();
 
       if (response.ok && (data.success || data.token || data)) {
-        localStorage.setItem('token', data.token || 'login_success');
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem('token', data.token || 'login_success');
         if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
+          storage.setItem('user', JSON.stringify(data.user));
         }
         navigate('/dashboard');
       } else {
@@ -43,7 +45,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-[#f4f7f9] p-4 font-sans text-slate-800">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-white to-slate-100 p-4 font-sans text-slate-800">
       <div className="max-w-[1000px] w-full grid md:grid-cols-2 gap-8 items-center scale-90 md:scale-95 origin-center">
         
         {/* Kolom Kiri: Branding */}
@@ -156,6 +158,8 @@ const LoginPage = () => {
                 <input 
                   type="checkbox" 
                   id="remember" 
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-3.5 h-3.5 rounded border-slate-200 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 bg-[#f8fafc] cursor-pointer"
                 />
                 <label htmlFor="remember" className="text-[10px] text-[#94a3b8] cursor-pointer">
