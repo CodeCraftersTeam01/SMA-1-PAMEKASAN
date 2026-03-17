@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Routes untuk Pendaftaran
+    Route::post('pendaftaran/import', [PendaftaranController::class, 'import']);
     Route::apiResource('pendaftaran', PendaftaranController::class);
     
     // Routes untuk Tahun Ajaran
