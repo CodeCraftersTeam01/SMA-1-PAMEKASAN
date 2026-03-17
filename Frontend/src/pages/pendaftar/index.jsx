@@ -1,14 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
+// Simple Toast notification component
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 4000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const colors = {
+    success: 'bg-emerald-500',
+    error: 'bg-red-500',
+    info: 'bg-blue-500',
+  };
+
+  return (
+    <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
+      {type === 'success' && (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+      {type === 'error' && (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      )}
+      <span className="text-sm font-semibold">{message}</span>
+      <button onClick={onClose} className="ml-1 opacity-70 hover:opacity-100">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+};
 
 const Pendaftar = () => {
   const [candidates, setCandidates] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState(null);
+  const [toast, setToast] = useState(null); // { message, type }
+  const [selectedFileName, setSelectedFileName] = useState('');
+  const fileInputRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSelectionModalOpen, setIsSelectionModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [currentCandidate, setCurrentCandidate] = useState(null);
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
   
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -73,12 +116,13 @@ const Pendaftar = () => {
       
       if (response.ok) {
         setIsModalOpen(false);
+        showToast('Data pendaftar berhasil disimpan!', 'success');
         fetchCandidates();
       } else {
-        alert(data.message || 'Gagal menyimpan data');
+        showToast(data.message || 'Gagal menyimpan data', 'error');
       }
     } catch (err) {
-      alert('Terjadi kesalahan koneksi saat menyimpan');
+      showToast('Terjadi kesalahan koneksi saat menyimpan', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -102,12 +146,13 @@ const Pendaftar = () => {
       if (response.ok) {
         setIsModalOpen(false);
         setCurrentCandidate(null);
+        showToast('Data berhasil diperbarui!', 'success');
         fetchCandidates();
       } else {
-        alert(data.message || 'Gagal menyimpan data');
+        showToast(data.message || 'Gagal memperbarui data', 'error');
       }
     } catch (err) {
-      alert('Terjadi kesalahan koneksi saat menyimpan');
+      showToast('Terjadi kesalahan koneksi saat menyimpan', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -124,12 +169,13 @@ const Pendaftar = () => {
           }
         });
         if (response.ok) {
+          showToast('Data berhasil dihapus!', 'success');
           fetchCandidates();
         } else {
-          alert('Gagal menghapus data');
+          showToast('Gagal menghapus data', 'error');
         }
       } catch (err) {
-        alert('Terjadi kesalahan koneksi');
+        showToast('Terjadi kesalahan koneksi', 'error');
       }
     }
   };
@@ -146,6 +192,8 @@ const Pendaftar = () => {
 
   const openImportModal = () => {
     setIsSelectionModalOpen(false);
+    setSelectedFileName('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
     setIsImportModalOpen(true);
   };
 
@@ -170,9 +218,16 @@ const Pendaftar = () => {
 
   const handleImportSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    if (!fileInputRef.current?.files[0]) {
+      showToast('Pilih file CSV terlebih dahulu!', 'error');
+      return;
+    }
+
+    setIsImporting(true);
     
-    const formData = new FormData(e.target);
+    const formData = new FormData();
+    formData.append('file', fileInputRef.current.files[0]);
     
     try {
       const response = await fetch(`${API_BASE_URL}/api/pendaftaran/import`, {
@@ -180,6 +235,7 @@ const Pendaftar = () => {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json'
+          // JANGAN tambah Content-Type di sini - biarkan browser set boundary multipart
         },
         body: formData
       });
@@ -187,14 +243,16 @@ const Pendaftar = () => {
       
       if (response.ok) {
         setIsImportModalOpen(false);
+        setSelectedFileName('');
+        showToast(data.message || 'Data berhasil diimport!', 'success');
         fetchCandidates();
       } else {
-        alert(data.message || 'Gagal mengimport data');
+        showToast(data.message || 'Gagal mengimport data', 'error');
       }
     } catch (err) {
-      alert('Terjadi kesalahan koneksi saat import');
+      showToast('Terjadi kesalahan koneksi saat import', 'error');
     } finally {
-      setIsLoading(false);
+      setIsImporting(false);
     }
   };
 
@@ -400,9 +458,9 @@ const Pendaftar = () => {
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-800">Import Data CSV</h3>
               <button 
-                onClick={() => setIsImportModalOpen(false)}
+                onClick={() => { setIsImportModalOpen(false); setSelectedFileName(''); }}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
-                disabled={isLoading}
+                disabled={isImporting}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -410,27 +468,61 @@ const Pendaftar = () => {
               </button>
             </div>
 
-            <form onSubmit={handleImportSubmit} className="space-y-6">
-              <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100 hover:border-blue-400 transition-all relative">
-                <input 
-                  type="file" 
-                  name="file" 
-                  accept=".csv" 
-                  required 
+            <form onSubmit={handleImportSubmit} className="space-y-5">
+              {/* File Drop Zone */}
+              <div
+                className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all relative cursor-pointer
+                  ${selectedFileName
+                    ? 'border-emerald-400 bg-emerald-50'
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-blue-400'
+                  } ${isImporting ? 'opacity-50 pointer-events-none' : ''}`}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  name="file"
+                  accept=".csv"
+                  required
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  disabled={isLoading}
+                  disabled={isImporting}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    setSelectedFileName(file ? file.name : '');
+                  }}
                 />
                 <div className="pointer-events-none">
-                  <svg className="w-10 h-10 text-slate-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="text-sm font-medium text-slate-700 mb-1">Klik atau drag file ke sini</p>
-                  <p className="text-xs text-slate-500">Mendukung file .csv</p>
+                  {selectedFileName ? (
+                    <>
+                      <svg className="w-10 h-10 text-emerald-500 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="text-sm font-bold text-emerald-700 mb-1 truncate px-4">{selectedFileName}</p>
+                      <p className="text-xs text-emerald-600">File siap diimport. Klik untuk ganti.</p>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-10 h-10 text-slate-400 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <p className="text-sm font-medium text-slate-700 mb-1">Klik atau drag file ke sini</p>
+                      <p className="text-xs text-slate-500">Hanya mendukung format <strong>.csv</strong></p>
+                    </>
+                  )}
                 </div>
               </div>
 
+              {/* Info format CSV */}
+              <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-xs text-blue-700">
+                <strong>Format kolom CSV:</strong> nisn, nama_lengkap, asal_sekolah, alamat
+              </div>
+
               <div className="flex items-center justify-between">
-                <button type="button" onClick={handleDownloadTemplate} className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  disabled={isImporting}
+                  className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium flex items-center gap-1 disabled:opacity-50"
+                >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
@@ -439,10 +531,10 @@ const Pendaftar = () => {
                 
                 <button 
                   type="submit" 
-                  disabled={isLoading}
+                  disabled={isImporting || !selectedFileName}
                   className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  {isLoading ? (
+                  {isImporting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       <span>Mengupload...</span>
@@ -560,6 +652,15 @@ const Pendaftar = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
 
     </div>

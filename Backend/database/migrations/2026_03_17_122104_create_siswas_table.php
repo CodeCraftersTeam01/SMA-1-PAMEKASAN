@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('siswas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pendaftar_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('pendaftar_id')->nullable()->constrained('pendaftarans')->onDelete('set null');
             $table->foreignId('tahun_ajaran_id')->constrained();
             $table->string('nis')->unique()->nullable(); // NIS diberikan setelah jadi siswa
             $table->string('nama_lengkap');
