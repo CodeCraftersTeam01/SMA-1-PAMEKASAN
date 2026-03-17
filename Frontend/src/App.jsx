@@ -5,6 +5,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/dashboard';
 import Pendaftar from './pages/pendaftar';
 import ProtectedRoute from './components/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 
 // Komponen pembantu untuk animasi transisi halaman
 const AnimatedRoutes = () => {
@@ -71,9 +72,11 @@ const AnimatedRoutes = () => {
 
 function App() {
   return (
-    <Router>
-      <AnimatedRoutes />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AnimatedRoutes />
+      </Router>
+    </AuthProvider>
   );
 }
 
