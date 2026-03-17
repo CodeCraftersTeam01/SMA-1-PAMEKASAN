@@ -7,9 +7,9 @@ const Pendaftar = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCandidate, setCurrentCandidate] = useState(null);
-  
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = localStorage.getItem('token');
 
   const fetchCandidates = async () => {
     setIsLoading(true);
@@ -20,15 +20,15 @@ const Pendaftar = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         // Handle both possible structures (direct array or wrapper)
         setCandidates(Array.isArray(data) ? data : (data.data || []));
       } else {
         if (response.status === 404) {
-             setCandidates([]);
+          setCandidates([]);
         } else {
           setError(data.message || 'Gagal mengambil data');
         }
@@ -43,7 +43,7 @@ const Pendaftar = () => {
   useEffect(() => {
     fetchCandidates();
   }, []);
-  
+
   // Empty async functions for future backend integration
   const handleCreate = async (formData) => {
     // console.log("Creating candidate", formData);
@@ -79,7 +79,7 @@ const Pendaftar = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
+
     if (currentCandidate) {
       handleUpdate(currentCandidate.id, data);
     } else {
@@ -88,7 +88,7 @@ const Pendaftar = () => {
   };
 
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'Diterima': return 'bg-emerald-50 text-emerald-500 border-emerald-100';
       case 'Ditolak': return 'bg-red-50 text-red-500 border-red-100';
       case 'Menunggu': return 'bg-amber-50 text-amber-500 border-amber-100';
@@ -98,7 +98,7 @@ const Pendaftar = () => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
         <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
@@ -109,7 +109,7 @@ const Pendaftar = () => {
               Kelola data calon siswa baru SMAN 1 Pamekasan.
             </p>
           </div>
-          <button 
+          <button
             onClick={openModalForCreate}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 font-semibold flex items-center gap-2"
           >
@@ -125,11 +125,11 @@ const Pendaftar = () => {
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-75">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-[16px] font-bold text-[#1e293b]">Daftar Calon Siswa</h3>
-          
+
           <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Cari nama..." 
+            <input
+              type="text"
+              placeholder="Cari nama..."
               className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600"
             />
             <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -137,7 +137,7 @@ const Pendaftar = () => {
             </svg>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
@@ -146,8 +146,8 @@ const Pendaftar = () => {
             </div>
           ) : error ? (
             <div className="py-20 text-center text-red-500">
-               <p>{error}</p>
-               <button onClick={fetchCandidates} className="mt-2 text-blue-500 underline text-sm">Coba lagi</button>
+              <p>{error}</p>
+              <button onClick={fetchCandidates} className="mt-2 text-blue-500 underline text-sm">Coba lagi</button>
             </div>
           ) : (
             <table className="w-full text-left responsive border-collapse">
@@ -175,7 +175,7 @@ const Pendaftar = () => {
                     </td>
                     <td className="py-4 text-right pr-2">
                       <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => openModalForEdit(item)}
                           className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Edit"
@@ -184,7 +184,7 @@ const Pendaftar = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(item.id)}
                           className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title="Hapus"
@@ -218,7 +218,7 @@ const Pendaftar = () => {
               <h3 className="text-lg font-bold text-slate-800">
                 {currentCandidate ? 'Edit Data Pendaftar' : 'Tambah Pendaftar Baru'}
               </h3>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
               >
@@ -227,12 +227,12 @@ const Pendaftar = () => {
                 </svg>
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="nama_lengkap"
                   defaultValue={currentCandidate?.nama_lengkap || ''}
                   required
@@ -240,11 +240,11 @@ const Pendaftar = () => {
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Asal Sekolah</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="asal_sekolah"
                   defaultValue={currentCandidate?.asal_sekolah || ''}
                   required
@@ -255,7 +255,7 @@ const Pendaftar = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Status</label>
-                <select 
+                <select
                   name="status"
                   defaultValue={currentCandidate?.status || 'Menunggu'}
                   className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white"
@@ -267,15 +267,15 @@ const Pendaftar = () => {
               </div>
 
               <div className="pt-4 flex justify-end gap-3">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
                 >
                   Batal
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all"
                 >
                   Simpan Data

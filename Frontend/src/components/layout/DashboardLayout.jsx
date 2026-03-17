@@ -29,10 +29,10 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-white to-slate-100 font-sans text-slate-800">
       <div class="fixed top-0 left-0 z-[2] w-full h-[100px] 
-            bg-gradient-to-b from-black/40 to-transparent 
+            bg-gradient-to-b from-black/20 to-transparent 
             backdrop-blur-sm 
             [mask-image:linear-gradient(to_bottom,black,transparent)]">
-</div>
+      </div>
 
       {/* Sidebar - Desktop */}
       <aside
