@@ -6,14 +6,16 @@ const DashboardLayout = () => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // For mobile responsiveness
 
-  // Parse user data from local storage
-  const userString = localStorage.getItem('user');
+  // Parse user data from local storage or session storage
+  const userString = localStorage.getItem('user') || sessionStorage.getItem('user');
   const user = userString ? JSON.parse(userString) : { name: 'Admin', email: 'admin@sman1.com', role: 'Admin' };
   const userInitial = user.name ? user.name.charAt(0).toUpperCase() : 'A';
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
     navigate('/login');
   };
 
@@ -25,15 +27,20 @@ const DashboardLayout = () => {
   ];
 
   return (
-    <div className="min-h-screen flex bg-[#f4f7f9] font-sans text-slate-800">
-      
+    <div className="min-h-screen flex bg-gradient-to-br from-white to-slate-100 font-sans text-slate-800">
+      <div class="fixed top-0 left-0 z-[2] w-full h-[100px] 
+            bg-gradient-to-b from-black/40 to-transparent 
+            backdrop-blur-sm 
+            [mask-image:linear-gradient(to_bottom,black,transparent)]">
+</div>
+
       {/* Sidebar - Desktop */}
-      <aside 
+      <aside
         className={`fixed inset-y-0 left-0 z-20 w-[260px] bg-white transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 28px), 50% 100%, 0 calc(100% - 28px))' }} // Mimicking the auth card shape faintly, but maybe better to just use rounded corners for sidebar
       >
         <div className="h-full flex flex-col pt-8 pb-12 rounded-r-[24px] shadow-[4px_0_24px_rgba(0,0,0,0.02)] border-r border-slate-100 bg-white">
-          
+
           {/* Logo & Branding */}
           <div className="px-8 pb-6 mb-4 border-b border-slate-100/60">
             <div className="flex items-center gap-3">
@@ -50,7 +57,7 @@ const DashboardLayout = () => {
             <div className="px-4 mb-2">
               <span className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-widest">Menu Utama</span>
             </div>
-            
+
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
               return (
@@ -79,8 +86,8 @@ const DashboardLayout = () => {
                 <p className="text-[10px] text-slate-500 truncate">{user.email}</p>
               </div>
             </div>
-            
-            <button 
+
+            <button
               onClick={handleLogout}
               className="w-full flex items-center gap-2 px-4 py-2.5 text-[12px] font-bold text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors border border-transparent hover:border-red-100"
             >
@@ -95,11 +102,11 @@ const DashboardLayout = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:pl-[260px] min-h-screen">
-        
+
         {/* Header */}
         <header className="sticky top-4 z-30 bg-white/40 backdrop-blur-2xl backdrop-saturate-[1.5] border border-white/60 shadow-[0_8px_32px_rgba(30,41,59,0.04)] h-[72px] flex items-center px-4 lg:px-8 justify-between mx-4 mb-6 rounded-2xl">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg"
             >
@@ -137,12 +144,12 @@ const DashboardLayout = () => {
         <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
           <Outlet />
         </main>
-        
+
       </div>
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="lg:hidden fixed inset-0 z-10 bg-slate-900/20 backdrop-blur-sm"
           onClick={() => setIsSidebarOpen(false)}
         ></div>

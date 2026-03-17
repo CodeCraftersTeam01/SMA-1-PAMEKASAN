@@ -1,35 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Pendaftar = () => {
-  const [candidates, setCandidates] = useState([
-    { id: 1, fullName: 'Budi Santoso', originSchool: 'SMPN 1 Pamekasan', registrationDate: '2026-03-10', status: 'Diterima' },
-    { id: 2, fullName: 'Siti Aminah', originSchool: 'SMPN 2 Pamekasan', registrationDate: '2026-03-11', status: 'Menunggu' },
-    { id: 3, fullName: 'Agus Riyadi', originSchool: 'SMPN 3 Pamekasan', registrationDate: '2026-03-12', status: 'Ditolak' },
-    { id: 4, fullName: 'Rina Kusuma', originSchool: 'SMPN 1 Galis', registrationDate: '2026-03-13', status: 'Diterima' },
-  ]);
+  const [candidates, setCandidates] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCandidate, setCurrentCandidate] = useState(null);
   
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+  const fetchCandidates = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/pendaftaran`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Handle both possible structures (direct array or wrapper)
+        setCandidates(Array.isArray(data) ? data : (data.data || []));
+      } else {
+        if (response.status === 404) {
+             setCandidates([]);
+        } else {
+          setError(data.message || 'Gagal mengambil data');
+        }
+      }
+    } catch (err) {
+      setError('Terjadi kesalahan koneksi');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCandidates();
+  }, []);
+  
   // Empty async functions for future backend integration
   const handleCreate = async (formData) => {
     // console.log("Creating candidate", formData);
-    const newCandidate = { ...formData, id: Date.now(), registrationDate: new Date().toISOString().split('T')[0] };
-    setCandidates([newCandidate, ...candidates]);
+    fetchCandidates(); // Refresh after create
     setIsModalOpen(false);
   };
 
   const handleUpdate = async (id, formData) => {
     // console.log("Updating candidate", id, formData);
-    setCandidates(candidates.map(c => c.id === id ? { ...c, ...formData } : c));
+    fetchCandidates(); // Refresh after update
     setIsModalOpen(false);
     setCurrentCandidate(null);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-      // console.log("Deleting candidate", id);
-      setCandidates(candidates.filter(c => c.id !== id));
+      // API call to delete here
+      fetchCandidates();
     }
   };
 
@@ -68,17 +100,18 @@ const Pendaftar = () => {
     <div className="space-y-6">
       
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg shadow-blue-500/20 relative overflow-hidden animate-fade-up">
-        <div className="relative z-10 flex justify-between items-center">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2">Data Pendaftar</h2>
-            <p className="text-blue-100 text-sm max-w-xl">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[#1e293b]">Data Pendaftar</h2>
+            <p className="text-slate-500 text-sm max-w-xl">
               Kelola data calon siswa baru SMAN 1 Pamekasan.
             </p>
           </div>
           <button 
             onClick={openModalForCreate}
-            className="bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-xl transition-all shadow-sm font-semibold flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 font-semibold flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -86,8 +119,6 @@ const Pendaftar = () => {
             Tambah Siswa
           </button>
         </div>
-        <div className="absolute top-0 right-0 -m-8 w-48 h-48 bg-white/10 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-0 right-32 -m-8 w-32 h-32 bg-indigo-900/20 rounded-full blur-xl"></div>
       </div>
 
       {/* Main Table Container */}
@@ -108,62 +139,74 @@ const Pendaftar = () => {
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                <th className="pb-3 pl-2">ID</th>
-                <th className="pb-3">Nama Lengkap</th>
-                <th className="pb-3">Asal Sekolah</th>
-                <th className="pb-3">Tanggal Daftar</th>
-                <th className="pb-3">Status</th>
-                <th className="pb-3 text-right pr-2">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="text-[13px] text-slate-600">
-              {candidates.map((item) => (
-                <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 pl-2 font-medium text-slate-400">#{item.id}</td>
-                  <td className="py-4 font-bold text-slate-700">{item.fullName}</td>
-                  <td className="py-4">{item.originSchool}</td>
-                  <td className="py-4 text-slate-500">{item.registrationDate}</td>
-                  <td className="py-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(item.status)}`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="py-4 text-right pr-2">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        onClick={() => openModalForEdit(item)}
-                        className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Hapus"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
+              <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin"></div>
+              <p className="text-sm font-medium">Memuat data...</p>
+            </div>
+          ) : error ? (
+            <div className="py-20 text-center text-red-500">
+               <p>{error}</p>
+               <button onClick={fetchCandidates} className="mt-2 text-blue-500 underline text-sm">Coba lagi</button>
+            </div>
+          ) : (
+            <table className="w-full text-left responsive border-collapse">
+              <thead>
+                <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="pb-3 pl-2">ID</th>
+                  <th className="pb-3">Nama Lengkap</th>
+                  <th className="pb-3">Asal Sekolah</th>
+                  <th className="pb-3">Tanggal Daftar</th>
+                  <th className="pb-3">Status</th>
+                  <th className="pb-3 text-right pr-2">Aksi</th>
                 </tr>
-              ))}
-              {candidates.length === 0 && (
-                <tr>
-                  <td colSpan="6" className="py-8 text-center text-slate-500">
-                    Tidak ada data pendaftar.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="text-[13px] text-slate-600">
+                {candidates.map((item) => (
+                  <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 pl-2 font-medium text-slate-400">#{item.id}</td>
+                    <td className="py-4 font-bold text-slate-700">{item.nama_lengkap}</td>
+                    <td className="py-4">{item.asal_sekolah}</td>
+                    <td className="py-4 text-slate-500">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                    <td className="py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(item.status || 'Menunggu')}`}>
+                        {item.status || 'Menunggu'}
+                      </span>
+                    </td>
+                    <td className="py-4 text-right pr-2">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => openModalForEdit(item)}
+                          className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Hapus"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {candidates.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="py-8 text-center text-slate-500">
+                      Tidak ada data pendaftar.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
@@ -190,8 +233,8 @@ const Pendaftar = () => {
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
                 <input 
                   type="text" 
-                  name="fullName"
-                  defaultValue={currentCandidate?.fullName || ''}
+                  name="nama_lengkap"
+                  defaultValue={currentCandidate?.nama_lengkap || ''}
                   required
                   className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600"
                   placeholder="Masukkan nama lengkap"
@@ -202,8 +245,8 @@ const Pendaftar = () => {
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Asal Sekolah</label>
                 <input 
                   type="text" 
-                  name="originSchool"
-                  defaultValue={currentCandidate?.originSchool || ''}
+                  name="asal_sekolah"
+                  defaultValue={currentCandidate?.asal_sekolah || ''}
                   required
                   className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600"
                   placeholder="Contoh: SMPN 1 Pamekasan"
