@@ -24,8 +24,8 @@ class PendaftaranController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'no_pendaftaran' => 'required|unique:pendaftars',
-            'nisn' => 'required|unique:pendaftars',
+            'no_pendaftaran' => 'required|unique:pendaftarans',
+            'nisn' => 'required|unique:pendaftarans',
             'nama_lengkap' => 'required',
             'asal_sekolah' => 'required',
             'alamat' => 'required'
