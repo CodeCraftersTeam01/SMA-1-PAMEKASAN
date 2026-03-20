@@ -21,6 +21,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    // Routes untuk Profile
+    Route::post('/profile', [\App\Http\Controllers\ProfileController::class, 'updateProfile']);
+    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword']);
+
+
     // Routes untuk Pendaftaran
     Route::post('pendaftaran/import', [PendaftaranController::class, 'import']);
     Route::apiResource('pendaftaran', PendaftaranController::class);
