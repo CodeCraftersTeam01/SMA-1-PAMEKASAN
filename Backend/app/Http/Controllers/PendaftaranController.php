@@ -70,92 +70,167 @@ class PendaftaranController extends Controller
         ]);
     }
 
-    // IMPORT data (CSV)
+    // IMPORT data (CSV & Excel)
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|mimetypes:text/csv,text/plain,application/csv,text/comma-separated-values,text/x-comma-separated-values,text/tab-separated-values,application/vnd.ms-excel'
+            'file' => 'required|mimetypes:text/csv,text/plain,application/csv,' .
+                      'text/comma-separated-values,text/x-comma-separated-values,' .
+                      'text/tab-separated-values,application/vnd.ms-excel,' .
+                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' .
+                      'application/octet-stream,application/zip'
         ]);
 
-        $file = $request->file('file');
-        
-        // Secondary strict extension check to prevent execution of malicious TXT files
-        if ($file->getClientOriginalExtension() !== 'csv') {
-             return response()->json([
-                'message' => 'The file must be a CSV file with a .csv extension.'
-             ], 422);
+        $file    = $request->file('file');
+        $ext     = strtolower($file->getClientOriginalExtension());
+
+        if (!in_array($ext, ['csv', 'xlsx'])) {
+            return response()->json([
+                'message' => 'File harus berformat .csv atau .xlsx'
+            ], 422);
         }
 
         $successCount = 0;
 
         try {
-            // Check if Maatwebsite Excel is installed
-            if (class_exists(\Maatwebsite\Excel\Facades\Excel::class)) {
-                $data = \Maatwebsite\Excel\Facades\Excel::toArray([], $file);
-                if (!empty($data) && !empty($data[0])) {
-                    $rows = $data[0];
-                    foreach ($rows as $index => $row) {
-                        if ($index === 0) continue; // Skip header
+            // Ambil baris data sesuai tipe file
+            $rows = ($ext === 'xlsx')
+                ? $this->parseXlsx($file->getPathname())
+                : $this->parseCsv($file->getPathname());
 
-                        if (empty($row[0]) || empty($row[1])) continue;
+            foreach ($rows as $index => $row) {
+                if ($index === 0) continue; // Skip header
 
-                        $dateStr = date('Ymd');
-                        $randomStr = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
-                        $no_pendaftaran = "REG-{$dateStr}-{$randomStr}";
+                $nisn  = $row[0] ?? null;
+                $nama  = $row[1] ?? null;
 
-                        Pendaftaran::create([
-                            'no_pendaftaran' => $no_pendaftaran,
-                            'nisn' => $row[0],
-                            'nama_lengkap' => $row[1],
-                            'asal_sekolah' => $row[2] ?? '-',
-                            'alamat' => $row[3] ?? '-',
-                            'status' => 'pending'
-                        ]);
-                        $successCount++;
-                    }
-                    return response()->json(['message' => "$successCount data berhasil diimport."]);
-                }
-            }
-            
-            // Fallback for native CSV functionality
-            if ($file->getClientOriginalExtension() === 'csv') {
-                $handle = fopen($file->getPathname(), "r");
-                $header = true;
-                
-                while ($row = fgetcsv($handle, 1000, ",")) {
-                    if ($header) {
-                        $header = false;
-                        continue;
-                    }
-                    
-                    if (empty($row[0]) || empty($row[1])) continue;
+                if (empty($nisn) || empty($nama)) continue;
 
-                    $dateStr = date('Ymd');
-                    $randomStr = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
-                    $no_pendaftaran = "REG-{$dateStr}-{$randomStr}";
+                $dateStr      = date('Ymd');
+                $randomStr    = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+                $no_pendaftaran = "REG-{$dateStr}-{$randomStr}";
 
-                    Pendaftaran::create([
-                        'no_pendaftaran' => $no_pendaftaran,
-                        'nisn' => $row[0],
-                        'nama_lengkap' => $row[1],
-                        'asal_sekolah' => $row[2] ?? '-',
-                        'alamat' => $row[3] ?? '-',
-                        'status' => 'pending'
-                    ]);
-                    $successCount++;
-                }
-                fclose($handle);
-                return response()->json(['message' => "$successCount data berhasil diimport."]);
+                Pendaftaran::create([
+                    'no_pendaftaran' => $no_pendaftaran,
+                    'nisn'           => $nisn,
+                    'nama_lengkap'   => $nama,
+                    'asal_sekolah'   => $row[2] ?? '-',
+                    'alamat'         => $row[3] ?? '-',
+                    'jalur'          => $row[4] ?? 'zonasi',
+                    'status'         => 'pending',
+                ]);
+
+                $successCount++;
             }
 
-            return response()->json([
-                'message' => 'Format file tidak didukung.'
-            ], 400);
+            return response()->json(['message' => "$successCount data berhasil diimport."]);
 
         } catch (\Throwable $th) {
             return response()->json([
                 'message' => 'Terjadi kesalahan saat import: ' . $th->getMessage()
             ], 500);
         }
+    }
+
+    // Parse CSV (support separator koma atau titik koma)
+    private function parseCsv(string $path): array
+    {
+        $rows   = [];
+        $handle = fopen($path, 'r');
+
+        // Deteksi BOM UTF-8
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") rewind($handle);
+
+        // Baca baris pertama untuk deteksi separator
+        $firstLine = fgets($handle);
+        rewind($handle);
+        if ($bom !== "\xEF\xBB\xBF") rewind($handle);
+        else fread($handle, 3); // skip BOM lagi
+
+        // Jika ada "sep=;" di baris pertama, skip baris itu
+        $trimmed = trim($firstLine);
+        $sep = ',';
+        if (str_starts_with($trimmed, 'sep=')) {
+            $sep = trim(str_replace('sep=', '', $trimmed));
+            fgets($handle); // skip baris sep=
+        } elseif (substr_count($firstLine, ';') > substr_count($firstLine, ',')) {
+            $sep = ';';
+        }
+
+        while (($row = fgetcsv($handle, 0, $sep)) !== false) {
+            $rows[] = $row;
+        }
+
+        fclose($handle);
+        return $rows;
+    }
+
+    // Parse XLSX secara native menggunakan ZipArchive + SimpleXML (tanpa library tambahan)
+    private function parseXlsx(string $path): array
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($path) !== true) {
+            throw new \Exception('Gagal membuka file XLSX.');
+        }
+
+        // Baca shared strings
+        $sharedStrings = [];
+        $ssXml = $zip->getFromName('xl/sharedStrings.xml');
+        if ($ssXml) {
+            $ss = simplexml_load_string($ssXml);
+            foreach ($ss->si as $si) {
+                if (isset($si->t)) {
+                    $sharedStrings[] = (string) $si->t;
+                } elseif (isset($si->r)) {
+                    $str = '';
+                    foreach ($si->r as $r) $str .= (string) $r->t;
+                    $sharedStrings[] = $str;
+                } else {
+                    $sharedStrings[] = '';
+                }
+            }
+        }
+
+        // Baca sheet pertama
+        $sheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        if (!$sheetXml) throw new \Exception('Sheet tidak ditemukan di file XLSX.');
+
+        $xml  = simplexml_load_string($sheetXml);
+        $rows = [];
+
+        foreach ($xml->sheetData->row as $row) {
+            $rowData = [];
+            $lastCol = -1;
+
+            foreach ($row->c as $cell) {
+                // Hitung index kolom dari referensi seperti A1, B2, dsb
+                preg_match('/([A-Z]+)(\d+)/', (string) $cell['r'], $m);
+                $colIndex = 0;
+                foreach (str_split($m[1]) as $ch) {
+                    $colIndex = $colIndex * 26 + (ord($ch) - ord('A') + 1);
+                }
+                $colIndex--; // 0-based
+
+                // Isi kolom yang terlewat (sparse cells)
+                while (++$lastCol < $colIndex) $rowData[] = '';
+
+                $type  = (string) $cell['t'];
+                $value = isset($cell->v) ? (string) $cell->v : '';
+
+                if ($type === 's') {
+                    $value = $sharedStrings[(int) $value] ?? '';
+                }
+
+                $rowData[] = $value;
+                $lastCol   = $colIndex;
+            }
+
+            $rows[] = $rowData;
+        }
+
+        return $rows;
     }
 }

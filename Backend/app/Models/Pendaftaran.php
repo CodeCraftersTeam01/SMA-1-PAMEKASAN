@@ -12,8 +12,9 @@ class Pendaftaran extends Model
         'nama_lengkap',
         'asal_sekolah',
         'status',
-        'alamat'
-];
+        'alamat',
+        'jalur',
+    ];
 
     public function tahunAjaran()
     {
