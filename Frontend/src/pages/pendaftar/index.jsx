@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 
 // Simple Toast notification component
 const Toast = ({ message, type, onClose }) => {
@@ -52,7 +53,7 @@ const Pendaftar = () => {
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
   };
-  
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
@@ -65,15 +66,15 @@ const Pendaftar = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         // Handle both possible structures (direct array or wrapper)
         setCandidates(Array.isArray(data) ? data : (data.data || []));
       } else {
         if (response.status === 404) {
-             setCandidates([]);
+          setCandidates([]);
         } else {
           setError(data.message || 'Gagal mengambil data');
         }
@@ -88,7 +89,7 @@ const Pendaftar = () => {
   useEffect(() => {
     fetchCandidates();
   }, []);
-  
+
   // API integration functions
   const handleCreate = async (formData) => {
     setIsLoading(true);
@@ -113,7 +114,7 @@ const Pendaftar = () => {
         body: JSON.stringify(dataToSend)
       });
       const data = await response.json();
-      
+
       if (response.ok) {
         setIsModalOpen(false);
         showToast('Data pendaftar berhasil disimpan!', 'success');
@@ -142,7 +143,7 @@ const Pendaftar = () => {
         body: JSON.stringify(formData)
       });
       const data = await response.json();
-      
+
       if (response.ok) {
         setIsModalOpen(false);
         setCurrentCandidate(null);
@@ -198,17 +199,27 @@ const Pendaftar = () => {
   };
 
   const handleDownloadTemplate = () => {
-    const csvHeader = "nisn,nama_lengkap,asal_sekolah,alamat\n";
-    const blob = new Blob([csvHeader], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "template_pendaftar.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Data template: baris pertama = header, baris kedua = contoh
+    const wsData = [
+      ["nisn", "nama_lengkap", "asal_sekolah", "alamat", "jalur"],
+      ["1234567890", "Nama Siswa Contoh", "SMPN 1 Pamekasan", "Jl. Contoh No. 1 Pamekasan", "zonasi"]
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Atur lebar kolom (satuan: karakter)
+    ws['!cols'] = [
+      { wch: 15 },  // nisn
+      { wch: 30 },  // nama_lengkap
+      { wch: 25 },  // asal_sekolah
+      { wch: 40 },  // alamat
+      { wch: 20 },  // jalur
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template Pendaftar");
+
+    XLSX.writeFile(wb, "template_pendaftar.xlsx");
   };
 
   const openModalForEdit = (candidate) => {
@@ -225,10 +236,10 @@ const Pendaftar = () => {
     }
 
     setIsImporting(true);
-    
+
     const formData = new FormData();
     formData.append('file', fileInputRef.current.files[0]);
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/pendaftaran/import`, {
         method: 'POST',
@@ -240,7 +251,7 @@ const Pendaftar = () => {
         body: formData
       });
       const data = await response.json();
-      
+
       if (response.ok) {
         setIsImportModalOpen(false);
         setSelectedFileName('');
@@ -260,7 +271,7 @@ const Pendaftar = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-    
+
     if (currentCandidate) {
       handleUpdate(currentCandidate.id, data);
     } else {
@@ -269,7 +280,7 @@ const Pendaftar = () => {
   };
 
   const getStatusColor = (status) => {
-    switch(status) {
+    switch (status) {
       case 'diterima': return 'bg-emerald-50 text-emerald-500 border-emerald-100';
       case 'ditolak': return 'bg-red-50 text-red-500 border-red-100';
       case 'pending': return 'bg-amber-50 text-amber-500 border-amber-100';
@@ -278,7 +289,7 @@ const Pendaftar = () => {
   };
 
   const getStatusText = (status) => {
-    switch(status) {
+    switch (status) {
       case 'diterima': return 'Diterima';
       case 'ditolak': return 'Ditolak';
       case 'pending': return 'Menunggu';
@@ -288,7 +299,7 @@ const Pendaftar = () => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
         <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
@@ -299,7 +310,7 @@ const Pendaftar = () => {
               Kelola data calon siswa baru SMAN 1 Pamekasan.
             </p>
           </div>
-          <button 
+          <button
             onClick={handleOpenSelectionModal}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-blue-500/20 font-semibold flex items-center gap-2"
           >
@@ -315,11 +326,11 @@ const Pendaftar = () => {
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-75">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-[16px] font-bold text-[#1e293b]">Daftar Calon Siswa</h3>
-          
+
           <div className="relative">
-            <input 
-              type="text" 
-              placeholder="Cari nama..." 
+            <input
+              type="text"
+              placeholder="Cari nama..."
               className="pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600"
             />
             <svg className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -327,7 +338,7 @@ const Pendaftar = () => {
             </svg>
           </div>
         </div>
-        
+
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
@@ -336,8 +347,8 @@ const Pendaftar = () => {
             </div>
           ) : error ? (
             <div className="py-20 text-center text-red-500">
-               <p>{error}</p>
-               <button onClick={fetchCandidates} className="mt-2 text-blue-500 underline text-sm">Coba lagi</button>
+              <p>{error}</p>
+              <button onClick={fetchCandidates} className="mt-2 text-blue-500 underline text-sm">Coba lagi</button>
             </div>
           ) : (
             <table className="w-full text-left responsive border-collapse">
@@ -347,6 +358,7 @@ const Pendaftar = () => {
                   <th className="pb-3">NISN</th>
                   <th className="pb-3">Nama Lengkap</th>
                   <th className="pb-3">Asal Sekolah</th>
+                  <th className="pb-3">Jalur</th>
                   <th className="pb-3">Tanggal Daftar</th>
                   <th className="pb-3">Status</th>
                   <th className="pb-3 text-right pr-2">Aksi</th>
@@ -359,6 +371,17 @@ const Pendaftar = () => {
                     <td className="py-4 text-slate-600">{item.nisn || '-'}</td>
                     <td className="py-4 font-bold text-slate-700">{item.nama_lengkap}</td>
                     <td className="py-4">{item.asal_sekolah}</td>
+                    <td className="py-4">
+                      {item.jalur ? (
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${item.jalur === 'zonasi' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                          item.jalur === 'afirmasi' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                            item.jalur === 'prestasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                              'bg-slate-50 text-slate-600 border-slate-100'
+                          }`}>
+                          {item.jalur.replace('_', ' ')}
+                        </span>
+                      ) : '-'}
+                    </td>
                     <td className="py-4 text-slate-500">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
                     <td className="py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(item.status || 'pending')}`}>
@@ -367,7 +390,7 @@ const Pendaftar = () => {
                     </td>
                     <td className="py-4 text-right pr-2">
                       <div className="flex items-center justify-end gap-2">
-                        <button 
+                        <button
                           onClick={() => openModalForEdit(item)}
                           className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Edit"
@@ -376,7 +399,7 @@ const Pendaftar = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                           </svg>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(item.id)}
                           className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                           title="Hapus"
@@ -391,7 +414,7 @@ const Pendaftar = () => {
                 ))}
                 {candidates.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="py-8 text-center text-slate-500">
+                    <td colSpan="8" className="py-8 text-center text-slate-500">
                       Tidak ada data pendaftar.
                     </td>
                   </tr>
@@ -408,7 +431,7 @@ const Pendaftar = () => {
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-800">Pilih Metode Input</h3>
-              <button 
+              <button
                 onClick={() => setIsSelectionModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
               >
@@ -417,7 +440,7 @@ const Pendaftar = () => {
                 </svg>
               </button>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Card 1: Input Manual */}
               <button
@@ -457,7 +480,7 @@ const Pendaftar = () => {
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-slate-800">Import Data CSV</h3>
-              <button 
+              <button
                 onClick={() => { setIsImportModalOpen(false); setSelectedFileName(''); }}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
                 disabled={isImporting}
@@ -481,7 +504,7 @@ const Pendaftar = () => {
                   ref={fileInputRef}
                   type="file"
                   name="file"
-                  accept=".csv"
+                  accept=".csv, .xlsx, .xls, text/csv, text/plain, application/csv, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                   required
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   disabled={isImporting}
@@ -505,7 +528,7 @@ const Pendaftar = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       <p className="text-sm font-medium text-slate-700 mb-1">Klik atau drag file ke sini</p>
-                      <p className="text-xs text-slate-500">Hanya mendukung format <strong>.csv</strong></p>
+                      <p className="text-xs text-slate-500">Mendukung format <strong>.CSV, .XLSX, .XLS</strong></p>
                     </>
                   )}
                 </div>
@@ -513,7 +536,8 @@ const Pendaftar = () => {
 
               {/* Info format CSV */}
               <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-xs text-blue-700">
-                <strong>Format kolom CSV:</strong> nisn, nama_lengkap, asal_sekolah, alamat
+                <strong>Format kolom:</strong> nisn, nama_lengkap, asal_sekolah, alamat, jalur<br />
+                <span className="text-blue-500">Jalur: <strong>zonasi</strong> / <strong>afirmasi</strong> / <strong>prestasi</strong> / <strong>perpindahan_tugas</strong></span>
               </div>
 
               <div className="flex items-center justify-between">
@@ -526,11 +550,11 @@ const Pendaftar = () => {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                  Download Template
+                  Download Template (.xlsx)
                 </button>
-                
-                <button 
-                  type="submit" 
+
+                <button
+                  type="submit"
                   disabled={isImporting || !selectedFileName}
                   className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
@@ -562,7 +586,7 @@ const Pendaftar = () => {
               <h3 className="text-lg font-bold text-slate-800">
                 {currentCandidate ? 'Edit Data Pendaftar' : 'Tambah Pendaftar Baru'}
               </h3>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="text-slate-400 hover:text-slate-600 transition-colors"
               >
@@ -571,12 +595,12 @@ const Pendaftar = () => {
                 </svg>
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">NISN</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="nisn"
                   defaultValue={currentCandidate?.nisn || ''}
                   required
@@ -587,8 +611,8 @@ const Pendaftar = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="nama_lengkap"
                   defaultValue={currentCandidate?.nama_lengkap || ''}
                   required
@@ -596,11 +620,11 @@ const Pendaftar = () => {
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Asal Sekolah</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="asal_sekolah"
                   defaultValue={currentCandidate?.asal_sekolah || ''}
                   required
@@ -611,7 +635,7 @@ const Pendaftar = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat Lengkap</label>
-                <textarea 
+                <textarea
                   name="alamat"
                   defaultValue={currentCandidate?.alamat || ''}
                   required
@@ -619,6 +643,21 @@ const Pendaftar = () => {
                   className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 resize-none"
                   placeholder="Masukkan alamat lengkap"
                 ></textarea>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Jalur Pendaftaran</label>
+                <select
+                  name="jalur"
+                  defaultValue={currentCandidate?.jalur || 'zonasi'}
+                  required
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white"
+                >
+                  <option value="zonasi">Zonasi</option>
+                  <option value="afirmasi">Afirmasi</option>
+                  <option value="prestasi">Prestasi</option>
+                  <option value="perpindahan_tugas">Perpindahan Tugas</option>
+                </select>
               </div>
 
               <div>
@@ -635,15 +674,15 @@ const Pendaftar = () => {
               </div>
 
               <div className="pt-4 flex justify-end gap-3">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
                 >
                   Batal
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all"
                 >
                   Simpan Data
