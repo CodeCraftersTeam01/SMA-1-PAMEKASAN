@@ -46,4 +46,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('tahun-ajaran/{id}', 'TahunAjaranController@show');
     $router->put('tahun-ajaran/{id}', 'TahunAjaranController@update');
     $router->delete('tahun-ajaran/{id}', 'TahunAjaranController@destroy');
+
+    // Routes untuk Pengaturan NIS
+    $router->get('pengaturan-nis', 'PengaturanNisController@index');
+    $router->put('pengaturan-nis', 'PengaturanNisController@update');
+    $router->post('pengaturan-nis/preview', 'PengaturanNisController@preview');
 });

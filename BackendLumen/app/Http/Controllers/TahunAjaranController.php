@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class TahunAjaranController extends Controller
 {
@@ -27,12 +28,16 @@ class TahunAjaranController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'tahun' => 'required|string|unique:tahun_ajarans,tahun',
             'is_active' => 'boolean'
         ]);
 
-        // Jika diset aktif, pastikan yang lain menjadi tidak aktif (opsional - sesuai kebutuhan)
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        // Jika diset aktif, pastikan yang lain menjadi tidak aktif
         if ($request->has('is_active') && $request->is_active) {
             TahunAjaran::where('is_active', true)->update(['is_active' => false]);
         }
@@ -73,10 +78,14 @@ class TahunAjaranController extends Controller
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'tahun' => 'sometimes|required|string|unique:tahun_ajarans,tahun,' . $id,
             'is_active' => 'boolean'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
 
         // Jika diset aktif, pastikan yang lain menjadi tidak aktif
         if ($request->has('is_active') && $request->is_active) {
