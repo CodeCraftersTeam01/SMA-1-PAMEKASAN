@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class PendaftaranController extends Controller
 {
@@ -23,13 +24,17 @@ class PendaftaranController extends Controller
     // CREATE data pendaftaran
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'no_pendaftaran' => 'required|unique:pendaftarans',
             'nisn' => 'required|unique:pendaftarans',
             'nama_lengkap' => 'required',
             'asal_sekolah' => 'required',
             'alamat' => 'required'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
 
         $data = Pendaftaran::create($request->all());
 
@@ -73,13 +78,17 @@ class PendaftaranController extends Controller
     // IMPORT data (CSV & Excel)
     public function import(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'file' => 'required|mimetypes:text/csv,text/plain,application/csv,' .
                       'text/comma-separated-values,text/x-comma-separated-values,' .
                       'text/tab-separated-values,application/vnd.ms-excel,' .
                       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' .
                       'application/octet-stream,application/zip'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
 
         $file    = $request->file('file');
         $ext     = strtolower($file->getClientOriginalExtension());

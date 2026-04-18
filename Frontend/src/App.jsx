@@ -6,19 +6,21 @@ import Dashboard from './pages/dashboard';
 import Pendaftar from './pages/pendaftar';
 import TahunAjaran from './pages/tahun-ajaran';
 import Profile from './pages/profile';
+import NisConfig from './pages/pengaturan/NisConfig';
+import Siswa from './pages/siswa';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
 // Komponen pembantu untuk animasi transisi halaman
 const AnimatedRoutes = () => {
   const location = useLocation();
-  
+
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         {/* Public Route */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <motion.div
               initial={{ opacity: 0, scale: 0.98 }}
@@ -29,14 +31,14 @@ const AnimatedRoutes = () => {
             >
               <LoginPage />
             </motion.div>
-          } 
+          }
         />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
@@ -47,10 +49,10 @@ const AnimatedRoutes = () => {
                 >
                   <Dashboard />
                 </motion.div>
-              } 
+              }
             />
-            <Route 
-              path="/pendaftar" 
+            <Route
+              path="/pendaftar"
               element={
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
@@ -61,10 +63,10 @@ const AnimatedRoutes = () => {
                 >
                   <Pendaftar />
                 </motion.div>
-              } 
+              }
             />
-            <Route 
-              path="/tahun-ajaran" 
+            <Route
+              path="/tahun-ajaran"
               element={
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
@@ -75,10 +77,10 @@ const AnimatedRoutes = () => {
                 >
                   <TahunAjaran />
                 </motion.div>
-              } 
+              }
             />
-            <Route 
-              path="/profile" 
+            <Route
+              path="/profile"
               element={
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
@@ -88,6 +90,34 @@ const AnimatedRoutes = () => {
                   className="w-full h-full"
                 >
                   <Profile />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/pengaturan-nis"
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <NisConfig />
+                </motion.div>
+              }
+            />
+            <Route 
+              path="/siswa" 
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <Siswa />
                 </motion.div>
               } 
             />
