@@ -9,7 +9,6 @@ class NisGeneratorService
 {
     /**
      * Generate NIS berdasarkan rules di config dan tahun masuk.
-     * Atau bisa dipanggil dengan mensimulasikan NIS preview.
      */
     public function generateNis($tahunMasuk = null, $isPreview = false)
     {
@@ -19,14 +18,14 @@ class NisGeneratorService
         }
 
         if (!$tahunMasuk) {
-            $tahunMasuk = date('Y'); // default tahun sekarang
+            $tahunMasuk = date('Y');
         }
 
         $tahun4 = (string) $tahunMasuk;
         $tahun2 = substr($tahun4, -2);
         $kode = $config->kode_sekolah ?? '';
 
-        // Tentukan nomor urut berikutnya berdasarkan setting reset
+        // Tentukan nomor urut berikutnya
         $nextUrut = 1;
         if (!$isPreview) {
             $query = Siswa::query();
@@ -37,7 +36,7 @@ class NisGeneratorService
             $nextUrut = $count + 1;
         }
 
-        $urutStr = str_pad((string)$nextUrut, $config->panjang_urut, '0', STR_PAD_LEFT);
+        $urutStr = str_pad((string) $nextUrut, $config->panjang_urut, '0', STR_PAD_LEFT);
 
         // Replace tags di dalam format
         $format = $config->format;
@@ -45,9 +44,6 @@ class NisGeneratorService
         $format = str_replace('[TAHUN_2]', $tahun2, $format);
         $format = str_replace('[KODE]', $kode, $format);
         $format = str_replace('[URUT]', $urutStr, $format);
-
-        // Preview dummy: replace tags literal dengan huruf X atau 1 jika belum diganti
-        // Namun karena kita sudah mensimulasikannya jika $isPreview=true, dia jadi 001.
 
         return $format;
     }

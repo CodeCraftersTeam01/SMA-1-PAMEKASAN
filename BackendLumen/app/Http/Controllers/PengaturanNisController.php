@@ -9,13 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class PengaturanNisController extends Controller
 {
-    protected $nisGenerator;
-
-    public function __construct(NisGeneratorService $nisGenerator)
-    {
-        $this->nisGenerator = $nisGenerator;
-    }
-
     public function index()
     {
         $setting = PengaturanNis::first();
@@ -51,21 +44,18 @@ class PengaturanNisController extends Controller
 
     public function preview(Request $request)
     {
-        // Simulasikan NIS menggunakan konfigurasi baru yang dioper tanpa disave
-        $setting = new PengaturanNis();
-        $setting->format = $request->input('format', '[TAHUN_4][KODE][URUT]');
-        $setting->kode_sekolah = $request->input('kode_sekolah', '');
-        $setting->panjang_urut = $request->input('panjang_urut', 4);
-        
         $tahun4 = date('Y');
         $tahun2 = substr($tahun4, -2);
-        
-        $urutStr = str_pad("1", $setting->panjang_urut, '0', STR_PAD_LEFT);
 
-        $format = $setting->format;
+        $format = $request->input('format', '[TAHUN_4][KODE][URUT]');
+        $kode = $request->input('kode_sekolah', '');
+        $panjang = (int) $request->input('panjang_urut', 4);
+
+        $urutStr = str_pad("1", $panjang, '0', STR_PAD_LEFT);
+
         $format = str_replace('[TAHUN_4]', $tahun4, $format);
         $format = str_replace('[TAHUN_2]', $tahun2, $format);
-        $format = str_replace('[KODE]', $setting->kode_sekolah, $format);
+        $format = str_replace('[KODE]', $kode, $format);
         $format = str_replace('[URUT]', $urutStr, $format);
 
         return response()->json(['preview' => $format]);
