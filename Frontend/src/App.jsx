@@ -5,6 +5,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/dashboard';
 import Pendaftar from './pages/pendaftar';
 import TahunAjaran from './pages/tahun-ajaran';
+import Profile from './pages/profile';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
@@ -73,6 +74,20 @@ const AnimatedRoutes = () => {
                   className="w-full h-full"
                 >
                   <TahunAjaran />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <Profile />
                 </motion.div>
               } 
             />

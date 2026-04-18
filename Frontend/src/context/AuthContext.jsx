@@ -9,6 +9,27 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Verifying on load
 
+  const refreshUser = async () => {
+    const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!storedToken) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${storedToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (err) {
+      console.error("Failed to refresh user", err);
+    }
+  };
+
   // On app mount, verify token against the backend
   useEffect(() => {
     const verifyAuth = async () => {
@@ -86,7 +107,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, hasRole, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
