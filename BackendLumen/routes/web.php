@@ -58,4 +58,8 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('siswa/{id}', 'SiswaController@show');
     $router->put('siswa/{id}', 'SiswaController@update');
     $router->delete('siswa/{id}', 'SiswaController@destroy');
+
+    // Routes untuk Laporan
+    $router->get('reports/pendaftaran', 'ReportController@pendaftaranReport');
+    $router->get('reports/siswa', 'ReportController@siswaReport');
 });
