@@ -1,6 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Dashboard = () => {
+  const [stats, setStats] = useState({
+    total_siswa: 0,
+    total_pendaftar: 0,
+    total_admin: 0,
+    tahun_ajaran: '-',
+  });
+  const [activities, setActivities] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+        
+        const res = await fetch(`${API_BASE_URL}/api/dashboard`, {
+          headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data.stats);
+          setActivities(data.recent_activities);
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
   return (
     <div className="space-y-6">
       
@@ -27,59 +63,74 @@ const Dashboard = () => {
               </svg>
             </span>
           </div>
-          <p className="text-3xl font-bold text-[#1e293b]">1,248</p>
-          <div className="mt-2 flex items-center text-[11px] font-medium text-emerald-500 gap-1">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-            <span>+12% dari bulan lalu</span>
+          {isLoading ? (
+             <div className="h-8 w-16 bg-slate-200 animate-pulse rounded"></div>
+          ) : (
+             <p className="text-3xl font-bold text-[#1e293b]">{stats.total_siswa.toLocaleString()}</p>
+          )}
+          <div className="mt-2 flex items-center text-[11px] font-medium text-slate-400 gap-1">
+            <span>Keseluruhan siswa terdaftar</span>
           </div>
         </div>
 
         {/* Stat Card 2 */}
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Guru Aktif</h3>
+            <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Total Pendaftar</h3>
             <span className="p-2 bg-purple-50 text-purple-500 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
             </span>
           </div>
-          <p className="text-3xl font-bold text-[#1e293b]">84</p>
+          {isLoading ? (
+             <div className="h-8 w-16 bg-slate-200 animate-pulse rounded"></div>
+          ) : (
+             <p className="text-3xl font-bold text-[#1e293b]">{stats.total_pendaftar.toLocaleString()}</p>
+          )}
           <div className="mt-2 flex items-center text-[11px] font-medium text-slate-400 gap-1">
-            <span>Tetap stabil</span>
+            <span>Menunggu migrasi atau verifikasi</span>
           </div>
         </div>
 
         {/* Stat Card 3 */}
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Kelas</h3>
+            <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Tahun Ajaran</h3>
             <span className="p-2 bg-amber-50 text-amber-500 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </span>
           </div>
-          <p className="text-3xl font-bold text-[#1e293b]">36</p>
+          {isLoading ? (
+             <div className="h-8 w-24 bg-slate-200 animate-pulse rounded"></div>
+          ) : (
+             <p className="text-3xl font-bold text-[#1e293b]">{stats.tahun_ajaran}</p>
+          )}
           <div className="mt-2 flex items-center text-[11px] font-medium text-amber-500 gap-1">
-            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
-            <span>+2 kelas baru</span>
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+            <span>Saat ini aktif</span>
           </div>
         </div>
 
         {/* Stat Card 4 */}
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Kehadiran Hari Ini</h3>
+            <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Total Admin</h3>
             <span className="p-2 bg-emerald-50 text-emerald-500 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </span>
           </div>
-          <p className="text-3xl font-bold text-[#1e293b]">98%</p>
+          {isLoading ? (
+             <div className="h-8 w-16 bg-slate-200 animate-pulse rounded"></div>
+          ) : (
+             <p className="text-3xl font-bold text-[#1e293b]">{stats.total_admin}</p>
+          )}
           <div className="mt-2 flex items-center text-[11px] font-medium text-emerald-500 gap-1">
-            <span>Sangat Baik</span>
+            <span>Admin Sistem</span>
           </div>
         </div>
       </div>
@@ -107,23 +158,35 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody className="text-[13px] text-slate-600">
-                {[
-                  { act: 'Update Data Siswa', by: 'Admin Utama', date: 'Hari ini', status: 'Sukses', statusColor: 'bg-emerald-50 text-emerald-500 border-emerald-100' },
-                  { act: 'Backup Database', by: 'Sistem', date: 'Kemarin', status: 'Selesai', statusColor: 'bg-blue-50 text-blue-500 border-blue-100' },
-                  { act: 'Sinkronisasi Ujian', by: 'Admin CBT', date: 'Kemarin', status: 'Gagal', statusColor: 'bg-red-50 text-red-500 border-red-100' },
-                  { act: 'Upload Modul Ajar', by: 'Guru A', date: '12 Nov 2026', status: 'Sukses', statusColor: 'bg-emerald-50 text-emerald-500 border-emerald-100' },
-                ].map((item, i) => (
-                  <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                    <td className="py-4 pl-2 font-medium text-slate-700">{item.act}</td>
-                    <td className="py-4">{item.by}</td>
-                    <td className="py-4 text-slate-400 text-[12px]">{item.date}</td>
-                    <td className="py-4 text-right pr-2">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${item.statusColor}`}>
-                        {item.status}
-                      </span>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="4" className="py-8 text-center text-slate-400">
+                      <div className="flex justify-center mb-2">
+                        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      </div>
+                      Memuat aktivitas...
                     </td>
                   </tr>
-                ))}
+                ) : activities.length > 0 ? (
+                  activities.map((item, i) => (
+                    <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                      <td className="py-4 pl-2 font-medium text-slate-700">{item.act}</td>
+                      <td className="py-4">{item.by}</td>
+                      <td className="py-4 text-slate-400 text-[12px]">{item.date}</td>
+                      <td className="py-4 text-right pr-2">
+                        <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${item.statusColor}`}>
+                          {item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="py-8 text-center text-slate-400">
+                      Tidak ada aktivitas terbaru.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

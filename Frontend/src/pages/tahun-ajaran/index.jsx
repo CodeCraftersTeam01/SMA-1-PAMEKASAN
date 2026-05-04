@@ -70,7 +70,6 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmLab
 };
 
 // ─── Main Component ──────────────────────────────────────────────────────────
-const MAX_ACTIVE = 3;
 
 const TahunAjaran = () => {
   const [data, setData] = useState([]);
@@ -132,7 +131,6 @@ const TahunAjaran = () => {
     setIsSaving(true);
     try {
       // If want to activate, backend will handle deactivating others.
-      // But we also enforce max-3 on frontend display.
       const payload = { tahun: formTahun.trim(), is_active: formIsActive };
       const res = await fetch(`${API_BASE_URL}/api/tahun-ajaran`, {
         method: 'POST',
@@ -191,11 +189,6 @@ const TahunAjaran = () => {
 
   // ── Toggle Active (quick-toggle from table) ───────────────────────────────
   const handleToggleActive = async (item) => {
-    // If trying to activate and already at max, warn
-    if (!item.is_active && activeCount >= MAX_ACTIVE) {
-      showToast(`Maksimal ${MAX_ACTIVE} tahun ajaran aktif. Nonaktifkan salah satu terlebih dahulu.`, 'warning');
-      return;
-    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/tahun-ajaran/${item.id}`, {
         method: 'PUT',
@@ -273,7 +266,7 @@ const TahunAjaran = () => {
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-[#1e293b]">Tahun Ajaran</h2>
             <p className="text-slate-500 text-sm max-w-xl">
-              Kelola tahun ajaran aktif. Maksimal <strong>{MAX_ACTIVE} tahun ajaran</strong> dapat aktif secara bersamaan.
+              Kelola tahun ajaran aktif. Hanya <strong>1 tahun ajaran</strong> yang dapat aktif secara bersamaan.
             </p>
           </div>
           <button
@@ -312,7 +305,7 @@ const TahunAjaran = () => {
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Aktif</p>
-            <p className="text-2xl font-bold text-emerald-600">{activeCount} <span className="text-sm text-slate-400 font-normal">/ {MAX_ACTIVE}</span></p>
+            <p className="text-2xl font-bold text-emerald-600">{activeCount}</p>
           </div>
         </div>
 
@@ -328,27 +321,6 @@ const TahunAjaran = () => {
             <p className="text-2xl font-bold text-slate-600">{data.length - activeCount}</p>
           </div>
         </div>
-      </div>
-
-      {/* ── Active Slots Bar ── */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-slate-600">Slot Aktif Terpakai</p>
-          <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${activeCount >= MAX_ACTIVE ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
-            {activeCount >= MAX_ACTIVE ? 'Penuh' : `${MAX_ACTIVE - activeCount} slot tersisa`}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          {Array.from({ length: MAX_ACTIVE }).map((_, i) => (
-            <div
-              key={i}
-              className={`h-2.5 flex-1 rounded-full ${i < activeCount ? 'bg-emerald-400' : 'bg-slate-100'} transition-all duration-300`}
-            />
-          ))}
-        </div>
-        <p className="text-[11px] text-slate-400 mt-2">
-          Menambahkan tahun ajaran baru sebagai aktif akan otomatis menonaktifkan yang tertua jika slot penuh.
-        </p>
       </div>
 
       {/* ── Table ── */}
@@ -497,10 +469,7 @@ const TahunAjaran = () => {
                 <div>
                   <p className="text-sm font-semibold text-slate-700">Status Aktif</p>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    {activeCount >= MAX_ACTIVE && !formIsActive && modalMode === 'create'
-                      ? `⚠ Slot penuh (${MAX_ACTIVE}/${MAX_ACTIVE}). Mengaktifkan ini akan nonaktifkan yang tertua.`
-                      : `Aktifkan tahun ajaran ini`
-                    }
+                    Aktifkan tahun ajaran ini (akan menonaktifkan yang lain)
                   </p>
                 </div>
                 <button
@@ -511,16 +480,6 @@ const TahunAjaran = () => {
                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ${formIsActive ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
               </div>
-
-              {/* Info banner when active slots full */}
-              {activeCount >= MAX_ACTIVE && formIsActive && modalMode === 'create' && (
-                <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-700">
-                  <svg className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <span>Slot aktif sudah penuh ({MAX_ACTIVE}/{MAX_ACTIVE}). Tahun ajaran yang paling lama aktif akan otomatis dinonaktifkan oleh sistem.</span>
-                </div>
-              )}
 
               {/* Actions */}
               <div className="pt-2 flex justify-end gap-3">
