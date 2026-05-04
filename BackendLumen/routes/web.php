@@ -67,4 +67,4 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('reports/siswa', 'ReportController@siswaReport');
 });
 
-//hello
+//hello kawan
