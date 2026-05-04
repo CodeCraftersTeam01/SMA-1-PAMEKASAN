@@ -66,3 +66,5 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('reports/pendaftaran', 'ReportController@pendaftaranReport');
     $router->get('reports/siswa', 'ReportController@siswaReport');
 });
+
+//hello
