@@ -29,6 +29,3 @@ class RoleMiddleware
         return $next($request);
     }
 }
-
-
-//hello
