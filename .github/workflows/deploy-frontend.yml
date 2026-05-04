@@ -1,8 +1,10 @@
 name: Auto Build & Deploy Smansa Frontend
 
-# Trigger: Jalan otomatis setiap kali kamu push ke branch main
+# Trigger: Jalan otomatis ketika Pull Request di-merge ke branch main
 on:
-  merge:
+  pull_request:
+    types:
+      - closed
     branches:
       - main
     # Opsi tambahan: Action hanya berjalan jika ada perubahan di folder Frontend
@@ -11,6 +13,8 @@ on:
 
 jobs:
   build-and-deploy:
+    # Hanya jalankan jika Pull Request benar-benar di-merge (bukan cuma di-close/batal)
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
