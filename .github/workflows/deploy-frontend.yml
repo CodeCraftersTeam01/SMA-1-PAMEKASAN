@@ -2,7 +2,7 @@ name: Auto Build & Deploy Smansa Frontend
 
 # Trigger: Jalan otomatis setiap kali kamu push ke branch main
 on:
-  push:
+  merge:
     branches:
       - main
     # Opsi tambahan: Action hanya berjalan jika ada perubahan di folder Frontend
