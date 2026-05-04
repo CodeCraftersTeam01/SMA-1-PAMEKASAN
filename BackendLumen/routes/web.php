@@ -28,6 +28,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->post('logout', 'AuthController@logout');
     $router->get('user', 'AuthController@user');
 
+    // Route untuk Dashboard
+    $router->get('dashboard', 'DashboardController@index');
+
     // Routes untuk Profile
     $router->post('profile', 'ProfileController@updateProfile');
     $router->put('profile/password', 'ProfileController@updatePassword');
