@@ -5,9 +5,12 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  
   server: {
     allowedHosts: [
-      'pc.leopard-gila.ts.net'
+      'pc.leopard-gila.ts.net',
+      'smansa.m-tech.fun'
     ]
+    
   }
 })
