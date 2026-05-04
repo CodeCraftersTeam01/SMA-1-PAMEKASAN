@@ -7,14 +7,20 @@ on:
       - closed
     branches:
       - main
-    # Opsi tambahan: Action hanya berjalan jika ada perubahan di folder Frontend
+    # Action hanya berjalan jika ada perubahan di folder Frontend
+    paths:
+      - 'Frontend/**'
+  # Opsional: Bisa juga jalan kalau kamu push langsung ke main
+  push:
+    branches:
+      - main
     paths:
       - 'Frontend/**'
 
 jobs:
   build-and-deploy:
-    # Hanya jalankan jika Pull Request benar-benar di-merge (bukan cuma di-close/batal)
-    if: github.event.pull_request.merged == true
+    # Jalankan jika ini adalah push biasa ATAU PR yang benar-benar di-merge
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -24,8 +30,9 @@ jobs:
       - name: 🛠️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Sesuaikan dengan versi node kamu
+          node-version: 20
           cache: 'npm'
+          # Path ke package-lock di dalam folder Frontend
           cache-dependency-path: './Frontend/package-lock.json'
 
       - name: 📦 Install Dependencies
@@ -34,9 +41,10 @@ jobs:
 
       - name: 🏗️ Build Project
         working-directory: ./Frontend
-        # Pastikan environment VITE_API_BASE_URL diset di GitHub Secrets jika dibutuhkan saat build,
-        # atau hardcode di .env repository.
         run: npm run build
+        env:
+          # Pastikan URL API sudah benar (tanpa double slash di akhir)
+          VITE_API_BASE_URL: http://api.smansa.m-tech.fun
 
       - name: 🚀 Upload ke VPS via SFTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -46,10 +54,13 @@ jobs:
           password: ${{ secrets.REMOTE_PASSWORD }}
           protocol: sftp
           port: 22
-          # Local-dir: folder hasil build di GitHub Action
-          # (Karena project React ada di folder Frontend)
+          # Mengambil hasil build dari folder Frontend/dist
           local-dir: ./Frontend/dist/
-          # Server-dir: folder tujuan di VPS kamu
+          # Mengirim ke folder tujuan di VPS
           server-dir: /var/www/html/smansa/frontend/dist/
-          # 'true' jika ingin menghapus file lama di VPS yang sudah tidak ada di repo
+          # Jangan hapus file lain di server agar tidak merusak folder lain
           delete-destination: false
+          # Jika butuh pengecualian file tertentu:
+          # exclude: |
+          #   **/.git*
+          #   **/node_modules/**
