@@ -1,0 +1,51 @@
+name: Auto Build & Deploy Smansa Frontend
+
+# Trigger: Jalan otomatis setiap kali kamu push ke branch main
+on:
+  push:
+    branches:
+      - main
+    # Opsi tambahan: Action hanya berjalan jika ada perubahan di folder Frontend
+    paths:
+      - 'Frontend/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # Sesuaikan dengan versi node kamu
+          cache: 'npm'
+          cache-dependency-path: './Frontend/package-lock.json'
+
+      - name: 📦 Install Dependencies
+        working-directory: ./Frontend
+        run: npm install
+
+      - name: 🏗️ Build Project
+        working-directory: ./Frontend
+        # Pastikan environment VITE_API_BASE_URL diset di GitHub Secrets jika dibutuhkan saat build,
+        # atau hardcode di .env repository.
+        run: npm run build
+
+      - name: 🚀 Upload ke VPS via SFTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          password: ${{ secrets.REMOTE_PASSWORD }}
+          protocol: sftp
+          port: 22
+          # Local-dir: folder hasil build di GitHub Action
+          # (Karena project React ada di folder Frontend)
+          local-dir: ./Frontend/dist/
+          # Server-dir: folder tujuan di VPS kamu
+          server-dir: /var/www/html/smansa/frontend/dist/
+          # 'true' jika ingin menghapus file lama di VPS yang sudah tidak ada di repo
+          delete-destination: false
