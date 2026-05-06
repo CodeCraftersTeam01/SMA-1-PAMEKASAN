@@ -46,3 +46,4 @@ jobs:
           source: "Frontend/dist/*"
           target: "frontend/dist/"
           strip_components: 2 # Ini penting agar folder 'Frontend/dist' tidak ikut terbuat di server
+          rm: true
