@@ -55,6 +55,10 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->put('pengaturan-nis', 'PengaturanNisController@update');
     $router->post('pengaturan-nis/preview', 'PengaturanNisController@preview');
 
+    // Routes untuk Pengaturan Tracking
+    $router->get('pengaturan-tracking', 'PengaturanTrackingController@index');
+    $router->put('pengaturan-tracking', 'PengaturanTrackingController@update');
+
     // Routes untuk Siswa
     $router->post('siswa/migrate', 'SiswaController@migrate');
     $router->get('siswa', 'SiswaController@index');
