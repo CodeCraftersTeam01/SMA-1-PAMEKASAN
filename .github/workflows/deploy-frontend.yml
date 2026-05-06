@@ -44,5 +44,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "Frontend/dist/*"
-          target: "/var/www/html/smansa/frontend/dist/"
+          target: "frontend/dist/"
           strip_components: 2 # Ini penting agar folder 'Frontend/dist' tidak ikut terbuat di server
