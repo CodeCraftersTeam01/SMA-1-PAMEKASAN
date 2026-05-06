@@ -34,7 +34,7 @@ jobs:
         working-directory: ./Frontend
         run: npm run build
         env:
-          VITE_API_BASE_URL: http://api.smansa.m-tech.fun
+          VITE_API_BASE_URL: https://api.smansa.m-tech.fun
 
       - name: 🚀 Upload Dist to VPS via SCP
         uses: appleboy/scp-action@master
