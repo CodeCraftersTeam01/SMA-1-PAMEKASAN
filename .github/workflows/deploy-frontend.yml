@@ -1,20 +1,17 @@
 name: Auto Build & Deploy Smansa Frontend
 
-# Trigger: Jalan otomatis ketika Pull Request di-merge ke branch main
 on:
   pull_request:
-    types:
-      - closed
-    branches:
-      - main
-  # Opsional: Bisa juga jalan kalau kamu push langsung ke main
+    types: [closed]
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-deploy:
-    # Jalankan jika ini adalah push biasa ATAU PR yang benar-benar di-merge
     if: github.event.pull_request.merged == true || github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -27,7 +24,6 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          # Path ke package-lock di dalam folder Frontend
           cache-dependency-path: './Frontend/package-lock.json'
 
       - name: 📦 Install Dependencies
@@ -38,24 +34,15 @@ jobs:
         working-directory: ./Frontend
         run: npm run build
         env:
-          # Pastikan URL API sudah benar (tanpa double slash di akhir)
           VITE_API_BASE_URL: http://api.smansa.m-tech.fun
 
-      - name: 🚀 Upload ke VPS via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: 🚀 Upload Dist to VPS via SCP
+        uses: appleboy/scp-action@master
         with:
-          server: ${{ secrets.REMOTE_HOST }}
+          host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
-          password: ${{ secrets.REMOTE_PASSWORD }}
-          protocol: sftp
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          # Mengambil hasil build dari folder Frontend/dist
-          local-dir: ./Frontend/dist/
-          # Mengirim ke folder tujuan di VPS
-          server-dir: /var/www/html/smansa/frontend/dist/
-          # Jangan hapus file lain di server agar tidak merusak folder lain
-          delete-destination: false
-          # Jika butuh pengecualian file tertentu:
-          # exclude: |
-          #   **/.git*
-          #   **/node_modules/**
+          source: "Frontend/dist/*"
+          target: "/var/www/html/smansa/frontend/dist/"
+          strip_components: 2 # Ini penting agar folder 'Frontend/dist' tidak ikut terbuat di server
