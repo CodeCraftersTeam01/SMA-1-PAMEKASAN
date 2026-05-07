@@ -1,0 +1,72 @@
+import { useEffect } from "react";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import Features from "./components/Features";
+import Announcement from "./components/Announcement";
+import Footer from "./components/Footer";
+import LoginModal from "./components/LoginModal";
+
+import AcademicSection from "./sections/AcademicSection";
+import StatisticsSection from "./sections/StatisticsSection";
+import GallerySection from "./sections/GallerySection";
+
+import useLoginModal from "./hooks/useLoginModal";
+
+import "./assets/styles/website.css";
+
+export default function WebsiteHome() {
+  const { isLoginOpen, openLogin, closeLogin } = useLoginModal();
+
+  // Load Bootstrap ONLY for the website page, clean up on unmount (e.g. when going to dashboard)
+  useEffect(() => {
+    const addLink = (id, href) => {
+      if (!document.getElementById(id)) {
+        const el = document.createElement("link");
+        el.id = id;
+        el.rel = "stylesheet";
+        el.href = href;
+        document.head.appendChild(el);
+      }
+    };
+
+    const addScript = (id, src) => {
+      if (!document.getElementById(id)) {
+        const el = document.createElement("script");
+        el.id = id;
+        el.src = src;
+        el.defer = true;
+        document.body.appendChild(el);
+      }
+    };
+
+    addLink("bootstrap-css", "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css");
+    addLink("bootstrap-icons-css", "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+    addScript("bootstrap-js", "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js");
+
+    return () => {
+      // Remove Bootstrap when navigating away from website (to dashboard, etc.)
+      document.getElementById("bootstrap-css")?.remove();
+      document.getElementById("bootstrap-icons-css")?.remove();
+      document.getElementById("bootstrap-js")?.remove();
+    };
+  }, []);
+
+  return (
+    <div className="website-page">
+      <Navbar onLoginClick={openLogin} />
+
+      <main id="beranda">
+        <Hero onLoginClick={openLogin} />
+        <StatisticsSection />
+        <Features />
+        <AcademicSection />
+        <GallerySection />
+        <Announcement />
+      </main>
+
+      <Footer />
+
+      <LoginModal open={isLoginOpen} onClose={closeLogin} />
+    </div>
+  );
+}

@@ -14,8 +14,15 @@
     }
   }
 }
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/*
+ * Bootstrap is loaded dynamically only on the public website page (WebsiteHome).
+ * It is removed from the DOM when the user navigates away (to dashboard, etc.)
+ * so there is no CSS conflict with Tailwind.
+ */

@@ -34,10 +34,10 @@ const LoginPage = () => {
         login(data.user, data.token, rememberMe);
         navigate('/dashboard');
       } else {
-        setError('Email atau kata sandi salah');
+        setError(data.message || 'Email atau kata sandi salah');
       }
     } catch (err) {
-      setError('Email atau kata sandi salah');
+      setError('Tidak dapat terhubung ke server. Periksa koneksi atau API.');
     } finally {
       setIsLoading(false);
     }
@@ -51,7 +51,7 @@ const LoginPage = () => {
         <div className="hidden md:flex flex-col h-full py-8 pr-8">
           <div className="mb-8">
             <img 
-              src="/public/logo-sma.png" 
+              src="/logo-sma.png" 
               alt="Logo SMAN 1 Pamekasan" 
               className="w-[100px] h-auto object-contain"
             />
@@ -62,8 +62,8 @@ const LoginPage = () => {
               SMAN 1 <br /> Pamekasan
             </h1>
             <p className="text-[#64748b] text-[13.5px] max-w-[340px] leading-relaxed">
-              Website terintegrasi dengan joko kentir.
-              selamat datang di website
+              Sistem Informasi Sekolah SMAN 1 Pamekasan.
+              Selamat datang di platform digital terintegrasi.
             </p>
           </div>
 
@@ -101,7 +101,7 @@ const LoginPage = () => {
             )}
 
             <form onSubmit={handleLogin} className="space-y-3.5">
-              {/* Input Registration ID */}
+              {/* Input Email */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block ml-1">
                   Akun email
@@ -135,7 +135,6 @@ const LoginPage = () => {
                     required
                     className="w-full px-3.5 py-3 rounded-lg bg-[#f8fafc] border border-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-[12px] text-slate-600 placeholder:text-slate-300 tracking-widest"
                   />
-                  {/* Optional eye icon toggle */}
                   <button 
                     type="button" 
                     onClick={() => setShowPassword(!showPassword)}
