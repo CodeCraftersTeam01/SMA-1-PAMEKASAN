@@ -14,10 +14,11 @@ class TrackingController extends Controller
      */
     public function store(Request $request)
     {
-        $user = Auth::user();
+        // Cek user dari guard api atau students
+        $user = Auth::guard('students')->user() ?: Auth::user();
         
         // Ensure the logged in user is a student and has a siswa_id
-        if (!$user || !isset($user->siswa_id)) {
+        if (!$user || (!isset($user->siswa_id) && $user->role !== 'siswa')) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Unauthorized: Hanya akun siswa yang dapat mengisi data ini.'

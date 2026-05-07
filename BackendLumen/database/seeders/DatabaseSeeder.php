@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(PengaturanNisSeeder::class);
         // User::factory(10)->create();
+        $this->call(AkunSiswaSeeder::class);
 
         User::factory()->create([
             'name' => 'Test User',
