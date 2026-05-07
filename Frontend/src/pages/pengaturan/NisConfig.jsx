@@ -151,13 +151,13 @@ const NisConfig = () => {
   };
 
   if (isLoading) {
-    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>;
+    return <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-slate-800 border-t-transparent rounded-full animate-spin"></div></div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-indigo-500" />
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800" />
         <div className="relative z-10">
           <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-[#1e293b]">Konfigurasi Nomor Induk Siswa</h2>
           <p className="text-slate-500 text-sm max-w-xl">
@@ -170,7 +170,7 @@ const NisConfig = () => {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
-              <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -189,7 +189,7 @@ const NisConfig = () => {
                     value={formData.kode_sekolah}
                     onChange={(e) => setFormData({...formData, kode_sekolah: e.target.value})}
                     placeholder="Misal: 20500123"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-700 text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                   />
                   <p className="mt-1.5 text-xs text-slate-500">Kode ini bisa Anda panggil dengan nama variabel [KODE].</p>
                 </div>
@@ -200,7 +200,7 @@ const NisConfig = () => {
                   <select
                     value={formData.panjang_urut}
                     onChange={(e) => setFormData({...formData, panjang_urut: parseInt(e.target.value)})}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-700 text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                   >
                     <option value={2}>2 digit (01-99)</option>
                     <option value={3}>3 digit (001-999)</option>
@@ -215,17 +215,17 @@ const NisConfig = () => {
                   Format (Template String) <span className="text-red-500">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <button type="button" onClick={() => handleInsertTag('[TAHUN_4]')} className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg transition-colors border border-indigo-200">+ [TAHUN_4]</button>
-                  <button type="button" onClick={() => handleInsertTag('[TAHUN_2]')} className="px-3 py-1 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold rounded-lg transition-colors border border-amber-200">+ [TAHUN_2]</button>
-                  <button type="button" onClick={() => handleInsertTag('[KODE]')} className="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg transition-colors border border-emerald-200">+ [KODE]</button>
-                  <button type="button" onClick={() => handleInsertTag('[URUT]')} className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-lg transition-colors border border-rose-200">+ [URUT]</button>
+                  <button type="button" onClick={() => handleInsertTag('[TAHUN_4]')} className="px-3 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">+ [TAHUN_4]</button>
+                  <button type="button" onClick={() => handleInsertTag('[TAHUN_2]')} className="px-3 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">+ [TAHUN_2]</button>
+                  <button type="button" onClick={() => handleInsertTag('[KODE]')} className="px-3 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">+ [KODE]</button>
+                  <button type="button" onClick={() => handleInsertTag('[URUT]')} className="px-3 py-1 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">+ [URUT]</button>
                 </div>
                 <input
                   type="text"
                   value={formData.format}
                   onChange={(e) => setFormData({...formData, format: e.target.value})}
                   required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-slate-800 font-mono text-sm shadow-inner bg-slate-50"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-800 font-mono text-sm shadow-inner bg-slate-50"
                 />
               </div>
 
@@ -238,7 +238,7 @@ const NisConfig = () => {
                       checked={formData.reset_per_tahun}
                       onChange={(e) => setFormData({...formData, reset_per_tahun: e.target.checked})}
                     />
-                    <div className={`block w-10 h-6 rounded-full transition-colors ${formData.reset_per_tahun ? 'bg-indigo-500' : 'bg-slate-300'}`}></div>
+                    <div className={`block w-10 h-6 rounded-full transition-colors ${formData.reset_per_tahun ? 'bg-slate-800' : 'bg-slate-300'}`}></div>
                     <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.reset_per_tahun ? 'transform translate-x-4' : ''}`}></div>
                   </div>
                   <div>
@@ -252,7 +252,7 @@ const NisConfig = () => {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-500/20 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-900/20 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSaving ? "Menyimpan..." : "Simpan Konfigurasi"}
                 </button>

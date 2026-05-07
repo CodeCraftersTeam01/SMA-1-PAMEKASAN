@@ -1,4 +1,4 @@
-name: Auto Build & Deploy Smansa Frontend
+name: Auto Build & Deploy Smansa (Frontend & Backend)
 
 on:
   pull_request:
@@ -23,17 +23,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './Frontend/package-lock.json'
 
-      - name: 📦 Install Dependencies
+      - name: 📦 Install Frontend Dependencies
         working-directory: ./Frontend
         run: npm install --legacy-peer-deps
 
-      - name: 🏗️ Build Project
+      - name: 🏗️ Build Frontend Project
         working-directory: ./Frontend
         run: npm run build
         env:
           VITE_API_BASE_URL: https://api.smansa.m-tech.fun
 
-      - name: 🚀 Upload Dist to VPS via SCP
+      - name: 🚀 Upload Frontend Dist to VPS via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -43,4 +43,29 @@ jobs:
           source: "Frontend/dist/*"
           target: "frontend/dist/"
           strip_components: 2
-          rm: true
+          rm: true
+
+      - name: 🚀 Upload Backend to VPS via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "BackendLumen/app,BackendLumen/bootstrap,BackendLumen/config,BackendLumen/database,BackendLumen/public,BackendLumen/resources,BackendLumen/routes,BackendLumen/storage,BackendLumen/artisan,BackendLumen/composer.json,BackendLumen/composer.lock"
+          target: "api/"
+          strip_components: 1
+          rm: false
+
+      - name: 🛠️ Post-Deployment Backend Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ~/api
+            composer install --no-dev --optimize-autoloader
+            php artisan migrate
+            chmod -R 775 storage bootstrap/cache

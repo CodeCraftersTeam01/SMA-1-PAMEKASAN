@@ -73,9 +73,9 @@ const DashboardLayout = () => {
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${isActive ? 'bg-[#4685ff] text-white shadow-[0_4px_12px_rgba(70,133,255,0.25)]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${isActive ? 'bg-slate-800 text-white shadow-[0_4px_12px_rgba(30,41,59,0.25)]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}
                 >
-                  <svg className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-blue-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-800'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                   </svg>
                   <span className={`text-[13px] font-medium ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
@@ -94,9 +94,9 @@ const DashboardLayout = () => {
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${isActive ? 'bg-indigo-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.25)]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'}`}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${isActive ? 'bg-slate-800 text-white shadow-[0_4px_12px_rgba(30,41,59,0.25)]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'}`}
                 >
-                  <svg className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-indigo-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-800'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
                   </svg>
                   <span className={`text-[13px] font-medium ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
