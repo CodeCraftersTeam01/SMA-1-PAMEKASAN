@@ -45,20 +45,8 @@ const AnimatedRoutes = () => {
           }
         />
 
-        {/* Admin Login Portal */}
-        <Route 
-          path="/login" 
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <LoginPage />
-            </motion.div>
-          } 
-        />
+        {/* Admin Login Portal - Redirect to homepage modal */}
+        <Route path="/login" element={<Navigate to="/" replace />} />
 
         {/* Dedicated Student Login Portal */}
         <Route

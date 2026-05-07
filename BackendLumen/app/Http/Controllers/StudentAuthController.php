@@ -40,9 +40,8 @@ class StudentAuthController extends Controller
         // Load relational data
         $akun->load('dataAkademik');
 
-        // Generate JWT Token using Tymon\JWTAuth (Auth::login)
-        // If your system uses a specific guard for students, you might need auth()->guard('siswa')->login($akun)
-        $token = Auth::login($akun);
+        // Generate JWT Token using students guard
+        $token = Auth::guard('students')->login($akun);
 
         return response()->json([
             'message' => 'Login Siswa berhasil',

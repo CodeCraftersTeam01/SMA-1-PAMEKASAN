@@ -83,6 +83,7 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        return response()->json(Auth::user());
+        $user = Auth::user() ?: Auth::guard('students')->user();
+        return response()->json($user);
     }
 }
