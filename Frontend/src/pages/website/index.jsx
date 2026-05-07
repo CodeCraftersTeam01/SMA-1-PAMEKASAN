@@ -83,7 +83,7 @@ export default function WebsiteHome() {
 
   return (
     <div className="website-page">
-      <Navbar onLoginClick={openLogin} isScrolled={isScrolled} />
+      <Navbar onLoginClick={openLogin} isScrolled={isScrolled} isLoginOpen={isLoginOpen} />
 
       <main>
         <Hero onLoginClick={openLogin} stats={dashboardStats} />

@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 
-export default function Navbar({ onLoginClick, isScrolled }) {
+export default function Navbar({ onLoginClick, isScrolled, isLoginOpen }) {
   return (
-    <div className="navbar-container">
+    <div className={`navbar-container ${isLoginOpen ? 'is-blurred' : ''}`}>
       <nav className={`navbar navbar-expand-md transition-all ${isScrolled ? 'scrolled' : ''}`}>
         <div className="container-fluid px-0">
           

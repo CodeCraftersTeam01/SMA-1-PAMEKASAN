@@ -45,6 +45,13 @@ h4, h5, .fw-800 { font-weight: 800; }
   display: flex;
   justify-content: center;
   padding: 0 1rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.website-page .navbar-container.is-blurred {
+  filter: blur(15px);
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .website-page .navbar {
