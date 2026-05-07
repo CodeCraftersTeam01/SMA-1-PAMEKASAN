@@ -27,5 +27,11 @@ class Siswa extends Model
         {
                 return $this->belongsTo(TahunAjaran::class, 'tahun_ajaran_id');
         }
+
+        // Relasi ke AkunSiswa
+        public function akunSiswa()
+        {
+                return $this->hasOne(AkunSiswa::class, 'siswa_id');
+        }
 }
 

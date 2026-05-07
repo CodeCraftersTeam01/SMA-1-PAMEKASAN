@@ -22,6 +22,7 @@ $router->get('/', function () use ($router) {
 // Auth Routes
 $router->post('api/register', 'AuthController@register');
 $router->post('api/login', 'AuthController@login');
+$router->post('api/login-siswa', 'StudentAuthController@loginSiswa');
 
 // API prefix group with Auth middleware
 $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($router) {
@@ -76,6 +77,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->post('users', 'UserController@store');
     $router->put('users/{id}', 'UserController@update');
     $router->delete('users/{id}', 'UserController@destroy');
+
+    // Routes untuk Penelusuran Alumni (Siswa)
+    $router->post('student/tracking', 'TrackingController@store');
 });
 
 //hello 
