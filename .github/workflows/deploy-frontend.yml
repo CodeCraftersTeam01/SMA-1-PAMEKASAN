@@ -68,4 +68,4 @@ jobs:
             cd ~/api
             composer install --no-dev --optimize-autoloader
             php artisan migrate
-            chmod -R 775 storage bootstrap/cache
+            chmod -R 775 storage
