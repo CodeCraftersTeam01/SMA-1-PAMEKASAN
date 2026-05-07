@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import UserList from './UserList';
 import UserForm from './UserForm';
@@ -38,18 +39,19 @@ const Toast = ({ message, type, onClose }) => {
 };
 
 const UserManagement = () => {
-  const { token } = useAuth();
+  const { token, user, isLoading } = useAuth();
+  const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const [users, setUsers] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const [toast, setToast] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
   // Fetch all users
   const fetchUsers = async () => {
-    setIsLoading(true);
+    setIsFetchingUsers(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'GET',
@@ -66,7 +68,7 @@ const UserManagement = () => {
     } catch (error) {
       setToast({ message: error.message, type: 'error' });
     } finally {
-      setIsLoading(false);
+      setIsFetchingUsers(false);
     }
   };
 
@@ -149,6 +151,13 @@ const UserManagement = () => {
     }
   };
 
+  // Redirect non-admin users away from this page
+  useEffect(() => {
+    if (!isLoading && user && user.role !== 'admin') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isLoading, user, navigate]);
+
   // Load users on mount
   useEffect(() => {
     fetchUsers();
@@ -210,7 +219,7 @@ const UserManagement = () => {
           <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
             <UserList
               users={users}
-              isLoading={isLoading}
+              isLoading={isFetchingUsers}
               onEdit={(user) => {
                 setEditingUser(user);
                 setShowForm(true);

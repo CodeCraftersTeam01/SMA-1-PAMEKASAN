@@ -59,6 +59,12 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        if ($this->authorizeAdmin() === false) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya admin yang dapat menambahkan pengguna.'
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -98,6 +104,12 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        if ($this->authorizeAdmin() === false) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya admin yang dapat mengubah pengguna.'
+            ], 403);
+        }
+
         try {
             $user = User::find($id);
 
@@ -149,6 +161,12 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
+        if ($this->authorizeAdmin() === false) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya admin yang dapat menghapus pengguna.'
+            ], 403);
+        }
+
         try {
             $user = User::find($id);
 
@@ -176,5 +194,19 @@ class UserController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Authorize current user as admin
+     */
+    private function authorizeAdmin()
+    {
+        $user = auth()->user();
+
+        if (! $user || $user->role !== 'admin') {
+            return false;
+        }
+
+        return true;
     }
 }
