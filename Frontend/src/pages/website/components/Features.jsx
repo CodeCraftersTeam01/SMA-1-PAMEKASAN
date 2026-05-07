@@ -36,7 +36,7 @@ export default function Features() {
     <section id="fitur" className="py-10 bg-soft border-top border-bottom border-light">
       <div className="container py-5">
         <div className="row mb-10 text-center justify-content-center">
-          <div className="col-lg-8 animate-fade-in-up">
+          <div className="col-lg-8 reveal">
             <span className="section-tag">Powerful Modules</span>
             <h2 className="h1 mb-4">Fitur Utama Platform</h2>
             <p className="text-muted fs-5 fw-500">
@@ -48,7 +48,7 @@ export default function Features() {
         <div className="row g-4 mt-2">
           {features.map((f, i) => (
             <div className="col-md-6 col-lg-4" key={i}>
-              <div className="card h-100 p-4 border-0 shadow-sm animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div className="card h-100 p-4 border-0 shadow-sm reveal" style={{ transitionDelay: `${i * 100}ms` }}>
                 <div className="card-body p-2">
                   <h5 className="fw-900 text-dark mb-3" style={{ fontSize: '1.25rem' }}>{f.title}</h5>
                   <p className="text-muted small fw-500 lh-lg mb-0">{f.desc}</p>
