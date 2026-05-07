@@ -1,17 +1,17 @@
 import { useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function LoginModal({ open, onClose }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { login } = useAuth();
 
   if (!open) return null;
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setError("");
 
@@ -23,10 +23,7 @@ export default function LoginModal({ open, onClose }) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
@@ -36,18 +33,16 @@ export default function LoginModal({ open, onClose }) {
         return;
       }
 
-     if (!data.token) {
-         setError("Token login tidak ditemukan dari server.");
-         return;
-     }
+      if (!data.token) {
+        setError("Token login tidak ditemukan dari server.");
+        return;
+      }
 
-     localStorage.setItem("token", data.token);
+      // Simpan via AuthContext agar ProtectedRoute mengenali sesi
+      login(data.user, data.token, true);
 
-     if (data.user) {
-         localStorage.setItem("user", JSON.stringify(data.user));
-     }
-
-        window.location.href = "/dashboard";
+      // Full reload ke dashboard
+      window.location.href = "/dashboard";
     } catch (err) {
       setError("Tidak dapat terhubung ke server. Periksa koneksi atau API.");
     } finally {

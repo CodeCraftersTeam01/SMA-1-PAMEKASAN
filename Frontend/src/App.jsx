@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import LoginPage from './pages/auth/login';
+import WebsiteHome from './pages/website';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/dashboard';
 import Pendaftar from './pages/pendaftar';
@@ -21,21 +21,23 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Public Route */}
+        {/* Public Website - login via modal */}
         <Route
-          path="/login"
+          path="/"
           element={
             <motion.div
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.02 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="w-full min-h-screen"
             >
-              <LoginPage />
+              <WebsiteHome />
             </motion.div>
           }
         />
+
+        {/* Redirect /login to / (modal dipakai di website) */}
+        <Route path="/login" element={<Navigate to="/" replace />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
@@ -166,10 +168,11 @@ const AnimatedRoutes = () => {
                 </motion.div>
               }
             />
-            {/* Redirect root to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Route>
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
   );
