@@ -33,11 +33,12 @@ const DashboardLayout = () => {
   const settingMenuItems = [
     { path: '/pengaturan-nis', label: 'Konfigurasi NIS', icon: 'M7 20l4-16m2 16l4-16M6 9h14M4 15h14' },
     { path: '/pengaturan-tracking', label: 'Konfigurasi Tracking', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+    { path: '/user-management', label: 'Manajemen Pengguna', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z' },
   ];
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-white to-slate-100 font-sans text-slate-800">
-      <div class="fixed top-0 left-0 z-[2] w-full h-[100px] 
+      <div className="fixed top-0 left-0 z-[2] w-full h-[100px] 
             bg-gradient-to-b from-black/20 to-transparent 
             backdrop-blur-sm 
             [mask-image:linear-gradient(to_bottom,black,transparent)]">

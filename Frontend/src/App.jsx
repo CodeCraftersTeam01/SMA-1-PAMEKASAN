@@ -10,6 +10,7 @@ import NisConfig from './pages/pengaturan/NisConfig';
 import TrackingConfig from './pages/pengaturan/TrackingConfig';
 import Siswa from './pages/siswa';
 import Laporan from './pages/laporan';
+import UserManagement from './pages/user-management';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
@@ -148,6 +149,20 @@ const AnimatedRoutes = () => {
                   className="w-full h-full"
                 >
                   <Laporan />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/user-management" 
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <UserManagement />
                 </motion.div>
               } 
             />
