@@ -23,7 +23,7 @@ export default function Hero({ onLoginClick, stats }) {
 
       <div className="container text-center position-relative z-1">
         <div className="row justify-content-center">
-          <div className="col-lg-10 animate-fade-in-up">
+          <div className="col-lg-10 reveal">
             
             <div className="mb-4">
               <span className="section-tag">Digital Transformation</span>

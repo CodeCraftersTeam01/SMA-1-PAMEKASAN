@@ -2,7 +2,7 @@ export default function StatisticsSection({ stats }) {
   return (
     <section className="py-5 bg-soft border-top border-bottom border-light">
       <div className="container py-4 text-center">
-        <div className="row g-5 animate-fade-in-up">
+        <div className="row g-5 reveal">
           <div className="col-md-4">
             <div className="display-5 fw-800 text-dark mb-1">{stats?.total_siswa?.toLocaleString() || '0'}</div>
             <div className="small text-muted font-bold text-uppercase tracking-wider">Database Siswa</div>

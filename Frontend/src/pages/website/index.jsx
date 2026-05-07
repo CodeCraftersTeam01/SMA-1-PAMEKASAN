@@ -31,6 +31,34 @@ export default function WebsiteHome() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Handle Reveal animations on scroll
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: "0px 0px -50px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+          // Optionally unobserve if you only want it to animate once
+          // observer.unobserve(entry.target);
+        } else {
+          // Keep it commented if you want it to trigger only once
+          // entry.target.classList.remove('active');
+        }
+      });
+    }, observerOptions);
+
+    const revealElements = document.querySelectorAll('[class*="reveal"]');
+    revealElements.forEach(el => observer.observe(el));
+
+    return () => {
+      revealElements.forEach(el => observer.unobserve(el));
+    };
+  }, []);
+
   // Fetch Dashboard Data for real-time stats on homepage
   useEffect(() => {
     const fetchStats = async () => {
@@ -83,7 +111,7 @@ export default function WebsiteHome() {
 
   return (
     <div className="website-page">
-      <Navbar onLoginClick={openLogin} isScrolled={isScrolled} />
+      <Navbar onLoginClick={openLogin} isScrolled={isScrolled} isLoginOpen={isLoginOpen} />
 
       <main>
         <Hero onLoginClick={openLogin} stats={dashboardStats} />

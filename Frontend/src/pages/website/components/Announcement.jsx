@@ -32,7 +32,7 @@ export default function Announcement() {
 
         <div className="mt-5">
           {announcements.map((item, index) => (
-            <div className="py-4 border-bottom border-light d-flex flex-column flex-md-row justify-content-between align-items-md-center animate-fade-in-up" key={index} style={{ animationDelay: `${index * 0.1}s` }}>
+            <div className="py-4 border-bottom border-light d-flex flex-column flex-md-row justify-content-between align-items-md-center reveal" key={index} style={{ transitionDelay: `${index * 100}ms` }}>
               <div className="d-flex align-items-center gap-4 mb-3 mb-md-0">
                 <span className="small text-muted font-bold text-uppercase tracking-widest d-none d-md-block" style={{ minWidth: '100px' }}>{item.category}</span>
                 <h5 className="fw-bold mb-0 hover-text-primary cursor-pointer transition-all">{item.title}</h5>
