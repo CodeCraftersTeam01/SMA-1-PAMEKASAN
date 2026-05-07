@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts';
+import React, { useState, useEffect } from 'react';
 
 // Simple Toast notification component
 const Toast = ({ message, type, onClose }) => {
@@ -45,7 +44,6 @@ const Laporan = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState(null);
   const [toast, setToast] = useState(null);
-  const [showCharts, setShowCharts] = useState(true);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -109,6 +107,7 @@ const Laporan = () => {
   const handleResetFilter = () => {
     setStartDate('');
     setEndDate('');
+    // setTimeout to allow state to update before fetch if we don't rely on dependency array for dates
     setTimeout(() => {
         fetchReportData();
     }, 0);
@@ -170,97 +169,16 @@ const Laporan = () => {
     }
   };
 
-  // --- Chart Data Aggregations ---
-  const pendaftaranChartData = useMemo(() => {
-    if (reportType !== 'pendaftaran' || data.length === 0) return null;
-    
-    const statusCounts = { pending: 0, diterima: 0, ditolak: 0 };
-    const jalurCounts = {};
-    const tahunCounts = {};
-
-    data.forEach(item => {
-      if (item.status) statusCounts[item.status]++;
-      if (item.jalur) {
-        jalurCounts[item.jalur] = (jalurCounts[item.jalur] || 0) + 1;
-      }
-      if (item.created_at) {
-        const year = new Date(item.created_at).getFullYear();
-        tahunCounts[year] = (tahunCounts[year] || 0) + 1;
-      }
-    });
-
-    const statusData = [
-      { name: 'Diterima', value: statusCounts.diterima, color: '#10b981' }, 
-      { name: 'Menunggu', value: statusCounts.pending, color: '#f59e0b' },
-      { name: 'Ditolak', value: statusCounts.ditolak, color: '#ef4444' },
-    ].filter(d => d.value > 0);
-
-    const jalurData = Object.keys(jalurCounts).map(key => ({
-      name: key.replace('_', ' ').toUpperCase(),
-      Jumlah: jalurCounts[key]
-    })).sort((a, b) => b.Jumlah - a.Jumlah);
-
-    const trenData = Object.keys(tahunCounts).sort().map(year => ({
-      name: year,
-      Jumlah: tahunCounts[year]
-    }));
-
-    return { statusData, jalurData, trenData };
-  }, [data, reportType]);
-
-  const siswaChartData = useMemo(() => {
-    if (reportType !== 'siswa' || data.length === 0) return null;
-
-    let aktifCount = 0;
-    let nonAktifCount = 0;
-    const tahunMasukCounts = {};
-
-    data.forEach(item => {
-      if (item.is_active) aktifCount++;
-      else nonAktifCount++;
-
-      if (item.tahun_masuk) {
-        tahunMasukCounts[item.tahun_masuk] = (tahunMasukCounts[item.tahun_masuk] || 0) + 1;
-      }
-    });
-
-    const statusData = [
-      { name: 'Aktif', value: aktifCount, color: '#10b981' },
-      { name: 'Tidak Aktif', value: nonAktifCount, color: '#ef4444' },
-    ].filter(d => d.value > 0);
-
-    const tahunData = Object.keys(tahunMasukCounts)
-      .sort((a, b) => parseInt(a) - parseInt(b))
-      .map(key => ({
-        name: key,
-        Jumlah: tahunMasukCounts[key]
-      }));
-
-    return { statusData, tahunData };
-  }, [data, reportType]);
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-100 text-sm">
-          <p className="font-bold text-slate-700">{label || payload[0].name}</p>
-          <p className="text-blue-600 font-semibold mt-1">Total: {payload[0].value}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6">
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
         <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[#1e293b]">Laporan & Statistik</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[#1e293b]">Laporan Data</h2>
             <p className="text-slate-500 text-sm max-w-xl">
-              Lihat, analisis, dan unduh laporan data Pendaftaran serta Siswa.
+              Lihat dan unduh laporan data Pendaftaran dan Siswa SMAN 1 Pamekasan.
             </p>
           </div>
           <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -272,7 +190,7 @@ const Laporan = () => {
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              Pendaftaran
+              Laporan Pendaftaran
             </button>
             <button
               onClick={() => setReportType('siswa')}
@@ -282,7 +200,7 @@ const Laporan = () => {
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
-              Siswa
+              Laporan Siswa
             </button>
           </div>
         </div>
@@ -315,6 +233,9 @@ const Laporan = () => {
                 type="submit"
                 className="flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
               >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
                 Filter
               </button>
               {(startDate || endDate) && (
@@ -330,17 +251,15 @@ const Laporan = () => {
           </form>
 
           <div className="flex gap-2 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
-            <button
-              onClick={() => setShowCharts(!showCharts)}
-              className={`flex-1 md:flex-none px-4 py-2 border rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                showCharts ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-              }`}
+            <button 
+              onClick={() => handleExport('csv')}
+              disabled={isExporting || data.length === 0}
+              className="flex-1 md:flex-none px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+              <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              {showCharts ? 'Sembunyikan Grafik' : 'Tampilkan Grafik'}
+              Export CSV
             </button>
             <button 
               onClick={() => handleExport('excel')}
@@ -348,7 +267,7 @@ const Laporan = () => {
               className="flex-1 md:flex-none px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Export Excel
             </button>
@@ -356,128 +275,14 @@ const Laporan = () => {
         </div>
       </div>
 
-      {/* Charts Section */}
-      {showCharts && !isLoading && !error && data.length > 0 && (
-        <div className="space-y-6 animate-fade-up delay-100">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* Chart 1: Pie Chart (Status) */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col">
-              <h3 className="text-[15px] font-bold text-slate-800 mb-6 text-center">
-                Statistik Status {reportType === 'pendaftaran' ? 'Pendaftaran' : 'Siswa Aktif'}
-              </h3>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={reportType === 'pendaftaran' ? pendaftaranChartData?.statusData : siswaChartData?.statusData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      labelLine={false}
-                    >
-                      {(reportType === 'pendaftaran' ? pendaftaranChartData?.statusData : siswaChartData?.statusData)?.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <RechartsTooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Chart 2: Bar Chart (Jalur / Tahun) */}
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col">
-              <h3 className="text-[15px] font-bold text-slate-800 mb-6 text-center">
-                {reportType === 'pendaftaran' ? 'Distribusi Jalur Pendaftaran' : 'Jumlah Siswa per Tahun Masuk'}
-              </h3>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={reportType === 'pendaftaran' ? pendaftaranChartData?.jalurData : siswaChartData?.tahunData}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 12 }} 
-                      dy={10}
-                    />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 12 }} 
-                    />
-                    <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
-                    <Bar 
-                      dataKey="Jumlah" 
-                      fill="#3b82f6" 
-                      radius={[6, 6, 0, 0]} 
-                      maxBarSize={60}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-
-          {/* Chart 3: Trends (Only for Pendaftaran) */}
-          {reportType === 'pendaftaran' && pendaftaranChartData?.trenData && (
-            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col">
-              <h3 className="text-[15px] font-bold text-slate-800 mb-6 text-center">
-                Tren Pendaftar per Tahun
-              </h3>
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={pendaftaranChartData.trenData}
-                    margin={{ top: 10, right: 30, left: -20, bottom: 0 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis 
-                      dataKey="name" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 12 }} 
-                      dy={10}
-                    />
-                    <YAxis 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 12 }} 
-                    />
-                    <RechartsTooltip content={<CustomTooltip />} />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Jumlah" 
-                      stroke="#3b82f6" 
-                      strokeWidth={3}
-                      dot={{ r: 6, fill: '#3b82f6', strokeWidth: 2, stroke: '#fff' }}
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Main Table Container */}
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-150">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-[16px] font-bold text-[#1e293b]">
-            Tabel Data {reportType === 'pendaftaran' ? 'Pendaftaran' : 'Siswa'}
+            Hasil Laporan {reportType === 'pendaftaran' ? 'Pendaftaran' : 'Siswa'}
           </h3>
-          <span className="text-xs font-bold px-3 py-1 bg-slate-100 text-slate-600 rounded-full">
-            Total: {data.length} baris
+          <span className="text-xs font-bold px-3 py-1 bg-blue-50 text-blue-600 rounded-full">
+            Total: {data.length} data
           </span>
         </div>
 
@@ -512,7 +317,7 @@ const Laporan = () => {
                     <th className="pb-3">Tahun Masuk</th>
                     <th className="pb-3">Tahun Ajaran</th>
                     <th className="pb-3">Status Aktif</th>
-                    <th className="pb-3">Tgl Dibuat</th>
+                    <th className="pb-3">Tanggal Data Dibuat</th>
                   </tr>
                 )}
               </thead>

@@ -1,0 +1,32 @@
+.website-page {
+  background: #ffffff;
+}
+
+.website-page .navbar {
+  min-height: 72px;
+}
+
+.website-page .transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+.website-page .transition-all:hover {
+  transform: translateY(-4px);
+}
+
+.website-page .icon-lg {
+  width: 48px;
+  height: 48px;
+}
+
+.website-page section {
+  scroll-margin-top: 90px;
+}
+
+.website-page .hero-visual-placeholder {
+  min-height: 320px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(13, 110, 253, 0.18), transparent 30%),
+    linear-gradient(135deg, #f8fbff, #eef4ff);
+}
