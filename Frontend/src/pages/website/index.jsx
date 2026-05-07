@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Features from "./components/Features";
@@ -6,9 +6,7 @@ import Announcement from "./components/Announcement";
 import Footer from "./components/Footer";
 import LoginModal from "./components/LoginModal";
 
-import AcademicSection from "./sections/AcademicSection";
 import StatisticsSection from "./sections/StatisticsSection";
-import GallerySection from "./sections/GallerySection";
 
 import useLoginModal from "./hooks/useLoginModal";
 
@@ -16,8 +14,41 @@ import "./assets/styles/website.css";
 
 export default function WebsiteHome() {
   const { isLoginOpen, openLogin, closeLogin } = useLoginModal();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [dashboardStats, setDashboardStats] = useState({
+    total_siswa: 0,
+    total_pendaftar: 0,
+    total_admin: 0,
+    tahun_ajaran: '-',
+  });
 
-  // Load Bootstrap ONLY for the website page, clean up on unmount (e.g. when going to dashboard)
+  // Handle scroll for navbar styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Fetch Dashboard Data for real-time stats on homepage
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.smansa.m-tech.fun";
+        const res = await fetch(`${API_BASE_URL}/api/dashboard`);
+        if (res.ok) {
+          const data = await res.json();
+          setDashboardStats(data.stats);
+        }
+      } catch (error) {
+        console.error("Error fetching homepage stats:", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  // Load Bootstrap ONLY for the website page
   useEffect(() => {
     const addLink = (id, href) => {
       if (!document.getElementById(id)) {
@@ -44,7 +75,6 @@ export default function WebsiteHome() {
     addScript("bootstrap-js", "https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js");
 
     return () => {
-      // Remove Bootstrap when navigating away from website (to dashboard, etc.)
       document.getElementById("bootstrap-css")?.remove();
       document.getElementById("bootstrap-icons-css")?.remove();
       document.getElementById("bootstrap-js")?.remove();
@@ -53,14 +83,12 @@ export default function WebsiteHome() {
 
   return (
     <div className="website-page">
-      <Navbar onLoginClick={openLogin} />
+      <Navbar onLoginClick={openLogin} isScrolled={isScrolled} />
 
-      <main id="beranda">
-        <Hero onLoginClick={openLogin} />
-        <StatisticsSection />
+      <main>
+        <Hero onLoginClick={openLogin} stats={dashboardStats} />
+        <StatisticsSection stats={dashboardStats} />
         <Features />
-        <AcademicSection />
-        <GallerySection />
         <Announcement />
       </main>
 

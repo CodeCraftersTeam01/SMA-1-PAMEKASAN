@@ -42,7 +42,7 @@ const Dashboard = () => {
       
       {/* Welcome Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800"></div>
         <div className="relative z-10">
           <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[#1e293b]">Selamat Datang di Sistem Informasi!</h2>
           <p className="text-slate-500 text-sm max-w-xl">
@@ -57,7 +57,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Total Siswa</h3>
-            <span className="p-2 bg-blue-50 text-blue-500 rounded-lg">
+            <span className="p-2 bg-slate-50 text-slate-800 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
@@ -97,7 +97,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Tahun Ajaran</h3>
-            <span className="p-2 bg-amber-50 text-amber-500 rounded-lg">
+            <span className="p-2 bg-slate-50 text-slate-800 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
@@ -108,7 +108,7 @@ const Dashboard = () => {
           ) : (
              <p className="text-3xl font-bold text-[#1e293b]">{stats.tahun_ajaran}</p>
           )}
-          <div className="mt-2 flex items-center text-[11px] font-medium text-amber-500 gap-1">
+          <div className="mt-2 flex items-center text-[11px] font-medium text-slate-500 gap-1">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
             <span>Saat ini aktif</span>
           </div>
@@ -118,7 +118,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] transition-shadow">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Total Admin</h3>
-            <span className="p-2 bg-emerald-50 text-emerald-500 rounded-lg">
+            <span className="p-2 bg-slate-50 text-slate-800 rounded-lg">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
@@ -129,7 +129,7 @@ const Dashboard = () => {
           ) : (
              <p className="text-3xl font-bold text-[#1e293b]">{stats.total_admin}</p>
           )}
-          <div className="mt-2 flex items-center text-[11px] font-medium text-emerald-500 gap-1">
+          <div className="mt-2 flex items-center text-[11px] font-medium text-slate-500 gap-1">
             <span>Admin Sistem</span>
           </div>
         </div>
@@ -142,7 +142,7 @@ const Dashboard = () => {
         <div className="bg-white rounded-2xl p-6 lg:col-span-2 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-150">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-[16px] font-bold text-[#1e293b]">Aktivitas Terkini</h3>
-            <button className="text-[12px] font-semibold text-blue-500 hover:text-blue-600 transition-colors">
+            <button className="text-[12px] font-semibold text-slate-800 hover:text-slate-600 transition-colors">
               Lihat Semua
             </button>
           </div>
@@ -162,7 +162,7 @@ const Dashboard = () => {
                   <tr>
                     <td colSpan="4" className="py-8 text-center text-slate-400">
                       <div className="flex justify-center mb-2">
-                        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-6 h-6 border-2 border-slate-800 border-t-transparent rounded-full animate-spin"></div>
                       </div>
                       Memuat aktivitas...
                     </td>
@@ -197,9 +197,9 @@ const Dashboard = () => {
           <h3 className="text-[16px] font-bold text-[#1e293b] mb-6">Tindakan Cepat</h3>
           <div className="space-y-3">
             {[
-              { icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', label: 'Tambah Siswa Baru', colorClass: 'bg-blue-50 text-blue-500 group-hover:bg-blue-100' },
-              { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', label: 'Laporan Kehadiran', colorClass: 'bg-emerald-50 text-emerald-500 group-hover:bg-emerald-100' },
-              { icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', label: 'Pengaturan Sistem', colorClass: 'bg-slate-50 text-slate-500 group-hover:bg-slate-100' }
+              { icon: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z', label: 'Tambah Siswa Baru', colorClass: 'bg-slate-50 text-slate-800 group-hover:bg-slate-100' },
+              { icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01', label: 'Laporan Kehadiran', colorClass: 'bg-slate-50 text-slate-800 group-hover:bg-slate-100' },
+              { icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z', label: 'Pengaturan Sistem', colorClass: 'bg-slate-50 text-slate-800 group-hover:bg-slate-100' }
             ].map((action, i) => (
               <button key={i} className="w-full flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 hover:shadow-sm transition-all text-left group">
                 <span className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${action.colorClass}`}>
@@ -207,7 +207,7 @@ const Dashboard = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={action.icon} />
                   </svg>
                 </span>
-                <span className="text-[13px] font-bold text-slate-700 group-hover:text-blue-600 transition-colors">
+                <span className="text-[13px] font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
                   {action.label}
                 </span>
               </button>

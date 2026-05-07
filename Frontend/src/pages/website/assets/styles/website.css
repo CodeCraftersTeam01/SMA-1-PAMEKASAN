@@ -1,32 +1,141 @@
+/* Dashboard-Inspired Elegant Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --primary: #2563eb;
+  --text-dark: #1e293b; /* Dashboard Headings */
+  --text-main: #334155; /* Dashboard Main Text */
+  --text-muted: #64748b; /* Dashboard Subtitles */
+  --bg-main: #ffffff;
+  --bg-soft: #f8fafc; /* Dashboard Background */
+  --border: #f1f5f9; /* Dashboard Borders */
+  --radius-pill: 100px;
+  --radius-dashboard: 1rem;
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
 .website-page {
-  background: #ffffff;
+  font-family: var(--font-sans);
+  color: var(--text-main);
+  background: var(--bg-main);
+  scroll-behavior: smooth;
+  line-height: 1.6;
+}
+
+/* Elegant Bold Typography */
+h1, .h1 { font-weight: 900; letter-spacing: -0.04em; color: var(--text-dark); }
+h2, .h2 { font-weight: 800; letter-spacing: -0.03em; color: var(--text-dark); }
+h3, .h3 { font-weight: 800; letter-spacing: -0.02em; color: var(--text-dark); }
+h4, h5, .fw-800 { font-weight: 800; }
+
+.text-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Floating Rounded Navbar - Minimalist */
+.website-page .navbar-container {
+  position: fixed;
+  top: 1.25rem;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem;
 }
 
 .website-page .navbar {
-  min-height: 72px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.6rem 1.5rem !important;
+  width: 100%;
+  max-width: 1100px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
-.website-page .transition-all {
-  transition: all 0.2s ease-in-out;
+.website-page .nav-link {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-dark) !important; /* Force darker color for visibility */
+  padding: 0.5rem 1.25rem !important;
+  transition: var(--transition);
+  opacity: 0.7;
 }
 
-.website-page .transition-all:hover {
+.website-page .nav-link:hover,
+.website-page .nav-link.active {
+  opacity: 1;
+  color: var(--primary) !important;
+}
+
+/* Buttons - Simple & Bold */
+.website-page .btn {
+  border-radius: 10px;
+  font-weight: 700;
+  padding: 0.7rem 1.6rem;
+  transition: all 0.3s ease;
+}
+
+.website-page .btn-primary {
+  background: var(--text-dark);
+  border: none;
+  box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.1);
+}
+
+.website-page .btn-primary:hover {
+  background: #000;
+  transform: translateY(-1px);
+}
+
+/* Hero Section - Clean & Typographic */
+.website-page .hero-section {
+  padding: 180px 0 100px;
+  background: #ffffff;
+}
+
+.website-page .hero-title {
+  font-size: 4.5rem;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+}
+
+/* Cards - Sync with Dashboard Style */
+.website-page .card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-dashboard);
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.website-page .card:hover {
+  border-color: #e2e8f0;
   transform: translateY(-4px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.04);
 }
 
-.website-page .icon-lg {
-  width: 48px;
-  height: 48px;
+/* Utility */
+.bg-soft { background-color: var(--bg-soft); }
+.section-tag {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(37, 99, 235, 0.05);
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 1rem;
 }
 
-.website-page section {
-  scroll-margin-top: 90px;
-}
-
-.website-page .hero-visual-placeholder {
-  min-height: 320px;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(13, 110, 253, 0.18), transparent 30%),
-    linear-gradient(135deg, #f8fbff, #eef4ff);
+@media (max-width: 991px) {
+  .website-page .hero-title { font-size: 2.75rem; }
+  .website-page .navbar { padding: 0.5rem 1rem !important; }
 }

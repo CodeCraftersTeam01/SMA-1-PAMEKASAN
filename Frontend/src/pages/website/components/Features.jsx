@@ -1,98 +1,61 @@
 const features = [
   {
-    icon: "bi bi-mortarboard-fill",
-    title: "E-Learning",
-    description:
-      "Akses materi pembelajaran, tugas, dan aktivitas kelas secara online.",
+    title: "Manajemen Siswa",
+    desc: "Modul inti pengelolaan database siswa, biodata, dan status akademik terpadu.",
+    theme: "blue"
   },
   {
-    icon: "bi bi-calendar-check-fill",
-    title: "Presensi Digital",
-    description:
-      "Monitoring kehadiran siswa dan guru secara realtime dan terintegrasi.",
+    title: "Pendaftaran Online",
+    desc: "Sistem penerimaan siswa baru dengan validasi data dan migrasi otomatis.",
+    theme: "purple"
   },
   {
-    icon: "bi bi-bar-chart-fill",
-    title: "Monitoring Akademik",
-    description:
-      "Pantau perkembangan akademik, nilai, dan performa siswa dengan mudah.",
+    title: "Dashboard Analitik",
+    desc: "Visualisasi data statistik untuk mendukung pengambilan keputusan strategis.",
+    theme: "emerald"
   },
   {
-    icon: "bi bi-megaphone-fill",
-    title: "Pengumuman Sekolah",
-    description:
-      "Informasi dan pengumuman sekolah tersampaikan lebih cepat dan terpusat.",
+    title: "Sistem Pelaporan",
+    desc: "Ekspor data laporan administratif dalam berbagai format secara instan.",
+    theme: "amber"
   },
   {
-    icon: "bi bi-people-fill",
-    title: "Manajemen Pengguna",
-    description:
-      "Pengelolaan akun siswa, guru, wali kelas, dan administrator sekolah.",
+    title: "Manajemen User",
+    desc: "Pengaturan hak akses sistem bagi administrator dan staf tata usaha.",
+    theme: "slate"
   },
   {
-    icon: "bi bi-shield-lock-fill",
-    title: "Sistem Terintegrasi",
-    description:
-      "Keamanan data dan akses sistem terpusat dalam satu platform digital.",
-  },
+    title: "Konfigurasi Sistem",
+    desc: "Pengaturan NIS dan periode akademik yang fleksibel sesuai kebutuhan.",
+    theme: "indigo"
+  }
 ];
 
 export default function Features() {
   return (
-    <section id="fitur" className="py-5 bg-light">
-      <div className="container">
-
-        {/* Section Title */}
-        <div className="row mb-5">
-          <div className="col-lg-8 mx-auto text-center">
-
-            <span className="badge bg-primary bg-opacity-10 text-primary mb-3">
-              Fitur Platform
-            </span>
-
-            <h2 className="fw-bold mb-3">
-              Sistem Digital Sekolah dalam Satu Platform
-            </h2>
-
-            <p className="text-muted mb-0">
-              Platform SMAN 1 Pamekasan dirancang untuk mendukung
-              pembelajaran, administrasi, dan layanan sekolah secara modern,
-              efisien, dan terintegrasi.
+    <section id="fitur" className="py-10 bg-soft border-top border-bottom border-light">
+      <div className="container py-5">
+        <div className="row mb-10 text-center justify-content-center">
+          <div className="col-lg-8 animate-fade-in-up">
+            <span className="section-tag">Powerful Modules</span>
+            <h2 className="h1 mb-4">Fitur Utama Platform</h2>
+            <p className="text-muted fs-5 fw-500">
+              Infrastruktur digital yang dirancang untuk menyederhanakan operasional harian sekolah Anda.
             </p>
-
           </div>
         </div>
 
-        {/* Features Grid */}
-        <div className="row g-4">
-
-          {features.map((feature, index) => (
-            <div className="col-md-6 col-lg-4" key={index}>
-
-              <div className="card border-0 shadow-sm h-100 rounded-4 transition-all">
-                <div className="card-body p-4">
-
-                  {/* Icon */}
-                  <div className="icon-lg bg-primary bg-opacity-10 text-primary rounded-circle mb-4 d-inline-flex align-items-center justify-content-center">
-                    <i className={`${feature.icon} fs-4`}></i>
-                  </div>
-
-                  {/* Title */}
-                  <h5 className="fw-bold mb-3">
-                    {feature.title}
-                  </h5>
-
-                  {/* Description */}
-                  <p className="text-muted mb-0">
-                    {feature.description}
-                  </p>
-
+        <div className="row g-4 mt-2">
+          {features.map((f, i) => (
+            <div className="col-md-6 col-lg-4" key={i}>
+              <div className="card h-100 p-4 border-0 shadow-sm animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
+                <div className="card-body p-2">
+                  <h5 className="fw-900 text-dark mb-3" style={{ fontSize: '1.25rem' }}>{f.title}</h5>
+                  <p className="text-muted small fw-500 lh-lg mb-0">{f.desc}</p>
                 </div>
               </div>
-
             </div>
           ))}
-
         </div>
       </div>
     </section>

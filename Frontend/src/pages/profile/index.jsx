@@ -147,7 +147,7 @@ const Profile = () => {
 
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500" />
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800" />
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-[#1e293b]">Pengaturan Profil</h2>
@@ -164,7 +164,7 @@ const Profile = () => {
         <div className="lg:col-span-2 space-y-6 animate-fade-up delay-75">
           <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
-              <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               <h3 className="text-lg font-bold text-slate-800">Identitas Profil</h3>
@@ -215,7 +215,7 @@ const Profile = () => {
                     value={profileData.name}
                     onChange={(e) => setProfileData({...profileData, name: e.target.value})}
                     required
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                     placeholder="Masukkan nama lengkap"
                   />
                 </div>
@@ -229,7 +229,7 @@ const Profile = () => {
                     value={profileData.email}
                     onChange={(e) => setProfileData({...profileData, email: e.target.value})}
                     required
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-700 text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                     placeholder="Masukkan alamat email"
                   />
                 </div>
@@ -239,7 +239,7 @@ const Profile = () => {
                 <button
                   type="submit"
                   disabled={isSavingProfile || (!photoFile && profileData.name === user?.name && profileData.email === user?.email)}
-                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {isSavingProfile ? (
                      <>
@@ -257,7 +257,7 @@ const Profile = () => {
         <div className="space-y-6 animate-fade-up delay-150">
           <div className="bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
-              <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               <h3 className="text-lg font-bold text-slate-800">Ubah Password</h3>
@@ -273,7 +273,7 @@ const Profile = () => {
                     value={passwordData.current_password}
                     onChange={(e) => setPasswordData({...passwordData, current_password: e.target.value})}
                     required
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-slate-700 text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                     placeholder="••••••••"
                   />
                 </div>
@@ -288,7 +288,7 @@ const Profile = () => {
                     onChange={(e) => setPasswordData({...passwordData, password: e.target.value})}
                     required
                     minLength={8}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-slate-700 text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                     placeholder="Minimal 8 karakter"
                   />
                 </div>
@@ -303,7 +303,7 @@ const Profile = () => {
                     onChange={(e) => setPasswordData({...passwordData, password_confirmation: e.target.value})}
                     required
                     minLength={8}
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-slate-700 text-sm"
+                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                     placeholder="Ulangi password baru"
                   />
                 </div>
@@ -313,7 +313,7 @@ const Profile = () => {
                 <button
                   type="submit"
                   disabled={isSavingPassword || !passwordData.current_password || !passwordData.password || !passwordData.password_confirmation}
-                  className="w-full px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-md shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSavingPassword ? (
                      <>

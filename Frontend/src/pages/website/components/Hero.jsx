@@ -1,111 +1,72 @@
-export default function Hero({ onLoginClick }) {
+import LightRays from './LightRays';
+
+export default function Hero({ onLoginClick, stats }) {
   return (
-    <section className="pt-5 pb-0 pb-lg-5">
-      <div className="container">
-        <div className="row g-4 g-lg-5 align-items-center">
+    <section className="hero-section position-relative overflow-hidden">
+      {/* Light Rays Background - Subtle Slate Color */}
+      <div className="position-absolute top-0 start-0 w-100 h-100" style={{ zIndex: 0, opacity: 0.5 }}>
+        <LightRays
+          raysOrigin="top-center"
+          raysColor="#334155" // Back to subtle Slate-700
+          raysSpeed={0.3}
+          lightSpread={0.7}
+          rayLength={3}
+          followMouse={true}
+          mouseInfluence={0.05}
+          noiseAmount={0.02}
+          distortion={0.1}
+          pulsating={true}
+          fadeDistance={0.8}
+          saturation={0.5}
+        />
+      </div>
 
-          {/* Left Content */}
-          <div className="col-lg-6 position-relative z-index-9">
+      <div className="container text-center position-relative z-1">
+        <div className="row justify-content-center">
+          <div className="col-lg-10 animate-fade-in-up">
+            
+            <div className="mb-4">
+              <span className="section-tag">Digital Transformation</span>
+            </div>
 
-            {/* Badge */}
-            <span className="badge bg-primary bg-opacity-10 text-primary mb-3">
-              Platform Digital Terintegrasi
-            </span>
-
-            {/* Heading */}
-            <h1 className="display-4 fw-bold mb-4">
-              SMAN 1 Pamekasan
-              <span className="text-primary d-block">
-                Smart School Platform
-              </span>
+            <h1 className="hero-title">
+              Satu Ekosistem. <br />
+              <span className="text-gradient">Satu Kendali Sekolah.</span>
             </h1>
 
-            {/* Description */}
-            <p className="lead text-muted mb-4">
-              Sistem informasi sekolah berbasis digital untuk mendukung
-              pembelajaran, administrasi, monitoring akademik, dan layanan
-              sekolah secara terintegrasi.
+            <p className="lead text-muted mb-5 mx-auto" style={{ maxWidth: '650px', fontSize: '1.2rem', fontWeight: 500 }}>
+              Optimalkan tata kelola SMAN 1 Pamekasan dengan sistem dashboard terintegrasi yang akurat, transparan, dan mudah digunakan.
             </p>
 
-            {/* Buttons */}
-            <div className="d-flex flex-wrap gap-3">
-
+            <div className="d-flex justify-content-center gap-3 mb-5">
               <button
-                className="btn btn-primary btn-lg"
+                className="btn btn-primary px-5 py-3 shadow-sm"
                 onClick={onLoginClick}
               >
-                <i className="bi bi-box-arrow-in-right me-2"></i>
-                Masuk Sistem
+                Mulai Sekarang
               </button>
-
               <a
                 href="#fitur"
-                className="btn btn-outline-secondary btn-lg"
+                className="btn btn-light border px-5 py-3 text-dark fw-bold shadow-sm"
+                style={{ background: '#fff' }}
               >
-                Jelajahi Fitur
+                Pelajari Fitur
               </a>
             </div>
 
-            {/* Stats */}
-            <div className="row g-4 mt-5">
-
-              <div className="col-sm-4">
-                <div className="text-center text-sm-start">
-                  <h3 className="fw-bold text-primary mb-0">1000+</h3>
-                  <p className="mb-0 text-muted">Siswa Aktif</p>
-                </div>
+            {/* Typography Stats - Bold & Minimal */}
+            <div className="row g-4 mt-5 justify-content-center pt-5 border-top border-light">
+              <div className="col-md-3">
+                <div className="h3 fw-900 text-dark mb-0">{stats?.total_siswa?.toLocaleString() || '0'}</div>
+                <div className="small text-muted font-bold text-uppercase tracking-widest" style={{ fontSize: '10px' }}>Total Siswa</div>
               </div>
-
-              <div className="col-sm-4">
-                <div className="text-center text-sm-start">
-                  <h3 className="fw-bold text-primary mb-0">50+</h3>
-                  <p className="mb-0 text-muted">Tenaga Pengajar</p>
-                </div>
+              <div className="col-md-3">
+                <div className="h3 fw-900 text-dark mb-0">{stats?.total_pendaftar?.toLocaleString() || '0'}</div>
+                <div className="small text-muted font-bold text-uppercase tracking-widest" style={{ fontSize: '10px' }}>Pendaftar Aktif</div>
               </div>
-
-              <div className="col-sm-4">
-                <div className="text-center text-sm-start">
-                  <h3 className="fw-bold text-primary mb-0">24/7</h3>
-                  <p className="mb-0 text-muted">Akses Sistem</p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Right Image */}
-          <div className="col-lg-6 text-center position-relative">
-
-            {/* Main Image */}
-            <img
-              src="/assets/images/hero-school.png"
-              className="img-fluid rounded-4 shadow-lg"
-              alt="SMAN 1 Pamekasan"
-            />
-
-            {/* Floating Card */}
-            <div
-              className="card shadow border-0 p-3 position-absolute bg-white"
-              style={{
-                bottom: "30px",
-                left: "0",
-                maxWidth: "250px",
-              }}
-            >
-              <div className="d-flex align-items-center gap-3">
-                <div className="icon-lg bg-success bg-opacity-10 rounded-circle text-success">
-                  <i className="bi bi-mortarboard-fill"></i>
-                </div>
-
-                <div className="text-start">
-                  <h6 className="mb-1 fw-bold">
-                    Sistem Akademik
-                  </h6>
-
-                  <small className="text-muted">
-                    Terintegrasi & realtime
-                  </small>
-                </div>
+              <div className="col-md-3">
+                <div className="h3 fw-900 text-dark mb-0">{stats?.tahun_ajaran || '-'}</div>
+                <div className="small text-muted font-bold text-uppercase tracking-widest" style={{ fontSize: '10px' }}>Tahun Ajaran</div>
               </div>
             </div>
 

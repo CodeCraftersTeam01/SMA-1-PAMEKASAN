@@ -173,7 +173,7 @@ const Laporan = () => {
     <div className="space-y-6">
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800"></div>
         <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[#1e293b]">Laporan Data</h2>
@@ -186,7 +186,7 @@ const Laporan = () => {
               onClick={() => setReportType('pendaftaran')}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                 reportType === 'pendaftaran' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
+                  ? 'bg-white text-slate-800 shadow-sm' 
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -196,7 +196,7 @@ const Laporan = () => {
               onClick={() => setReportType('siswa')}
               className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                 reportType === 'siswa' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
+                  ? 'bg-white text-slate-800 shadow-sm' 
                   : 'text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -216,7 +216,7 @@ const Laporan = () => {
                 type="date" 
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm text-slate-600"
+                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-sm text-slate-600"
               />
             </div>
             <div className="w-full sm:w-auto">
@@ -225,13 +225,13 @@ const Laporan = () => {
                 type="date" 
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm text-slate-600"
+                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-sm text-slate-600"
               />
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <button 
                 type="submit"
-                className="flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+                className="flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-900/20 transition-all flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -263,8 +263,7 @@ const Laporan = () => {
             </button>
             <button 
               onClick={() => handleExport('excel')}
-              disabled={isExporting || data.length === 0}
-              className="flex-1 md:flex-none px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 md:flex-none px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-900 transition-all shadow-md shadow-slate-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -281,7 +280,7 @@ const Laporan = () => {
           <h3 className="text-[16px] font-bold text-[#1e293b]">
             Hasil Laporan {reportType === 'pendaftaran' ? 'Pendaftaran' : 'Siswa'}
           </h3>
-          <span className="text-xs font-bold px-3 py-1 bg-blue-50 text-blue-600 rounded-full">
+          <span className="text-xs font-bold px-3 py-1 bg-slate-50 text-slate-800 rounded-full">
             Total: {data.length} data
           </span>
         </div>
@@ -289,7 +288,7 @@ const Laporan = () => {
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-              <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-4 border-slate-100 border-t-slate-800 rounded-full animate-spin"></div>
               <p className="text-sm font-medium">Memuat data laporan...</p>
             </div>
           ) : error ? (
@@ -332,12 +331,7 @@ const Laporan = () => {
                         <td className="py-4">{item.asal_sekolah}</td>
                         <td className="py-4">
                           {item.jalur ? (
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                              item.jalur === 'zonasi' ? 'bg-blue-50 text-blue-600 border-blue-100' : 
-                              item.jalur === 'afirmasi' ? 'bg-purple-50 text-purple-600 border-purple-100' : 
-                              item.jalur === 'prestasi' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-                              'bg-slate-50 text-slate-600 border-slate-100'
-                            }`}>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-600 border-slate-100`}>
                               {item.jalur.replace('_', ' ')}
                             </span>
                           ) : '-'}
@@ -357,7 +351,7 @@ const Laporan = () => {
                         <td className="py-4 text-slate-600">{item.tahun_ajaran?.tahun || '-'}</td>
                         <td className="py-4">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                            item.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'
+                            item.is_active ? 'bg-slate-800 text-white border-slate-800' : 'bg-red-50 text-red-600 border-red-100'
                           }`}>
                             {item.is_active ? 'Aktif' : 'Tidak Aktif'}
                           </span>

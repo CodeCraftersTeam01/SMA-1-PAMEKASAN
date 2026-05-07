@@ -5,7 +5,9 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  
+  optimizeDeps: {
+    include: ['ogl']
+  },
   server: {
     allowedHosts: [
       'pc.leopard-gila.ts.net',

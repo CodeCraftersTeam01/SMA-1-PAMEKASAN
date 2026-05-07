@@ -38,10 +38,7 @@ export default function LoginModal({ open, onClose }) {
         return;
       }
 
-      // Simpan via AuthContext agar ProtectedRoute mengenali sesi
       login(data.user, data.token, true);
-
-      // Full reload ke dashboard
       window.location.href = "/dashboard";
     } catch (err) {
       setError("Tidak dapat terhubung ke server. Periksa koneksi atau API.");
@@ -52,152 +49,122 @@ export default function LoginModal({ open, onClose }) {
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop with Maximum Glassmorphism Blur */}
       <div
-        className="modal-backdrop fade show"
-        style={{ zIndex: 1040 }}
+        style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 1040, 
+          backgroundColor: 'rgba(15, 23, 42, 0.25)', /* Sangat transparan agar blur terlihat jelas */
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          transition: 'all 0.3s ease-in-out'
+        }}
         onClick={onClose}
       ></div>
 
-      {/* Modal */}
+      {/* Modal Container */}
       <div
         className="modal fade show d-block"
         tabIndex="-1"
         role="dialog"
         style={{ zIndex: 1050 }}
       >
-        <div className="modal-dialog modal-dialog-centered">
-          <div className="modal-content border-0 rounded-4 shadow-lg">
-
-            {/* Header */}
-            <div className="modal-header border-0 pb-0">
-              <div>
-                <h5 className="modal-title fw-bold mb-1">
-                  Login Sistem
-                </h5>
-
-                <small className="text-muted">
-                  Masuk menggunakan akun yang telah terdaftar.
-                </small>
-              </div>
-
-              <button
-                type="button"
-                className="btn-close"
-                onClick={onClose}
-                disabled={loading}
-              ></button>
+        <div className="modal-dialog modal-dialog-centered" style={{ maxWidth: '400px' }}>
+          <div className="modal-content border-0 rounded-5 shadow-2xl overflow-hidden bg-white">
+            
+            {/* Minimalist Header */}
+            <div className="modal-header border-0 pt-5 pb-4 px-5 d-flex flex-column align-items-start">
+               <h3 className="fw-900 text-dark mb-1" style={{ letterSpacing: '-0.04em' }}>Sign In</h3>
+               <p className="text-muted small fw-500 mb-0">Selamat datang kembali di Smart School.</p>
+               <button
+                  type="button"
+                  className="btn-close shadow-none position-absolute"
+                  style={{ top: '2rem', right: '2rem', opacity: 0.3 }}
+                  onClick={onClose}
+                  disabled={loading}
+               ></button>
             </div>
 
             {/* Body */}
-            <form onSubmit={handleLogin}>
-              <div className="modal-body pt-4">
-
+            <form onSubmit={handleLogin} className="px-5 pb-5">
+              <div className="modal-body p-0">
                 {error && (
-                  <div className="alert alert-danger py-2" role="alert">
+                  <div className="alert alert-danger py-3 border-0 rounded-4 small mb-4 animate-fade-in-up" style={{ backgroundColor: '#fef2f2', color: '#991b1b' }}>
+                    <i className="bi bi-exclamation-circle-fill me-2"></i>
                     {error}
                   </div>
                 )}
 
-                <div className="mb-3">
-                  <label className="form-label fw-semibold">
-                    Email
+                <div className="mb-4">
+                  <label className="form-label small fw-800 text-dark text-uppercase tracking-widest mb-2" style={{ fontSize: '10px' }}>
+                    Email Address
                   </label>
-
-                  <div className="input-group">
-                    <span className="input-group-text">
-                      <i className="bi bi-envelope"></i>
-                    </span>
-
-                    <input
-                      type="email"
-                      className="form-control"
-                      placeholder="Masukkan email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      disabled={loading}
-                      required
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    className="form-control bg-soft border-light py-3 px-3 rounded-4 shadow-none fw-500"
+                    placeholder="name@school.id"
+                    style={{ fontSize: '14px', border: '1px solid #f1f5f9' }}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
                 </div>
 
-                <div className="mb-3">
-                  <label className="form-label fw-semibold">
+                <div className="mb-4">
+                  <label className="form-label small fw-800 text-dark text-uppercase tracking-widest mb-2" style={{ fontSize: '10px' }}>
                     Password
                   </label>
-
-                  <div className="input-group">
-                    <span className="input-group-text">
-                      <i className="bi bi-lock"></i>
-                    </span>
-
-                    <input
-                      type="password"
-                      className="form-control"
-                      placeholder="Masukkan password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      disabled={loading}
-                      required
-                    />
-                  </div>
+                  <input
+                    type="password"
+                    className="form-control bg-soft border-light py-3 px-3 rounded-4 shadow-none fw-500"
+                    placeholder="••••••••"
+                    style={{ fontSize: '14px', border: '1px solid #f1f5f9' }}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    required
+                  />
                 </div>
 
-                <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-5">
                   <div className="form-check">
                     <input
-                      className="form-check-input"
+                      className="form-check-input shadow-none"
                       type="checkbox"
                       id="rememberMe"
                     />
-
                     <label
-                      className="form-check-label small text-muted"
+                      className="form-check-label small text-muted fw-500 cursor-pointer"
                       htmlFor="rememberMe"
+                      style={{ fontSize: '12px' }}
                     >
                       Ingat saya
                     </label>
                   </div>
-
-                  <a href="#" className="small text-decoration-none">
-                    Lupa password?
+                  <a href="#" className="small text-dark fw-800 text-decoration-none" style={{ fontSize: '12px' }}>
+                    Lupa Password?
                   </a>
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="modal-footer border-0 pt-0">
-                <button
-                  type="button"
-                  className="btn btn-light"
-                  onClick={onClose}
-                  disabled={loading}
-                >
-                  Batal
-                </button>
-
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      Memproses...
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-box-arrow-in-right me-2"></i>
-                      Masuk
-                    </>
-                  )}
-                </button>
-              </div>
+              {/* Action Button - Elegant & Bold */}
+              <button
+                type="submit"
+                className="btn btn-primary w-100 py-3 rounded-4 d-flex align-items-center justify-content-center gap-3"
+                disabled={loading}
+                style={{ backgroundColor: '#1e293b', border: 'none' }}
+              >
+                {loading ? (
+                  <span className="spinner-border spinner-border-sm" role="status"></span>
+                ) : (
+                  <span className="fw-800 text-uppercase tracking-widest" style={{ fontSize: '12px' }}>Akses Dashboard</span>
+                )}
+              </button>
             </form>
 
           </div>

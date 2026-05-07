@@ -103,7 +103,7 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl">
-      <h2 className="text-2xl font-bold text-slate-900 mb-6">
+      <h2 className="text-xl font-bold text-[#1e293b] mb-6">
         {isEditing ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}
       </h2>
 
@@ -119,10 +119,10 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-colors ${
+            className={`w-full px-4 py-2 border rounded-xl font-medium transition-colors text-sm text-slate-600 ${
               errors.name
-                ? 'border-red-500 bg-red-50 focus:outline-none focus:border-red-600'
-                : 'border-slate-300 focus:outline-none focus:border-blue-500'
+                ? 'border-red-500 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20'
+                : 'border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500'
             }`}
             placeholder="Masukkan nama lengkap"
           />
@@ -140,10 +140,10 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-colors ${
+            className={`w-full px-4 py-2 border rounded-xl font-medium transition-colors text-sm text-slate-600 ${
               errors.email
-                ? 'border-red-500 bg-red-50 focus:outline-none focus:border-red-600'
-                : 'border-slate-300 focus:outline-none focus:border-blue-500'
+                ? 'border-red-500 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20'
+                : 'border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500'
             }`}
             placeholder="Masukkan email"
           />
@@ -162,10 +162,10 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-colors ${
+            className={`w-full px-4 py-2 border rounded-xl font-medium transition-colors text-sm text-slate-600 ${
               errors.password
-                ? 'border-red-500 bg-red-50 focus:outline-none focus:border-red-600'
-                : 'border-slate-300 focus:outline-none focus:border-blue-500'
+                ? 'border-red-500 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20'
+                : 'border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500'
             }`}
             placeholder={isEditing ? 'Masukkan password baru (opsional)' : 'Masukkan password'}
           />
@@ -184,10 +184,10 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
               name="password_confirmation"
               value={formData.password_confirmation}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-colors ${
+              className={`w-full px-4 py-2 border rounded-xl font-medium transition-colors text-sm text-slate-600 ${
                 errors.password_confirmation
-                  ? 'border-red-500 bg-red-50 focus:outline-none focus:border-red-600'
-                  : 'border-slate-300 focus:outline-none focus:border-blue-500'
+                  ? 'border-red-500 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20'
+                  : 'border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500'
               }`}
               placeholder="Masukkan kembali password"
             />
@@ -207,14 +207,14 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border-2 rounded-lg font-medium transition-colors ${
+            className={`w-full px-4 py-2 border rounded-xl font-medium transition-colors text-sm text-slate-600 bg-white ${
               errors.role
-                ? 'border-red-500 bg-red-50 focus:outline-none focus:border-red-600'
-                : 'border-slate-300 focus:outline-none focus:border-blue-500'
+                ? 'border-red-500 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20'
+                : 'border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500'
             }`}
           >
-            <option value="petugas">👨‍💼 Petugas</option>
-            <option value="admin">👤 Admin</option>
+            <option value="petugas">Petugas</option>
+            <option value="admin">Admin</option>
           </select>
           {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
         </div>
@@ -225,7 +225,7 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-400 text-white font-bold rounded-xl transition-all shadow-md shadow-slate-900/20 flex items-center justify-center gap-2 text-sm"
         >
           {isSubmitting && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
           {isSubmitting ? 'Menyimpan...' : isEditing ? 'Simpan Perubahan' : 'Tambah Pengguna'}
