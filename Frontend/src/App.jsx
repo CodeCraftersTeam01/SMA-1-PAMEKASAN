@@ -154,20 +154,24 @@ const AnimatedRoutes = () => {
                 </motion.div>
               }
             />
-            <Route
-              path="/user-management"
-              element={
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-full"
-                >
-                  <UserManagement />
-                </motion.div>
-              }
-            />
+          </Route>
+          <Route element={<ProtectedRoute requiredRole="admin" />}>
+            <Route element={<DashboardLayout />}>
+              <Route
+                path="/user-management"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <UserManagement />
+                  </motion.div>
+                }
+              />
+            </Route>
           </Route>
         </Route>
 
