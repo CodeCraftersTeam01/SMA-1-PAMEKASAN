@@ -35,6 +35,7 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     // Routes untuk Profile
     $router->post('profile', 'ProfileController@updateProfile');
     $router->put('profile/password', 'ProfileController@updatePassword');
+    $router->post('profile/setup', 'ProfileController@setupPassword');
 
     // Routes untuk Pendaftaran
     $router->post('pendaftaran/import', 'PendaftaranController@import');

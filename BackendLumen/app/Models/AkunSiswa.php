@@ -18,6 +18,7 @@ class AkunSiswa extends Model implements AuthenticatableContract, AuthorizableCo
     protected $fillable = [
         'siswa_id',
         'nis',
+        'email',
         'password',
         'is_password_changed',
     ];
@@ -30,6 +31,11 @@ class AkunSiswa extends Model implements AuthenticatableContract, AuthorizableCo
      * Relasi ke tabel siswas
      */
     public function dataAkademik()
+    {
+        return $this->belongsTo(Siswa::class, 'siswa_id');
+    }
+
+    public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'siswa_id');
     }

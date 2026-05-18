@@ -84,6 +84,9 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         $user = Auth::user() ?: Auth::guard('students')->user();
+        if ($user instanceof \App\Models\AkunSiswa) {
+            $user->load('siswa.pendaftaran');
+        }
         return response()->json($user);
     }
 }

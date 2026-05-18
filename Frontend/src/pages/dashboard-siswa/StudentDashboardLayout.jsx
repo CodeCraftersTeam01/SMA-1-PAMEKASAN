@@ -79,8 +79,8 @@ const StudentDashboardLayout = () => {
             <button onClick={() => navigate('/dashboard-siswa/profile')} className="p-4 bg-slate-50 hover:bg-slate-100 rounded-xl mb-4 border border-slate-100 flex items-center gap-3 w-full transition-colors text-left cursor-pointer">
               <img src={getAvatarUrl()} alt="Avatar" className="w-10 h-10 rounded-full border border-slate-200 object-cover shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold text-slate-700 truncate">{user?.data_akademik?.nama_lengkap || user?.name || 'Siswa'}</p>
-                <p className="text-[10px] text-slate-500 truncate">{user?.nis || 'Siswa'}</p>
+                <p className="text-[13px] font-bold text-slate-700 truncate">{user?.siswa?.nama_lengkap || user?.data_akademik?.nama_lengkap || user?.name || 'Siswa'}</p>
+                <p className="text-[10px] text-slate-500 truncate">{user?.siswa?.nis || user?.data_akademik?.nis || user?.nis || 'Siswa'}</p>
               </div>
             </button>
 
@@ -126,7 +126,7 @@ const StudentDashboardLayout = () => {
 
             <button onClick={() => navigate('/dashboard-siswa/profile')} className="hidden sm:flex items-center gap-3 pl-4 border-l border-slate-200 hover:opacity-80 transition-opacity">
               <div className="text-right">
-                <p className="text-[12px] font-bold text-slate-700">{user?.data_akademik?.nama_lengkap || user?.name || 'Siswa'}</p>
+                <p className="text-[12px] font-bold text-slate-700">{user?.siswa?.nama_lengkap || user?.data_akademik?.nama_lengkap || user?.name || 'Siswa'}</p>
                 <p className="text-[10px] text-slate-500">Siswa</p>
               </div>
               <img src={getAvatarUrl()} alt="Avatar" className="w-9 h-9 rounded-full border border-slate-200 object-cover" />

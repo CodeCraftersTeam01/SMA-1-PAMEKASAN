@@ -4,13 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 const ProfileSiswa = () => {
   const { user } = useAuth();
   
-  const student = user?.data_akademik || {};
+  const student = user?.siswa || {};
 
   const infoItems = [
     { label: 'Nama Lengkap', value: student.nama_lengkap || user?.name || '-' },
-    { label: 'NIS', value: user?.nis || student.nis || '-' },
-    { label: 'NISN', value: student.nisn || '-' },
-    { label: 'Kelas', value: student.grade || user?.student_grade || '-' },
+    { label: 'NIS', value: student.nis || user?.nis || '-' },
+    { label: 'NISN', value: student.pendaftaran?.nisn || student.nisn || '-' },
+    { label: 'Kelas', value: student.kelas || student.grade || user?.student_grade || '-' },
     { label: 'Status Akun', value: student.is_active ? 'Aktif' : 'Non-Aktif', isStatus: true },
     { label: 'Tahun Masuk', value: student.tahun_masuk || '-' },
   ];
