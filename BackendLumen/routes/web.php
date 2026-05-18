@@ -24,6 +24,25 @@ $router->post('api/register', 'AuthController@register');
 $router->post('api/login', 'AuthController@login');
 $router->post('api/login-siswa', 'StudentAuthController@loginSiswa');
 
+$router->get('api/test-mail', function() {
+    $to = request('to', 'wardilanang46@gmail.com');
+    try {
+        \Illuminate\Support\Facades\Mail::raw('SMTP Mailer SMA 1 Pamekasan berhasil terhubung dan berfungsi dengan baik!', function ($message) use ($to) {
+            $message->to($to)
+                    ->subject('Test Koneksi SMTP SMAN 1 Pamekasan');
+        });
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Koneksi SMTP berhasil! Email uji coba terkirim ke ' . $to
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Gagal terhubung ke SMTP: ' . $e->getMessage()
+        ], 500);
+    }
+});
+
 // API prefix group with Auth middleware
 $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($router) {
     $router->post('logout', 'AuthController@logout');
