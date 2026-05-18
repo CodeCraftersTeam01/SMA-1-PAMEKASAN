@@ -49,13 +49,31 @@ const UserList = ({ users, isLoading, onEdit, onDelete, onRefresh }) => {
               <td className="px-6 py-4 text-[13px] text-slate-600">{user.email}</td>
               <td className="px-6 py-4">
                 <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                    user.role === 'admin'
-                      ? 'bg-slate-800 text-white border-slate-800'
-                      : 'bg-slate-50 text-slate-600 border-slate-100'
+                  className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border ${
+                    user.role?.toLowerCase() === 'admin'
+                      ? 'bg-slate-900 text-white border-slate-900'
+                      : user.role?.toLowerCase() === 'petugas'
+                      ? 'bg-blue-50 text-blue-600 border-blue-100'
+                      : user.role?.toLowerCase() === 'tu'
+                      ? 'bg-indigo-50 text-indigo-600 border-indigo-100'
+                      : user.role?.toLowerCase() === 'guru'
+                      ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                      : user.role?.toLowerCase() === 'kepsek'
+                      ? 'bg-purple-50 text-purple-600 border-purple-100'
+                      : 'bg-slate-50 text-slate-500 border-slate-200/40'
                   }`}
                 >
-                  {user.role === 'admin' ? 'Admin' : 'Petugas'}
+                  {user.role?.toLowerCase() === 'admin'
+                    ? 'Admin'
+                    : user.role?.toLowerCase() === 'petugas'
+                    ? 'Petugas'
+                    : user.role?.toLowerCase() === 'tu'
+                    ? 'Tata Usaha'
+                    : user.role?.toLowerCase() === 'guru'
+                    ? 'Guru'
+                    : user.role?.toLowerCase() === 'kepsek'
+                    ? 'Kepala Sekolah'
+                    : user.role || '-'}
                 </span>
               </td>
               <td className="px-6 py-4 text-[13px] text-slate-500">
