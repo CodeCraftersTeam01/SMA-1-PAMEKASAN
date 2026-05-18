@@ -79,4 +79,4 @@ jobs:
             cd ~/api
             composer install --no-dev --optimize-autoloader
             php artisan migrate
-            chmod -R 775 storage
+            chmod -R 775 storage || true
