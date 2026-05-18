@@ -40,16 +40,16 @@ export default function Navbar({ onLoginClick, isScrolled, isLoginOpen }) {
           <div className="d-none d-md-flex flex-grow-1 align-items-center justify-content-between w-100" id="navbarCollapse">
             <ul className="navbar-nav mx-auto d-flex flex-row align-items-center justify-content-center" style={{ gap: '2rem' }}>
               <li className="nav-item">
-                <a className="nav-link fw-bold" href="#" style={{ color: '#1e293b', fontSize: '14px', opacity: 1, padding: '0.5rem' }}>Beranda</a>
+                <a className="nav-link fw-medium" href="/" style={{ color: '#1e293b', fontSize: '14px', opacity: 1, padding: '0.5rem' }}>Beranda</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link fw-bold" href="#fitur" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Fitur</a>
+                <a className="nav-link fw-medium" href="#fitur" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Fitur</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link fw-bold" href="#pengumuman" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Warta</a>
+                <a className="nav-link fw-medium" href="#pengumuman" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Warta</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link fw-bold" href="#kontak" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Kontak</a>
+                <a className="nav-link fw-medium" href="#kontak" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Kontak</a>
               </li>
             </ul>
 

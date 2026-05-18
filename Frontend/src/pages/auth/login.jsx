@@ -76,16 +76,7 @@ const LoginPage = () => {
         </div>
 
         {/* Kolom Kanan: Login Card */}
-        <div className="relative w-full max-w-[380px] mx-auto md:ml-auto">
-          {/* Shadow container with clip-path shape */}
-          <div className="absolute inset-0 drop-shadow-[0_12px_28px_rgba(0,0,0,0.04)]">
-            <div 
-              className="w-full h-full bg-white rounded-t-[16px]"
-              style={{ clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 28px), 50% 100%, 0 calc(100% - 28px))' }}
-            ></div>
-          </div>
-          
-          <div className="relative z-10 p-8 pb-12">
+        <div className="relative w-full max-w-[380px] mx-auto md:ml-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 p-8 pb-12">
             
             <div className="text-center mb-8 mt-1">
               <h2 className="text-[30px] font-bold text-[#1e293b]">Selamat datang kembali</h2>
@@ -182,7 +173,6 @@ const LoginPage = () => {
                 © 2026 SMAN 1 Pamekasan | <a href="#">PENS PSDKU SUMENEP</a>
               </p>
             </div>
-          </div>
         </div>
 
       </div>

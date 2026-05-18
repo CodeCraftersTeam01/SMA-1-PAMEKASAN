@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('akun_siswas', function (Blueprint $table) {
-            $table->string('email')->nullable()->unique()->after('nis');
-        });
+        // Handled directly in the primary create_akun_siswas_table migration
     }
 
     /**
@@ -21,8 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('akun_siswas', function (Blueprint $table) {
-            $table->dropColumn('email');
-        });
+        // Handled directly in the primary create_akun_siswas_table migration
     }
 };

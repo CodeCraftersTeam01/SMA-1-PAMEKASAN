@@ -23,6 +23,11 @@ $router->get('/', function () use ($router) {
 $router->post('api/register', 'AuthController@register');
 $router->post('api/login', 'AuthController@login');
 $router->post('api/login-siswa', 'StudentAuthController@loginSiswa');
+$router->post('api/forgot-password-siswa', 'StudentAuthController@forgotPasswordSiswa');
+$router->post('api/reset-password-siswa', 'StudentAuthController@resetPasswordSiswa');
+$router->post('api/public/alumni-tracking/verify', 'PublicTrackingController@verify');
+$router->post('api/public/alumni-tracking/submit', 'PublicTrackingController@submit');
+$router->get('api/public/alumni-tracking/status', 'PublicTrackingController@status');
 
 $router->get('api/test-mail', function() {
     $to = request('to', 'wardilanang46@gmail.com');
@@ -99,6 +104,7 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->delete('users/{id}', 'UserController@destroy');
 
     // Routes untuk Penelusuran Alumni (Siswa)
+    $router->get('alumni-tracking', 'TrackingController@index');
     $router->post('student/tracking', 'TrackingController@store');
 });
 

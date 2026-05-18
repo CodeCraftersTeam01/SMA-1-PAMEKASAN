@@ -17,7 +17,6 @@ class AkunSiswa extends Model implements AuthenticatableContract, AuthorizableCo
 
     protected $fillable = [
         'siswa_id',
-        'nis',
         'email',
         'password',
         'is_password_changed',
