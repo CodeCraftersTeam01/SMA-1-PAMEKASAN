@@ -304,7 +304,7 @@ const DonutChart = ({ diterima, ditolak, pending }) => {
   const rotPending = ((pDiterima + pDitolak) / 100) * 360;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-6 justify-center w-full">
+    <div className="flex flex-col items-center justify-center w-full gap-5">
       <div className="relative w-28 h-28 shrink-0">
         <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
           <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
@@ -364,27 +364,27 @@ const DonutChart = ({ diterima, ditolak, pending }) => {
       </div>
       
       {/* Legend list */}
-      <div className="flex flex-col gap-2.5 w-full sm:w-auto">
-        <div className="flex items-center justify-between sm:justify-start gap-4 px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+      <div className="flex flex-col gap-2 w-full max-w-[240px]">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
             <span className="text-xs font-bold text-slate-600">Diterima</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto">{diterima} ({Math.round(pDiterima)}%)</span>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{diterima} ({Math.round(pDiterima)}%)</span>
         </div>
-        <div className="flex items-center justify-between sm:justify-start gap-4 px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
             <span className="text-xs font-bold text-slate-600">Ditolak</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto">{ditolak} ({Math.round(pDitolak)}%)</span>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{ditolak} ({Math.round(pDitolak)}%)</span>
         </div>
-        <div className="flex items-center justify-between sm:justify-start gap-4 px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
             <span className="text-xs font-bold text-slate-600">Menunggu</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto">{pending} ({Math.round(pPending)}%)</span>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{pending} ({Math.round(pPending)}%)</span>
         </div>
       </div>
     </div>
@@ -409,7 +409,7 @@ const SiswaDonutChart = ({ aktif, tidakAktif }) => {
   const rotTidakAktif = (pAktif / 100) * 360;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-6 justify-center w-full">
+    <div className="flex flex-col items-center justify-center w-full gap-5">
       <div className="relative w-28 h-28 shrink-0">
         <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
           <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
@@ -453,20 +453,20 @@ const SiswaDonutChart = ({ aktif, tidakAktif }) => {
       </div>
       
       {/* Legend list */}
-      <div className="flex flex-col gap-2.5 w-full sm:w-auto">
-        <div className="flex items-center justify-between sm:justify-start gap-4 px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+      <div className="flex flex-col gap-2 w-full max-w-[240px]">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-slate-800 shrink-0"></span>
             <span className="text-xs font-bold text-slate-600">Aktif</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto">{aktif} ({Math.round(pAktif)}%)</span>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{aktif} ({Math.round(pAktif)}%)</span>
         </div>
-        <div className="flex items-center justify-between sm:justify-start gap-4 px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
             <span className="text-xs font-bold text-slate-600">Tidak Aktif</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto">{tidakAktif} ({Math.round(pTidakAktif)}%)</span>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{tidakAktif} ({Math.round(pTidakAktif)}%)</span>
         </div>
       </div>
     </div>
@@ -547,7 +547,7 @@ const Laporan = () => {
     setStartDate('');
     setEndDate('');
     setTimeout(() => {
-        fetchReportData();
+        fetchReportData(); // Fetch data laporan setelah filter direset
     }, 0);
   };
 
