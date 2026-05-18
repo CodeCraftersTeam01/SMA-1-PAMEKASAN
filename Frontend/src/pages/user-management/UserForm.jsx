@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const PRESET_ROLES = ['admin', 'petugas', 'tu', 'guru', 'kepsek'];
+
 const UserForm = ({ user, onSubmit, isEditing }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -7,6 +9,7 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
     password: '',
     password_confirmation: '',
     role: 'petugas',
+    customRole: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -14,12 +17,14 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
 
   useEffect(() => {
     if (isEditing && user) {
+      const isPreset = PRESET_ROLES.includes(user.role?.toLowerCase());
       setFormData({
         name: user.name || '',
         email: user.email || '',
         password: '',
         password_confirmation: '',
-        role: user.role || 'petugas',
+        role: isPreset ? (user.role?.toLowerCase() || 'petugas') : 'kustom',
+        customRole: isPreset ? '' : (user.role || ''),
       });
     }
   }, [isEditing, user]);
@@ -73,6 +78,8 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
 
     if (!formData.role) {
       newErrors.role = 'Role harus dipilih';
+    } else if (formData.role === 'kustom' && !formData.customRole.trim()) {
+      newErrors.customRole = 'Nama role kustom harus diisi';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -85,7 +92,7 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
     const submitData = {
       name: formData.name,
       email: formData.email,
-      role: formData.role,
+      role: formData.role === 'kustom' ? formData.customRole.trim().toLowerCase() : formData.role,
     };
 
     if (formData.password) {
@@ -213,11 +220,38 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
                 : 'border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500'
             }`}
           >
-            <option value="petugas">Petugas</option>
             <option value="admin">Admin</option>
+            <option value="petugas">Petugas</option>
+            <option value="tu">Tata Usaha (TU)</option>
+            <option value="guru">Guru</option>
+            <option value="kepsek">Kepala Sekolah</option>
+            <option value="kustom">Lainnya (Kustom...)</option>
           </select>
           {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role}</p>}
         </div>
+
+        {/* Custom Role Input */}
+        {formData.role === 'kustom' && (
+          <div className="animate-fade-up">
+            <label htmlFor="customRole" className="block text-sm font-semibold text-slate-700 mb-2">
+              Nama Role Kustom
+            </label>
+            <input
+              type="text"
+              id="customRole"
+              name="customRole"
+              value={formData.customRole}
+              onChange={handleChange}
+              className={`w-full px-4 py-2 border rounded-xl font-medium transition-colors text-sm text-slate-600 ${
+                errors.customRole
+                  ? 'border-red-500 bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20'
+                  : 'border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500'
+              }`}
+              placeholder="Contoh: wakasek, humas, dll"
+            />
+            {errors.customRole && <p className="text-red-500 text-sm mt-1">{errors.customRole}</p>}
+          </div>
+        )}
       </div>
 
       {/* Buttons */}
