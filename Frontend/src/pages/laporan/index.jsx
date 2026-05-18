@@ -283,108 +283,105 @@ const SiswaBarChart = ({ data }) => {
   );
 };
 
+// ── Helper Donut Segments ────────────────────────────────────
+const createDonutSegments = (data, radius) => {
+    let currentAngle = -90; // Start at top
+    const circumference = 2 * Math.PI * radius;
+    
+    return data.map((item) => {
+        if (item.value === 0) return null;
+        
+        const percentage = item.value / item.total;
+        const dasharray = `${percentage * circumference} ${circumference}`;
+        
+        // Calculate offset to start drawing from currentAngle
+        const offset = circumference - ((currentAngle + 90) / 360) * circumference;
+        
+        const segment = {
+            ...item,
+            dasharray,
+            offset,
+            percentage: percentage * 100
+        };
+        
+        currentAngle += percentage * 360;
+        return segment;
+    }).filter(Boolean);
+};
+
 // ── Donut Chart for Registration Status ────────────────────────────────────
 const DonutChart = ({ diterima, ditolak, pending }) => {
   const total = diterima + ditolak + pending;
   if (total === 0) return null;
 
-  const pDiterima = (diterima / total) * 100;
-  const pDitolak = (ditolak / total) * 100;
-  const pPending = (pending / total) * 100;
-
-  const radius = 38;
-  const circumference = 2 * Math.PI * radius;
-
-  const offsetDiterima = circumference - (pDiterima / 100) * circumference;
-  const offsetDitolak = circumference - (pDitolak / 100) * circumference;
-  const offsetPending = circumference - (pPending / 100) * circumference;
-
-  const rotDiterima = 0;
-  const rotDitolak = (pDiterima / 100) * 360;
-  const rotPending = ((pDiterima + pDitolak) / 100) * 360;
+  const radius = 40;
+  
+  const segments = createDonutSegments([
+      { id: 'diterima', value: diterima, total, color: '#10b981' },
+      { id: 'ditolak', value: ditolak, total, color: '#ef4444' },
+      { id: 'pending', value: pending, total, color: '#f59e0b' }
+  ], radius);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full gap-5">
-      <div className="relative w-28 h-28 shrink-0">
-        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
-          
-          {/* Diterima segment */}
-          {pDiterima > 0 && (
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="transparent"
-              stroke="#10b981"
-              strokeWidth="10"
-              strokeDasharray={circumference}
-              strokeDashoffset={offsetDiterima}
-              transform={`rotate(${rotDiterima} 50 50)`}
-              className="transition-all duration-500"
-            />
-          )}
-          
-          {/* Ditolak segment */}
-          {pDitolak > 0 && (
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="transparent"
-              stroke="#ef4444"
-              strokeWidth="10"
-              strokeDasharray={circumference}
-              strokeDashoffset={offsetDitolak}
-              transform={`rotate(${rotDitolak} 50 50)`}
-              className="transition-all duration-500"
-            />
-          )}
+    <div className="flex flex-col items-center justify-center w-full gap-6">
+      <div className="relative w-32 h-32 shrink-0">
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f1f5f9" strokeWidth="12" />
 
-          {/* Pending segment */}
-          {pPending > 0 && (
+          {segments.map((seg) => (
             <circle
+              key={seg.id}
               cx="50"
               cy="50"
               r={radius}
               fill="transparent"
-              stroke="#f59e0b"
-              strokeWidth="10"
-              strokeDasharray={circumference}
-              strokeDashoffset={offsetPending}
-              transform={`rotate(${rotPending} 50 50)`}
-              className="transition-all duration-500"
+              stroke={seg.color}
+              strokeWidth="12"
+              strokeDasharray={seg.dasharray}
+              strokeDashoffset={seg.offset}
+              strokeLinecap={seg.value === total ? "butt" : "round"}
+              className="transition-all duration-700 ease-out hover:stroke-[14px]"
+              style={{ transformOrigin: 'center' }}
             />
-          )}
+          ))}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-black text-slate-800">{total}</span>
-          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+          <span className="text-2xl font-black text-slate-800 tracking-tight">{total}</span>
+          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mt-0.5">Siswa</span>
         </div>
       </div>
-      
+
       {/* Legend list */}
-      <div className="flex flex-col gap-2 w-full max-w-[240px]">
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
-            <span className="text-xs font-bold text-slate-600">Diterima</span>
+      <div className="flex flex-col gap-2.5 w-full max-w-[260px]">
+        <div className="flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-100 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:border-emerald-200 transition-colors cursor-default">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 shadow-sm shadow-emerald-500/40"></span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Diterima</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{diterima} ({Math.round(pDiterima)}%)</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-400">{Math.round((diterima/total)*100)}%</span>
+            <span className="text-xs font-extrabold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md">{diterima}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
-            <span className="text-xs font-bold text-slate-600">Ditolak</span>
+        <div className="flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-100 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:border-red-200 transition-colors cursor-default">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 shadow-sm shadow-red-500/40"></span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Ditolak</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{ditolak} ({Math.round(pDitolak)}%)</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-400">{Math.round((ditolak/total)*100)}%</span>
+            <span className="text-xs font-extrabold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md">{ditolak}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
-            <span className="text-xs font-bold text-slate-600">Menunggu</span>
+        <div className="flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-100 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:border-amber-200 transition-colors cursor-default">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 shadow-sm shadow-amber-500/40"></span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Menunggu</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{pending} ({Math.round(pPending)}%)</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-400">{Math.round((pending/total)*100)}%</span>
+            <span className="text-xs font-extrabold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md">{pending}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -396,77 +393,63 @@ const SiswaDonutChart = ({ aktif, tidakAktif }) => {
   const total = aktif + tidakAktif;
   if (total === 0) return null;
 
-  const pAktif = (aktif / total) * 100;
-  const pTidakAktif = (tidakAktif / total) * 100;
-
-  const radius = 38;
-  const circumference = 2 * Math.PI * radius;
-
-  const offsetAktif = circumference - (pAktif / 100) * circumference;
-  const offsetTidakAktif = circumference - (pTidakAktif / 100) * circumference;
-
-  const rotAktif = 0;
-  const rotTidakAktif = (pAktif / 100) * 360;
+  const radius = 40;
+  
+  const segments = createDonutSegments([
+      { id: 'aktif', value: aktif, total, color: '#1e293b' },
+      { id: 'tidakAktif', value: tidakAktif, total, color: '#ef4444' }
+  ], radius);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full gap-5">
-      <div className="relative w-28 h-28 shrink-0">
-        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
-          
-          {/* Active segment */}
-          {pAktif > 0 && (
+    <div className="flex flex-col items-center justify-center w-full gap-6">
+      <div className="relative w-32 h-32 shrink-0">
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f1f5f9" strokeWidth="12" />
+
+          {segments.map((seg) => (
             <circle
+              key={seg.id}
               cx="50"
               cy="50"
               r={radius}
               fill="transparent"
-              stroke="#1e293b"
-              strokeWidth="10"
-              strokeDasharray={circumference}
-              strokeDashoffset={offsetAktif}
-              transform={`rotate(${rotAktif} 50 50)`}
-              className="transition-all duration-500"
+              stroke={seg.color}
+              strokeWidth="12"
+              strokeDasharray={seg.dasharray}
+              strokeDashoffset={seg.offset}
+              strokeLinecap={seg.value === total ? "butt" : "round"}
+              className="transition-all duration-700 ease-out hover:stroke-[14px]"
+              style={{ transformOrigin: 'center' }}
             />
-          )}
-          
-          {/* Inactive segment */}
-          {pTidakAktif > 0 && (
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="transparent"
-              stroke="#ef4444"
-              strokeWidth="10"
-              strokeDasharray={circumference}
-              strokeDashoffset={offsetTidakAktif}
-              transform={`rotate(${rotTidakAktif} 50 50)`}
-              className="transition-all duration-500"
-            />
-          )}
+          ))}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-black text-slate-800">{total}</span>
-          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+          <span className="text-2xl font-black text-slate-800 tracking-tight">{total}</span>
+          <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest mt-0.5">Siswa</span>
         </div>
       </div>
-      
+
       {/* Legend list */}
-      <div className="flex flex-col gap-2 w-full max-w-[240px]">
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-800 shrink-0"></span>
-            <span className="text-xs font-bold text-slate-600">Aktif</span>
+      <div className="flex flex-col gap-2.5 w-full max-w-[260px]">
+        <div className="flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-100 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:border-slate-300 transition-colors cursor-default">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-slate-800 shrink-0 shadow-sm shadow-slate-800/40"></span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Aktif</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{aktif} ({Math.round(pAktif)}%)</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-400">{Math.round((aktif/total)*100)}%</span>
+            <span className="text-xs font-extrabold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md">{aktif}</span>
+          </div>
         </div>
-        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
-            <span className="text-xs font-bold text-slate-600">Tidak Aktif</span>
+        <div className="flex items-center justify-between px-3.5 py-2 rounded-xl border border-slate-100 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:border-red-200 transition-colors cursor-default">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 shadow-sm shadow-red-500/40"></span>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Tidak Aktif</span>
           </div>
-          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{tidakAktif} ({Math.round(pTidakAktif)}%)</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-slate-400">{Math.round((tidakAktif/total)*100)}%</span>
+            <span className="text-xs font-extrabold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md">{tidakAktif}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -812,7 +795,7 @@ const Laporan = () => {
                   </div>
                   <div className="flex items-baseline gap-1 mt-4">
                     <span className="text-3xl font-black text-slate-800 tracking-tight">{data.length}</span>
-                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Pendaftar</span>
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
@@ -837,7 +820,7 @@ const Laporan = () => {
                   </div>
                   <div className="flex items-baseline gap-1 mt-4">
                     <span className="text-3xl font-black text-emerald-500 tracking-tight">{pendaftaranStats.totalDiterima}</span>
-                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Pendaftar</span>
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
@@ -862,7 +845,7 @@ const Laporan = () => {
                   </div>
                   <div className="flex items-baseline gap-1 mt-4">
                     <span className="text-3xl font-black text-red-50 tracking-tight text-red-500">{pendaftaranStats.totalDitolak}</span>
-                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Pendaftar</span>
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
@@ -887,7 +870,7 @@ const Laporan = () => {
                   </div>
                   <div className="flex items-baseline gap-1 mt-4">
                     <span className="text-3xl font-black text-amber-500 tracking-tight">{pendaftaranStats.totalPending}</span>
-                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Pendaftar</span>
                   </div>
                   <div className="mt-3">
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
@@ -1102,7 +1085,11 @@ const Laporan = () => {
                         <td className="py-4 text-slate-500 font-bold">{item.asal_sekolah}</td>
                         <td className="py-4">
                           {item.jalur ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-200/40">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border ${item.jalur === 'zonasi' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                item.jalur === 'afirmasi' ? 'bg-purple-50 text-purple-600 border-purple-100' :
+                                  item.jalur === 'prestasi' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                    'bg-slate-50 text-slate-600 border-slate-100'
+                              }`}>
                               {item.jalur.replace('_', ' ')}
                             </span>
                           ) : '-'}
@@ -1121,11 +1108,15 @@ const Laporan = () => {
                         <td className="py-4 text-slate-600 font-bold">{item.tahun_masuk}</td>
                         <td className="py-4 text-slate-600 font-extrabold">{item.tahun_ajaran?.tahun || '-'}</td>
                         <td className="py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border ${
-                            item.is_active ? 'bg-slate-900 text-white border-slate-900' : 'bg-red-50 text-red-600 border-red-100'
-                          }`}>
-                            {item.is_active ? 'Aktif' : 'Tidak Aktif'}
-                          </span>
+                          {item.is_active ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border bg-slate-900 text-white border-slate-900">
+                              Aktif
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-100">
+                              Alumni
+                            </span>
+                          )}
                         </td>
                         <td className="py-4 text-slate-400 font-bold">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
                       </>
