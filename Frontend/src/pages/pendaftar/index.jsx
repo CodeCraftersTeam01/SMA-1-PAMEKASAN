@@ -93,15 +93,11 @@ const Pendaftar = () => {
   // API integration functions
   const handleCreate = async (formData) => {
     setIsLoading(true);
-    // Generate a no_pendaftaran (e.g. REG-YYYYMMDD-Random)
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const randomStr = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    const no_pendaftaran = `REG-${dateStr}-${randomStr}`;
 
-    const dataToSend = {
-      ...formData,
-      no_pendaftaran,
-    };
+    const dataToSend = { ...formData };
+    if (!dataToSend.no_pendaftaran || dataToSend.no_pendaftaran.trim() === '') {
+      delete dataToSend.no_pendaftaran;
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/pendaftaran`, {
@@ -581,7 +577,7 @@ const Pendaftar = () => {
       {/* Form Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-up">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-lg font-bold text-slate-800">
                 {currentCandidate ? 'Edit Data Pendaftar' : 'Tambah Pendaftar Baru'}
@@ -597,6 +593,17 @@ const Pendaftar = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">No. Pendaftaran (Kosongkan untuk otomatis)</label>
+                <input
+                  type="text"
+                  name="no_pendaftaran"
+                  defaultValue={currentCandidate?.no_pendaftaran || ''}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600"
+                  placeholder="Maksimal 255 karakter, contoh: REG-20260518-1234"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">NISN</label>
                 <input
@@ -661,8 +668,8 @@ const Pendaftar = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1 hidden">Status</label>
-                <select hidden
+                <label className="block text-sm font-semibold text-slate-700 mb-1">Status Pendaftaran</label>
+                <select
                   name="status"
                   defaultValue={currentCandidate?.status || 'pending'}
                   className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white"
