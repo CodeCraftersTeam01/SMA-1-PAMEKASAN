@@ -249,6 +249,21 @@ const TahunAjaran = () => {
     setIsModalOpen(true);
   };
 
+  const handleTahunChange = (val) => {
+    // Allow only digits and slash
+    const cleaned = val.replace(/[^0-9/]/g, '');
+    
+    // If exactly 4 digits are typed, auto-generate the YYYY/YYYY format
+    if (/^\d{4}$/.test(cleaned)) {
+      const year = parseInt(cleaned, 10);
+      setFormTahun(`${year}/${year + 1}`);
+    } else {
+      if (cleaned.length <= 9) {
+        setFormTahun(cleaned);
+      }
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (modalMode === 'create') handleCreate();
@@ -456,7 +471,7 @@ const TahunAjaran = () => {
                 <input
                   type="text"
                   value={formTahun}
-                  onChange={e => setFormTahun(e.target.value)}
+                  onChange={e => handleTahunChange(e.target.value)}
                   required
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 text-sm"
                   placeholder="Contoh: 2024/2025"
