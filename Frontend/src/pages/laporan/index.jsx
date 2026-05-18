@@ -35,6 +35,379 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
+// ── SVG Stacked Bar Chart for Registration trends ──────────────────────────────
+const BarChart = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center text-slate-400 text-sm py-12">Belum ada data visualisasi tren.</div>
+    );
+  }
+
+  const maxVal = Math.max(...data.map(d => d.total), 1);
+  const chartHeight = 160;
+  const chartWidth = 500;
+  const padding = 40;
+  
+  const barWidth = Math.min(45, (chartWidth - padding * 2) / data.length - 15);
+  const gap = ((chartWidth - padding * 2) - (barWidth * data.length)) / (data.length + 1);
+
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${chartHeight + padding * 2}`} className="w-full h-auto max-h-[220px]">
+      {/* Grid Lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
+        const y = padding + chartHeight * (1 - ratio);
+        const val = Math.round(maxVal * ratio);
+        return (
+          <g key={idx}>
+            <line x1={padding} y1={y} x2={chartWidth - padding} y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4" />
+            <text x={padding - 10} y={y + 4} fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="end">{val}</text>
+          </g>
+        );
+      })}
+
+      {/* Bars */}
+      {data.map((d, idx) => {
+        const x = padding + gap + idx * (barWidth + gap);
+        
+        // Stacked heights
+        const yDiterima = (d.diterima / maxVal) * chartHeight;
+        const yDitolak = (d.ditolak / maxVal) * chartHeight;
+        const yPending = (d.pending / maxVal) * chartHeight;
+
+        let currentY = padding + chartHeight;
+
+        return (
+          <g key={idx} className="group cursor-pointer">
+            {/* Accepted (Diterima) Bar */}
+            {yDiterima > 0 && (
+              <rect
+                x={x}
+                y={currentY - yDiterima}
+                width={barWidth}
+                height={yDiterima}
+                fill="#10b981"
+                rx="4"
+                className="transition-all duration-300 hover:opacity-90"
+              />
+            )}
+            {/* Rejected (Ditolak) Bar */}
+            {yDitolak > 0 && (
+              <rect
+                x={x}
+                y={currentY - yDiterima - yDitolak}
+                width={barWidth}
+                height={yDitolak}
+                fill="#ef4444"
+                rx="4"
+                className="transition-all duration-300 hover:opacity-90"
+              />
+            )}
+            {/* Pending Bar */}
+            {yPending > 0 && (
+              <rect
+                x={x}
+                y={currentY - yDiterima - yDitolak - yPending}
+                width={barWidth}
+                height={yPending}
+                fill="#f59e0b"
+                rx="4"
+                className="transition-all duration-300 hover:opacity-90"
+              />
+            )}
+
+            {/* Label for year */}
+            <text
+              x={x + barWidth / 2}
+              y={padding + chartHeight + 20}
+              fill="#475569"
+              fontSize="11"
+              fontWeight="bold"
+              textAnchor="middle"
+            >
+              {d.year}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+// ── SVG Stacked Bar Chart for Student trends ───────────────────────────────
+const SiswaBarChart = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center text-slate-400 text-sm py-12">Belum ada data visualisasi tren.</div>
+    );
+  }
+
+  const maxVal = Math.max(...data.map(d => d.total), 1);
+  const chartHeight = 160;
+  const chartWidth = 500;
+  const padding = 40;
+  
+  const barWidth = Math.min(45, (chartWidth - padding * 2) / data.length - 15);
+  const gap = ((chartWidth - padding * 2) - (barWidth * data.length)) / (data.length + 1);
+
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${chartHeight + padding * 2}`} className="w-full h-auto max-h-[220px]">
+      {/* Grid Lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
+        const y = padding + chartHeight * (1 - ratio);
+        const val = Math.round(maxVal * ratio);
+        return (
+          <g key={idx}>
+            <line x1={padding} y1={y} x2={chartWidth - padding} y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4" />
+            <text x={padding - 10} y={y + 4} fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="end">{val}</text>
+          </g>
+        );
+      })}
+
+      {/* Bars */}
+      {data.map((d, idx) => {
+        const x = padding + gap + idx * (barWidth + gap);
+        
+        const yAktif = (d.aktif / maxVal) * chartHeight;
+        const yTidakAktif = (d.tidakAktif / maxVal) * chartHeight;
+
+        let currentY = padding + chartHeight;
+
+        return (
+          <g key={idx} className="group cursor-pointer">
+            {/* Active (Aktif) Bar */}
+            {yAktif > 0 && (
+              <rect
+                x={x}
+                y={currentY - yAktif}
+                width={barWidth}
+                height={yAktif}
+                fill="#1e293b"
+                rx="4"
+                className="transition-all duration-300 hover:opacity-90"
+              />
+            )}
+            {/* Inactive Bar */}
+            {yTidakAktif > 0 && (
+              <rect
+                x={x}
+                y={currentY - yAktif - yTidakAktif}
+                width={barWidth}
+                height={yTidakAktif}
+                fill="#ef4444"
+                rx="4"
+                className="transition-all duration-300 hover:opacity-90"
+              />
+            )}
+
+            {/* Label for year */}
+            <text
+              x={x + barWidth / 2}
+              y={padding + chartHeight + 20}
+              fill="#475569"
+              fontSize="11"
+              fontWeight="bold"
+              textAnchor="middle"
+            >
+              {d.year}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+// ── SVG Donut Chart for Registration Status ────────────────────────────────────
+const DonutChart = ({ diterima, ditolak, pending }) => {
+  const total = diterima + ditolak + pending;
+  if (total === 0) return null;
+
+  const pDiterima = (diterima / total) * 100;
+  const pDitolak = (ditolak / total) * 100;
+  const pPending = (pending / total) * 100;
+
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+
+  const offsetDiterima = circumference - (pDiterima / 100) * circumference;
+  const offsetDitolak = circumference - (pDitolak / 100) * circumference;
+  const offsetPending = circumference - (pPending / 100) * circumference;
+
+  const rotDiterima = 0;
+  const rotDitolak = (pDiterima / 100) * 360;
+  const rotPending = ((pDiterima + pDitolak) / 100) * 360;
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-6 justify-center w-full">
+      <div className="relative w-28 h-28 shrink-0">
+        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
+          
+          {/* Diterima segment */}
+          {pDiterima > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#10b981"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetDiterima}
+              transform={`rotate(${rotDiterima} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+          
+          {/* Ditolak segment */}
+          {pDitolak > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#ef4444"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetDitolak}
+              transform={`rotate(${rotDitolak} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+
+          {/* Pending segment */}
+          {pPending > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#f59e0b"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetPending}
+              transform={`rotate(${rotPending} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-black text-slate-800">{total}</span>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+        </div>
+      </div>
+      
+      {/* Legend list */}
+      <div className="flex flex-col gap-2 w-full sm:w-auto">
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-emerald-500 shrink-0"></span>
+            <span className="text-xs font-semibold text-slate-600">Diterima</span>
+          </div>
+          <span className="text-xs font-bold text-slate-800 ml-auto">{diterima} ({Math.round(pDiterima)}%)</span>
+        </div>
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-red-500 shrink-0"></span>
+            <span className="text-xs font-semibold text-slate-600">Ditolak</span>
+          </div>
+          <span className="text-xs font-bold text-slate-800 ml-auto">{ditolak} ({Math.round(pDitolak)}%)</span>
+        </div>
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-amber-500 shrink-0"></span>
+            <span className="text-xs font-semibold text-slate-600">Menunggu</span>
+          </div>
+          <span className="text-xs font-bold text-slate-800 ml-auto">{pending} ({Math.round(pPending)}%)</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── SVG Donut Chart for Student Status ────────────────────────────────────
+const SiswaDonutChart = ({ aktif, tidakAktif }) => {
+  const total = aktif + tidakAktif;
+  if (total === 0) return null;
+
+  const pAktif = (aktif / total) * 100;
+  const pTidakAktif = (tidakAktif / total) * 100;
+
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+
+  const offsetAktif = circumference - (pAktif / 100) * circumference;
+  const offsetTidakAktif = circumference - (pTidakAktif / 100) * circumference;
+
+  const rotAktif = 0;
+  const rotTidakAktif = (pAktif / 100) * 360;
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-6 justify-center w-full">
+      <div className="relative w-28 h-28 shrink-0">
+        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
+          
+          {/* Active segment */}
+          {pAktif > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#1e293b"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetAktif}
+              transform={`rotate(${rotAktif} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+          
+          {/* Inactive segment */}
+          {pTidakAktif > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#ef4444"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetTidakAktif}
+              transform={`rotate(${rotTidakAktif} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-black text-slate-800">{total}</span>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+        </div>
+      </div>
+      
+      {/* Legend list */}
+      <div className="flex flex-col gap-2 w-full sm:w-auto">
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-slate-800 shrink-0"></span>
+            <span className="text-xs font-semibold text-slate-600">Aktif</span>
+          </div>
+          <span className="text-xs font-bold text-slate-800 ml-auto">{aktif} ({Math.round(pAktif)}%)</span>
+        </div>
+        <div className="flex items-center justify-between sm:justify-start gap-4">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-red-500 shrink-0"></span>
+            <span className="text-xs font-semibold text-slate-600">Tidak Aktif</span>
+          </div>
+          <span className="text-xs font-bold text-slate-800 ml-auto">{tidakAktif} ({Math.round(pTidakAktif)}%)</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 const Laporan = () => {
   const [reportType, setReportType] = useState('pendaftaran'); // 'pendaftaran' or 'siswa'
   const [startDate, setStartDate] = useState('');
@@ -107,10 +480,62 @@ const Laporan = () => {
   const handleResetFilter = () => {
     setStartDate('');
     setEndDate('');
-    // setTimeout to allow state to update before fetch if we don't rely on dependency array for dates
     setTimeout(() => {
         fetchReportData();
     }, 0);
+  };
+
+  // ── Stat Aggregation Helpers ──────────────────────────────────────────────
+  const getPendaftaranStats = () => {
+    const stats = {};
+    let totalDiterima = 0;
+    let totalDitolak = 0;
+    let totalPending = 0;
+
+    data.forEach(item => {
+      const year = new Date(item.created_at).getFullYear();
+      if (!stats[year]) {
+        stats[year] = { year, total: 0, diterima: 0, ditolak: 0, pending: 0 };
+      }
+      stats[year].total++;
+      if (item.status === 'diterima') {
+        stats[year].diterima++;
+        totalDiterima++;
+      } else if (item.status === 'ditolak') {
+        stats[year].ditolak++;
+        totalDitolak++;
+      } else {
+        stats[year].pending++;
+        totalPending++;
+      }
+    });
+
+    const yearData = Object.values(stats).sort((a, b) => a.year - b.year);
+    return { yearData, totalDiterima, totalDitolak, totalPending };
+  };
+
+  const getSiswaStats = () => {
+    const stats = {};
+    let totalAktif = 0;
+    let totalTidakAktif = 0;
+
+    data.forEach(item => {
+      const year = item.tahun_masuk || new Date(item.created_at).getFullYear();
+      if (!stats[year]) {
+        stats[year] = { year, total: 0, aktif: 0, tidakAktif: 0 };
+      }
+      stats[year].total++;
+      if (item.is_active) {
+        stats[year].aktif++;
+        totalAktif++;
+      } else {
+        stats[year].tidakAktif++;
+        totalTidakAktif++;
+      }
+    });
+
+    const yearData = Object.values(stats).sort((a, b) => a.year - b.year);
+    return { yearData, totalAktif, totalTidakAktif };
   };
 
   const handleExport = async (format) => {
@@ -263,6 +688,7 @@ const Laporan = () => {
             </button>
             <button 
               onClick={() => handleExport('excel')}
+              disabled={isExporting || data.length === 0}
               className="flex-1 md:flex-none px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-900 transition-all shadow-md shadow-slate-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -273,6 +699,119 @@ const Laporan = () => {
           </div>
         </div>
       </div>
+
+      {/* Dashboard Statistics & Visualizations */}
+      {!isLoading && !error && data.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-up">
+          {/* Metrics summary cards */}
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {reportType === 'pendaftaran' ? (
+              <>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Total Pendaftar</span>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="text-3xl font-black text-slate-800">{data.length}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Siswa</span>
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+                  <span className="text-[10px] font-extrabold text-emerald-500 uppercase tracking-widest">Diterima</span>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="text-3xl font-black text-emerald-500">{getPendaftaranStats().totalDiterima}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Siswa</span>
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+                  <span className="text-[10px] font-extrabold text-red-500 uppercase tracking-widest">Ditolak</span>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="text-3xl font-black text-red-500">{getPendaftaranStats().totalDitolak}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Siswa</span>
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+                  <span className="text-[10px] font-extrabold text-amber-500 uppercase tracking-widest">Menunggu</span>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="text-3xl font-black text-amber-500">{getPendaftaranStats().totalPending}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Siswa</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Total Siswa</span>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="text-3xl font-black text-slate-800">{data.length}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Siswa</span>
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between col-span-2">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-widest">Status Keaktifan</span>
+                  <div className="flex items-baseline gap-6 mt-2">
+                    <div>
+                      <span className="text-2xl font-black text-slate-800">{getSiswaStats().totalAktif}</span>
+                      <span className="text-[10px] text-slate-400 font-extrabold uppercase ml-1">Aktif</span>
+                    </div>
+                    <div className="border-l border-slate-200 h-6"></div>
+                    <div>
+                      <span className="text-2xl font-black text-red-500">{getSiswaStats().totalTidakAktif}</span>
+                      <span className="text-[10px] text-slate-400 font-extrabold uppercase ml-1">Tidak Aktif</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">Tahun Masuk Terbaru</span>
+                  <div className="flex items-baseline gap-2 mt-2">
+                    <span className="text-xl font-extrabold text-slate-800">
+                      {data.length > 0 ? Math.max(...data.map(s => s.tahun_masuk || 0)) : '-'}
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Chart Cards */}
+          <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[300px]">
+            <div className="mb-4">
+              <h4 className="text-[14px] font-bold text-slate-800">
+                {reportType === 'pendaftaran' ? 'Tren Pendaftaran Tahunan' : 'Tren Penerimaan Siswa Baru'}
+              </h4>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Statistik jumlah yang dikelompokkan berdasarkan tahun masuk / tahun pendaftaran.
+              </p>
+            </div>
+            <div className="flex-1 flex items-center justify-center py-2">
+              {reportType === 'pendaftaran' ? (
+                <BarChart data={getPendaftaranStats().yearData} />
+              ) : (
+                <SiswaBarChart data={getSiswaStats().yearData} />
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[300px]">
+            <div className="mb-4">
+              <h4 className="text-[14px] font-bold text-slate-800">Distribusi Status</h4>
+              <p className="text-[11px] text-slate-400 mt-0.5">Persentase distribusi status dari seluruh data saat ini.</p>
+            </div>
+            <div className="flex-1 flex items-center justify-center py-2">
+              {reportType === 'pendaftaran' ? (
+                <DonutChart 
+                  diterima={getPendaftaranStats().totalDiterima}
+                  ditolak={getPendaftaranStats().totalDitolak}
+                  pending={getPendaftaranStats().totalPending}
+                />
+              ) : (
+                <SiswaDonutChart 
+                  aktif={getSiswaStats().totalAktif}
+                  tidakAktif={getSiswaStats().totalTidakAktif}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Table Container */}
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-150">
