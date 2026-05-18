@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ForceSetupModal from '../../components/ForceSetupModal';
 
 const StudentDashboardLayout = () => {
   const navigate = useNavigate();
@@ -147,6 +148,9 @@ const StudentDashboardLayout = () => {
           onClick={() => setIsSidebarOpen(false)}
         ></div>
       )}
+
+      {/* Forced Password & Email Setup Modal */}
+      {(user?.is_password_default === true || !user?.email) && <ForceSetupModal />}
 
     </div>
   );
