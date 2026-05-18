@@ -38,7 +38,7 @@ class StudentAuthController extends Controller
         }
 
         // Load relational data
-        $akun->load('dataAkademik');
+        $akun->load(['dataAkademik', 'siswa.pendaftaran']);
 
         // Generate JWT Token using students guard
         $token = Auth::guard('students')->login($akun);

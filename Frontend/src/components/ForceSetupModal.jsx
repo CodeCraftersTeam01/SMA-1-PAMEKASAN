@@ -42,14 +42,16 @@ const ForceSetupModal = () => {
 
     setIsSubmitting(true);
 
+    const activeToken = token || localStorage.getItem('token') || sessionStorage.getItem('token');
+
     try {
       const response = await axios.post(`${API_BASE_URL}/api/profile/setup`, {
-        password: formData.new_password,
-        password_confirmation: formData.confirm_password,
+        new_password: formData.new_password,
+        new_password_confirmation: formData.confirm_password,
         email: formData.recovery_email
       }, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${activeToken}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         }

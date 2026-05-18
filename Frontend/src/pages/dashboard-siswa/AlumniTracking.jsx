@@ -12,11 +12,6 @@ const AlumniTracking = () => {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const [formData, setFormData] = useState({
-    semester_1: '',
-    semester_2: '',
-    semester_3: '',
-    semester_4: '',
-    semester_5: '',
     universitas_1: '',
     jurusan_1: '',
     universitas_2: '',
@@ -48,18 +43,10 @@ const AlumniTracking = () => {
   };
 
   const validateStep2 = () => {
-    return formData.semester_1 && formData.semester_2 && formData.semester_3 && formData.semester_4 && formData.semester_5;
-  };
-
-  const validateStep3 = () => {
     return formData.universitas_1 && formData.jurusan_1; // Pilihan 2 optional
   };
 
   const handleNext = () => {
-    if (currentStep === 2 && !validateStep2()) {
-      alert("Harap lengkapi semua nilai rapor sebelum melanjutkan.");
-      return;
-    }
     setCurrentStep(prev => prev + 1);
   };
 
@@ -69,7 +56,7 @@ const AlumniTracking = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep3()) {
+    if (!validateStep2()) {
        alert("Harap lengkapi Universitas dan Jurusan Pilihan 1.");
        return;
     }
@@ -136,11 +123,6 @@ const AlumniTracking = () => {
         </div>
         <div className="flex-1 flex flex-col items-center relative">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= 2 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'}`}>2</div>
-          <span className="text-[10px] mt-2 font-semibold text-slate-500">Akademik</span>
-          <div className={`absolute top-5 left-[50%] w-full h-[2px] ${currentStep >= 3 ? 'bg-slate-900' : 'bg-slate-100'}`}></div>
-        </div>
-        <div className="flex-1 flex flex-col items-center">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= 3 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'}`}>3</div>
           <span className="text-[10px] mt-2 font-semibold text-slate-500">Rencana Karir</span>
         </div>
       </div>
@@ -163,8 +145,9 @@ const AlumniTracking = () => {
                   <label className="text-[12px] font-semibold text-slate-700">NIS</label>
                   <input
                     type="text"
-                    value={user?.nis || user?.data_akademik?.nis || ''}
+                    value={user?.siswa?.nis || user?.nis || user?.data_akademik?.nis || ''}
                     disabled
+                    readOnly
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 focus:outline-none"
                   />
                 </div>
@@ -172,8 +155,9 @@ const AlumniTracking = () => {
                   <label className="text-[12px] font-semibold text-slate-700">NISN</label>
                   <input
                     type="text"
-                    value={user?.data_akademik?.nisn || ''}
+                    value={user?.siswa?.pendaftaran?.nisn || user?.data_akademik?.nisn || ''}
                     disabled
+                    readOnly
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 focus:outline-none"
                   />
                 </div>
@@ -182,40 +166,17 @@ const AlumniTracking = () => {
                 <label className="text-[12px] font-semibold text-slate-700">Nama Lengkap</label>
                 <input
                   type="text"
-                  value={user?.data_akademik?.nama_lengkap || user?.name || ''}
+                  value={user?.siswa?.nama_lengkap || user?.data_akademik?.nama_lengkap || user?.name || ''}
                   disabled
+                  readOnly
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 focus:outline-none"
                 />
               </div>
           </div>
         )}
 
-        {/* Step 2: Akademik */}
+        {/* Step 2: Rencana Karir */}
         {currentStep === 2 && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-             <p className="text-sm text-slate-600 mb-4">Masukkan nilai rata-rata rapor Anda dari Semester 1 hingga Semester 5.</p>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3, 4, 5].map(sem => (
-                  <div key={sem} className="space-y-1.5">
-                    <label className="text-[12px] font-semibold text-slate-700">Nilai Semester {sem} <span className="text-red-500">*</span></label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      name={`semester_${sem}`}
-                      value={formData[`semester_${sem}`]}
-                      onChange={handleInputChange}
-                      placeholder="0.00"
-                      required
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-slate-800 focus:ring-2 focus:ring-slate-100 focus:border-slate-500 focus:outline-none transition-all"
-                    />
-                  </div>
-                ))}
-             </div>
-          </div>
-        )}
-
-        {/* Step 3: Rencana Karir */}
-        {currentStep === 3 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
              
              <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 space-y-4">
@@ -290,7 +251,7 @@ const AlumniTracking = () => {
             Kembali
           </button>
           
-          {currentStep < 3 ? (
+          {currentStep < 2 ? (
             <button
               type="button"
               onClick={handleNext}

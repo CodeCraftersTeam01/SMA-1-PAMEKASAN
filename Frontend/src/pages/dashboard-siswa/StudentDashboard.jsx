@@ -7,7 +7,7 @@ const StudentDashboard = () => {
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-        <h2 className="text-xl font-bold text-slate-800 mb-2">Selamat Datang, {user?.data_akademik?.nama_lengkap || user?.name || 'Siswa'}!</h2>
+        <h2 className="text-xl font-bold text-slate-800 mb-2">Selamat Datang, {user?.siswa?.nama_lengkap || user?.data_akademik?.nama_lengkap || user?.name || 'Siswa'}!</h2>
         <p className="text-slate-600 text-sm">
           Ini adalah portal siswa SMAN 1 Pamekasan. Anda dapat melihat profil, mengganti password, atau mengisi data penelusuran alumni melalui menu di sebelah kiri.
         </p>

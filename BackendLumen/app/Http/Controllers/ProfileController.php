@@ -70,4 +70,44 @@ class ProfileController extends Controller
             'message' => 'Password berhasil diperbarui'
         ]);
     }
+
+    /**
+     * Initial setup for student profile (set email and password)
+     */
+    public function setupPassword(Request $request)
+    {
+        $user = $request->user();
+        $tableName = $user->getTable();
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'email' => 'required|string|email|max:255|unique:' . $tableName . ',email,' . $user->id,
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Update the user's email
+        $user->email = $request->email;
+
+        // Hash the new_password and update it
+        $user->password = Hash::make($request->new_password);
+
+        // Set the is_password_changed flag to 1 (or true)
+        if (isset($user->is_password_changed) || $user instanceof \App\Models\AkunSiswa) {
+            $user->is_password_changed = true;
+        }
+
+        // Save the changes
+        $user->save();
+
+        return response()->json([
+            'message' => 'Kata sandi dan email pemulihan berhasil dikonfigurasi.',
+            'user' => $user
+        ], 200);
+    }
 }
