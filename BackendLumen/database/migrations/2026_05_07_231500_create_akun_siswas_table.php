@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('akun_siswas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('siswa_id')->constrained('siswas')->onDelete('cascade');
-            $table->string('nis')->unique();
+            $table->string('email')->nullable()->unique();
             $table->string('password');
             $table->boolean('is_password_changed')->default(false);
             $table->timestamps();

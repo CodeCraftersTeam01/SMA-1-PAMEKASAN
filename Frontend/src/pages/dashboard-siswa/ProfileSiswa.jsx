@@ -10,7 +10,7 @@ const ProfileSiswa = () => {
     { label: 'Nama Lengkap', value: student.nama_lengkap || user?.name || '-' },
     { label: 'NIS', value: student.nis || user?.nis || '-' },
     { label: 'NISN', value: student.pendaftaran?.nisn || student.nisn || '-' },
-    { label: 'Kelas', value: student.kelas || student.grade || user?.student_grade || '-' },
+    { label: 'Kelas', value: 'Tidak tersedia' },
     { label: 'Status Akun', value: student.is_active ? 'Aktif' : 'Non-Aktif', isStatus: true },
     { label: 'Tahun Masuk', value: student.tahun_masuk || '-' },
   ];

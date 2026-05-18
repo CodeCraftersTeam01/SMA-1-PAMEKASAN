@@ -21,6 +21,7 @@ import AlumniTracking from './pages/dashboard-siswa/AlumniTracking';
 import GantiPassword from './pages/dashboard-siswa/GantiPassword';
 import ProfileSiswa from './pages/dashboard-siswa/ProfileSiswa';
 import AdminTrackingDashboard from './pages/admin/alumni-tracking/AdminTrackingDashboard';
+import PublicTracking from './pages/website/PublicTracking';
 
 
 // Komponen pembantu untuk animasi transisi halaman
@@ -59,6 +60,21 @@ const AnimatedRoutes = () => {
               transition={{ duration: 0.3 }}
             >
               <StudentLogin />
+            </motion.div>
+          }
+        />
+
+        {/* Independent Public Alumni Tracking Page */}
+        <Route
+          path="/siswas/tracking"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <PublicTracking />
             </motion.div>
           }
         />

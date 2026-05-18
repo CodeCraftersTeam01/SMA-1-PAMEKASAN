@@ -40,14 +40,6 @@ class AkunSiswaSeeder extends Seeder
             'tahun_lulus' => null,
         ]);
 
-        // 2. Create the related AkunSiswa auth record
-        AkunSiswa::create([
-            'siswa_id' => $siswa->id,
-            'nis' => '123456',
-            'password' => Hash::make('12345678'),
-            'is_password_changed' => false,
-        ]);
-
         $this->command->info('Siswa master data and related AkunSiswa auth record created successfully (NIS: 123456).');
     }
 }

@@ -85,7 +85,7 @@ class AuthController extends Controller
     {
         $user = Auth::user() ?: Auth::guard('students')->user();
         if ($user instanceof \App\Models\AkunSiswa) {
-            $user->load('siswa.pendaftaran');
+            $user->load('siswa.pendaftaran', 'siswa.rencanaKarir');
         }
         return response()->json($user);
     }

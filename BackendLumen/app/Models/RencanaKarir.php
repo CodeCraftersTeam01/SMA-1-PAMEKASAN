@@ -10,10 +10,19 @@ class RencanaKarir extends Model
 
     protected $fillable = [
         'siswa_id',
+        'kategori_pilihan',
         'univ_pilihan_1',
         'jurusan_pilihan_1',
         'univ_pilihan_2',
         'jurusan_pilihan_2',
+        'jalur_seleksi',
+        'status_seleksi',
+        'nama_perusahaan',
+        'posisi_pekerjaan',
+        'estimasi_gaji',
+        'bidang_bisnis',
+        'nama_bisnis',
+        'modal_awal',
     ];
 
     /**
