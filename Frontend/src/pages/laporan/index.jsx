@@ -35,6 +35,445 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
+// ── Ultra Premium SVG Stacked Bar Chart for Registration ───────────────────
+const BarChart = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-slate-400 py-12">
+        <svg className="w-10 h-10 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <p className="text-xs font-semibold text-slate-400">Belum ada data tren yang terekam.</p>
+      </div>
+    );
+  }
+
+  const maxVal = Math.max(...data.map(d => d.total), 1);
+  const chartHeight = 150;
+  const chartWidth = 500;
+  const padding = 40;
+  
+  const barWidth = Math.min(38, (chartWidth - padding * 2) / data.length - 20);
+  const gap = ((chartWidth - padding * 2) - (barWidth * data.length)) / (data.length + 1);
+
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${chartHeight + padding * 2}`} className="w-full h-auto max-h-[220px]">
+      <defs>
+        {/* Sleek iOS gradients */}
+        <linearGradient id="gradDiterima" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="100%" stopColor="#059669" />
+        </linearGradient>
+        <linearGradient id="gradDitolak" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f87171" />
+          <stop offset="100%" stopColor="#dc2626" />
+        </linearGradient>
+        <linearGradient id="gradPending" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#d97706" />
+        </linearGradient>
+        {/* Full track background */}
+        <linearGradient id="gradBarTrack" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f8fafc" />
+          <stop offset="100%" stopColor="#f1f5f9" />
+        </linearGradient>
+      </defs>
+
+      {/* Grid Lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
+        const y = padding + chartHeight * (1 - ratio);
+        const val = Math.round(maxVal * ratio);
+        return (
+          <g key={idx}>
+            <line x1={padding} y1={y} x2={chartWidth - padding} y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3" />
+            <text x={padding - 12} y={y + 4} fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="end">{val}</text>
+          </g>
+        );
+      })}
+
+      {/* Bars */}
+      {data.map((d, idx) => {
+        const x = padding + gap + idx * (barWidth + gap);
+        
+        // Stacked heights
+        const yDiterima = (d.diterima / maxVal) * chartHeight;
+        const yDitolak = (d.ditolak / maxVal) * chartHeight;
+        const yPending = (d.pending / maxVal) * chartHeight;
+
+        let currentY = padding + chartHeight;
+
+        return (
+          <g key={idx} className="group cursor-pointer">
+            {/* Visual background track pill */}
+            <rect
+              x={x}
+              y={padding}
+              width={barWidth}
+              height={chartHeight}
+              fill="url(#gradBarTrack)"
+              rx="5"
+            />
+
+            {/* Accepted (Diterima) Bar */}
+            {yDiterima > 0 && (
+              <rect
+                x={x}
+                y={currentY - yDiterima}
+                width={barWidth}
+                height={yDiterima}
+                fill="url(#gradDiterima)"
+                rx="5"
+                className="transition-all duration-300 hover:brightness-105"
+              />
+            )}
+            {/* Rejected (Ditolak) Bar */}
+            {yDitolak > 0 && (
+              <rect
+                x={x}
+                y={currentY - yDiterima - yDitolak}
+                width={barWidth}
+                height={yDitolak}
+                fill="url(#gradDitolak)"
+                rx="5"
+                className="transition-all duration-300 hover:brightness-105"
+              />
+            )}
+            {/* Pending Bar */}
+            {yPending > 0 && (
+              <rect
+                x={x}
+                y={currentY - yDiterima - yDitolak - yPending}
+                width={barWidth}
+                height={yPending}
+                fill="url(#gradPending)"
+                rx="5"
+                className="transition-all duration-300 hover:brightness-105"
+              />
+            )}
+
+            {/* Label for year */}
+            <text
+              x={x + barWidth / 2}
+              y={padding + chartHeight + 20}
+              fill="#475569"
+              fontSize="10"
+              fontWeight="800"
+              textAnchor="middle"
+            >
+              {d.year}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+// ── Ultra Premium SVG Stacked Bar Chart for Student ──────────────────────────
+const SiswaBarChart = ({ data }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center text-slate-400 py-12">
+        <svg className="w-10 h-10 mb-2 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <p className="text-xs font-semibold text-slate-400">Belum ada data tren yang terekam.</p>
+      </div>
+    );
+  }
+
+  const maxVal = Math.max(...data.map(d => d.total), 1);
+  const chartHeight = 150;
+  const chartWidth = 500;
+  const padding = 40;
+  
+  const barWidth = Math.min(38, (chartWidth - padding * 2) / data.length - 20);
+  const gap = ((chartWidth - padding * 2) - (barWidth * data.length)) / (data.length + 1);
+
+  return (
+    <svg viewBox={`0 0 ${chartWidth} ${chartHeight + padding * 2}`} className="w-full h-auto max-h-[220px]">
+      <defs>
+        <linearGradient id="gradSiswaAktif" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#475569" />
+          <stop offset="100%" stopColor="#0f172a" />
+        </linearGradient>
+        <linearGradient id="gradSiswaTidakAktif" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f87171" />
+          <stop offset="100%" stopColor="#b91c1c" />
+        </linearGradient>
+        <linearGradient id="gradBarTrack" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f8fafc" />
+          <stop offset="100%" stopColor="#f1f5f9" />
+        </linearGradient>
+      </defs>
+
+      {/* Grid Lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
+        const y = padding + chartHeight * (1 - ratio);
+        const val = Math.round(maxVal * ratio);
+        return (
+          <g key={idx}>
+            <line x1={padding} y1={y} x2={chartWidth - padding} y2={y} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="3" />
+            <text x={padding - 12} y={y + 4} fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="end">{val}</text>
+          </g>
+        );
+      })}
+
+      {/* Bars */}
+      {data.map((d, idx) => {
+        const x = padding + gap + idx * (barWidth + gap);
+        
+        const yAktif = (d.aktif / maxVal) * chartHeight;
+        const yTidakAktif = (d.tidakAktif / maxVal) * chartHeight;
+
+        let currentY = padding + chartHeight;
+
+        return (
+          <g key={idx} className="group cursor-pointer">
+            {/* Visual background track pill */}
+            <rect
+              x={x}
+              y={padding}
+              width={barWidth}
+              height={chartHeight}
+              fill="url(#gradBarTrack)"
+              rx="5"
+            />
+
+            {/* Active (Aktif) Bar */}
+            {yAktif > 0 && (
+              <rect
+                x={x}
+                y={currentY - yAktif}
+                width={barWidth}
+                height={yAktif}
+                fill="url(#gradSiswaAktif)"
+                rx="5"
+                className="transition-all duration-300 hover:brightness-105"
+              />
+            )}
+            {/* Inactive Bar */}
+            {yTidakAktif > 0 && (
+              <rect
+                x={x}
+                y={currentY - yAktif - yTidakAktif}
+                width={barWidth}
+                height={yTidakAktif}
+                fill="url(#gradSiswaTidakAktif)"
+                rx="5"
+                className="transition-all duration-300 hover:brightness-105"
+              />
+            )}
+
+            {/* Label for year */}
+            <text
+              x={x + barWidth / 2}
+              y={padding + chartHeight + 20}
+              fill="#475569"
+              fontSize="10"
+              fontWeight="800"
+              textAnchor="middle"
+            >
+              {d.year}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+};
+
+// ── Donut Chart for Registration Status ────────────────────────────────────
+const DonutChart = ({ diterima, ditolak, pending }) => {
+  const total = diterima + ditolak + pending;
+  if (total === 0) return null;
+
+  const pDiterima = (diterima / total) * 100;
+  const pDitolak = (ditolak / total) * 100;
+  const pPending = (pending / total) * 100;
+
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+
+  const offsetDiterima = circumference - (pDiterima / 100) * circumference;
+  const offsetDitolak = circumference - (pDitolak / 100) * circumference;
+  const offsetPending = circumference - (pPending / 100) * circumference;
+
+  const rotDiterima = 0;
+  const rotDitolak = (pDiterima / 100) * 360;
+  const rotPending = ((pDiterima + pDitolak) / 100) * 360;
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full gap-5">
+      <div className="relative w-28 h-28 shrink-0">
+        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
+          
+          {/* Diterima segment */}
+          {pDiterima > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#10b981"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetDiterima}
+              transform={`rotate(${rotDiterima} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+          
+          {/* Ditolak segment */}
+          {pDitolak > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#ef4444"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetDitolak}
+              transform={`rotate(${rotDitolak} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+
+          {/* Pending segment */}
+          {pPending > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#f59e0b"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetPending}
+              transform={`rotate(${rotPending} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-black text-slate-800">{total}</span>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+        </div>
+      </div>
+      
+      {/* Legend list */}
+      <div className="flex flex-col gap-2 w-full max-w-[240px]">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0"></span>
+            <span className="text-xs font-bold text-slate-600">Diterima</span>
+          </div>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{diterima} ({Math.round(pDiterima)}%)</span>
+        </div>
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
+            <span className="text-xs font-bold text-slate-600">Ditolak</span>
+          </div>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{ditolak} ({Math.round(pDitolak)}%)</span>
+        </div>
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span>
+            <span className="text-xs font-bold text-slate-600">Menunggu</span>
+          </div>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{pending} ({Math.round(pPending)}%)</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Donut Chart for Student Status ────────────────────────────────────
+const SiswaDonutChart = ({ aktif, tidakAktif }) => {
+  const total = aktif + tidakAktif;
+  if (total === 0) return null;
+
+  const pAktif = (aktif / total) * 100;
+  const pTidakAktif = (tidakAktif / total) * 100;
+
+  const radius = 38;
+  const circumference = 2 * Math.PI * radius;
+
+  const offsetAktif = circumference - (pAktif / 100) * circumference;
+  const offsetTidakAktif = circumference - (pTidakAktif / 100) * circumference;
+
+  const rotAktif = 0;
+  const rotTidakAktif = (pAktif / 100) * 360;
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full gap-5">
+      <div className="relative w-28 h-28 shrink-0">
+        <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+          <circle cx="50" cy="50" r={radius} fill="transparent" stroke="#f8fafc" strokeWidth="10" />
+          
+          {/* Active segment */}
+          {pAktif > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#1e293b"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetAktif}
+              transform={`rotate(${rotAktif} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+          
+          {/* Inactive segment */}
+          {pTidakAktif > 0 && (
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="transparent"
+              stroke="#ef4444"
+              strokeWidth="10"
+              strokeDasharray={circumference}
+              strokeDashoffset={offsetTidakAktif}
+              transform={`rotate(${rotTidakAktif} 50 50)`}
+              className="transition-all duration-500"
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-black text-slate-800">{total}</span>
+          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total</span>
+        </div>
+      </div>
+      
+      {/* Legend list */}
+      <div className="flex flex-col gap-2 w-full max-w-[240px]">
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-slate-800 shrink-0"></span>
+            <span className="text-xs font-bold text-slate-600">Aktif</span>
+          </div>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{aktif} ({Math.round(pAktif)}%)</span>
+        </div>
+        <div className="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-50 bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0"></span>
+            <span className="text-xs font-bold text-slate-600">Tidak Aktif</span>
+          </div>
+          <span className="text-xs font-extrabold text-slate-800 ml-auto whitespace-nowrap">{tidakAktif} ({Math.round(pTidakAktif)}%)</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Main Component ─────────────────────────────────────────────────────────────
 const Laporan = () => {
   const [reportType, setReportType] = useState('pendaftaran'); // 'pendaftaran' or 'siswa'
   const [startDate, setStartDate] = useState('');
@@ -107,10 +546,62 @@ const Laporan = () => {
   const handleResetFilter = () => {
     setStartDate('');
     setEndDate('');
-    // setTimeout to allow state to update before fetch if we don't rely on dependency array for dates
     setTimeout(() => {
-        fetchReportData();
+        fetchReportData(); // Fetch data laporan setelah filter direset
     }, 0);
+  };
+
+  // ── Stat Aggregation Helpers ──────────────────────────────────────────────
+  const getPendaftaranStats = () => {
+    const stats = {};
+    let totalDiterima = 0;
+    let totalDitolak = 0;
+    let totalPending = 0;
+
+    data.forEach(item => {
+      const year = new Date(item.created_at).getFullYear();
+      if (!stats[year]) {
+        stats[year] = { year, total: 0, diterima: 0, ditolak: 0, pending: 0 };
+      }
+      stats[year].total++;
+      if (item.status === 'diterima') {
+        stats[year].diterima++;
+        totalDiterima++;
+      } else if (item.status === 'ditolak') {
+        stats[year].ditolak++;
+        totalDitolak++;
+      } else {
+        stats[year].pending++;
+        totalPending++;
+      }
+    });
+
+    const yearData = Object.values(stats).sort((a, b) => a.year - b.year);
+    return { yearData, totalDiterima, totalDitolak, totalPending };
+  };
+
+  const getSiswaStats = () => {
+    const stats = {};
+    let totalAktif = 0;
+    let totalTidakAktif = 0;
+
+    data.forEach(item => {
+      const year = item.tahun_masuk || new Date(item.created_at).getFullYear();
+      if (!stats[year]) {
+        stats[year] = { year, total: 0, aktif: 0, tidakAktif: 0 };
+      }
+      stats[year].total++;
+      if (item.is_active) {
+        stats[year].aktif++;
+        totalAktif++;
+      } else {
+        stats[year].tidakAktif++;
+        totalTidakAktif++;
+      }
+    });
+
+    const yearData = Object.values(stats).sort((a, b) => a.year - b.year);
+    return { yearData, totalAktif, totalTidakAktif };
   };
 
   const handleExport = async (format) => {
@@ -153,9 +644,9 @@ const Laporan = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'diterima': return 'bg-emerald-50 text-emerald-500 border-emerald-100';
-      case 'ditolak': return 'bg-red-50 text-red-500 border-red-100';
-      case 'pending': return 'bg-amber-50 text-amber-500 border-amber-100';
+      case 'diterima': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'ditolak': return 'bg-red-50 text-red-600 border-red-100';
+      case 'pending': return 'bg-amber-50 text-amber-600 border-amber-100';
       default: return 'bg-slate-50 text-slate-500 border-slate-100';
     }
   };
@@ -169,37 +660,64 @@ const Laporan = () => {
     }
   };
 
+  // Pre-calculate percentages for progress indicators in metrics
+  const pendaftaranStats = getPendaftaranStats();
+  const totalPendaftar = data.length || 1;
+  const ratioDiterima = Math.round((pendaftaranStats.totalDiterima / totalPendaftar) * 100);
+  const ratioDitolak = Math.round((pendaftaranStats.totalDitolak / totalPendaftar) * 100);
+  const ratioPending = Math.round((pendaftaranStats.totalPending / totalPendaftar) * 100);
+
+  const siswaStats = getSiswaStats();
+  const totalSiswaVal = data.length || 1;
+  const ratioAktif = Math.round((siswaStats.totalAktif / totalSiswaVal) * 100);
+  const ratioTidakAktif = Math.round((siswaStats.totalTidakAktif / totalSiswaVal) * 100);
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden animate-fade-up">
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-800"></div>
-        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 text-slate-800 shadow-[0_4px_30px_rgba(0,0,0,0.02)] border border-slate-100 relative overflow-hidden animate-fade-up">
+        <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-900"></div>
+        <div className="relative z-10 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-[#1e293b]">Laporan Data</h2>
-            <p className="text-slate-500 text-sm max-w-xl">
-              Lihat dan unduh laporan data Pendaftaran dan Siswa SMAN 1 Pamekasan.
+            <div className="flex items-center gap-2 mb-2">
+              <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-100 text-slate-700">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </span>
+              <span className="text-xs font-extrabold text-slate-400 uppercase tracking-widest">Dashboard Analitik</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black mb-1.5 text-slate-800 tracking-tight">Laporan & Statistik</h2>
+            <p className="text-slate-500 text-xs sm:text-sm max-w-xl">
+              Pantau tren pendaftaran tahunan secara dinamis dan cetak laporan resmi SMAN 1 Pamekasan.
             </p>
           </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl">
+          <div className="flex bg-slate-100 p-1.5 rounded-2xl w-full lg:w-auto shrink-0 border border-slate-200/40">
             <button
               onClick={() => setReportType('pendaftaran')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all ${
                 reportType === 'pendaftaran' 
-                  ? 'bg-white text-slate-800 shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-white text-slate-900 shadow-[0_4px_15px_rgba(0,0,0,0.06)]' 
+                  : 'text-slate-500 hover:text-slate-800'
               }`}
             >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
               Laporan Pendaftaran
             </button>
             <button
               onClick={() => setReportType('siswa')}
-              className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+              className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-extrabold rounded-xl transition-all ${
                 reportType === 'siswa' 
-                  ? 'bg-white text-slate-800 shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-white text-slate-900 shadow-[0_4px_15px_rgba(0,0,0,0.06)]' 
+                  : 'text-slate-500 hover:text-slate-800'
               }`}
             >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 14l9-5-9-5-9 5 9 5z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>
               Laporan Siswa
             </button>
           </div>
@@ -207,31 +725,31 @@ const Laporan = () => {
       </div>
 
       {/* Filter Card */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-75">
+      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] animate-fade-up delay-75">
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
           <form onSubmit={handleFilter} className="flex flex-col sm:flex-row items-end gap-3 w-full md:w-auto">
             <div className="w-full sm:w-auto">
-              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Tanggal Mulai</label>
+              <label className="block text-[10px] font-extrabold text-slate-400 mb-1.5 uppercase tracking-wider">Tanggal Mulai</label>
               <input 
                 type="date" 
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-sm text-slate-600"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-800 transition-all text-xs font-bold text-slate-700"
               />
             </div>
             <div className="w-full sm:w-auto">
-              <label className="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Tanggal Selesai</label>
+              <label className="block text-[10px] font-extrabold text-slate-400 mb-1.5 uppercase tracking-wider">Tanggal Selesai</label>
               <input 
                 type="date" 
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-sm text-slate-600"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-800 transition-all text-xs font-bold text-slate-700"
               />
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <button 
                 type="submit"
-                className="flex-1 sm:flex-none px-5 py-2 rounded-xl text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-900/20 transition-all flex items-center justify-center gap-2"
+                className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-xs font-extrabold text-white bg-slate-900 hover:bg-slate-850 shadow-lg shadow-slate-900/10 transition-all flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -242,7 +760,7 @@ const Laporan = () => {
                 <button 
                   type="button"
                   onClick={handleResetFilter}
-                  className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
+                  className="px-4 py-2.5 rounded-xl text-xs font-extrabold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all"
                 >
                   Reset
                 </button>
@@ -250,57 +768,310 @@ const Laporan = () => {
             </div>
           </form>
 
-          <div className="flex gap-2 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-slate-100">
+          <div className="flex gap-2 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-slate-100 shrink-0">
             <button 
               onClick={() => handleExport('csv')}
               disabled={isExporting || data.length === 0}
-              className="flex-1 md:flex-none px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 md:flex-none px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-700 hover:bg-slate-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Export CSV
+              CSV
             </button>
             <button 
               onClick={() => handleExport('excel')}
-              className="flex-1 md:flex-none px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-bold hover:bg-slate-900 transition-all shadow-md shadow-slate-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isExporting || data.length === 0}
+              className="flex-1 md:flex-none px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-extrabold hover:bg-slate-850 transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Export Excel
+              Unduh Excel
             </button>
           </div>
         </div>
       </div>
 
+      {/* Dashboard Statistics & Visualizations */}
+      {!isLoading && !error && data.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-up">
+          {/* Metrics summary cards */}
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {reportType === 'pendaftaran' ? (
+              <>
+                {/* Total Pendaftar */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.015)] hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Total Pendaftar</span>
+                    <span className="p-2 rounded-xl bg-slate-50 text-slate-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className="text-3xl font-black text-slate-800 tracking-tight">{data.length}</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                      <span>Kapasitas</span>
+                      <span>100%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1">
+                      <div className="bg-slate-800 h-1 rounded-full w-full"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Diterima */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.015)] hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold text-emerald-500 uppercase tracking-wider">Diterima</span>
+                    <span className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className="text-3xl font-black text-emerald-500 tracking-tight">{pendaftaranStats.totalDiterima}</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                      <span>Rasio Kelulusan</span>
+                      <span>{ratioDiterima}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1">
+                      <div className="bg-emerald-500 h-1 rounded-full" style={{ width: `${ratioDiterima}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ditolak */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.015)] hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold text-red-500 uppercase tracking-wider">Ditolak</span>
+                    <span className="p-2 rounded-xl bg-red-50 text-red-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className="text-3xl font-black text-red-50 tracking-tight text-red-500">{pendaftaranStats.totalDitolak}</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                      <span>Rasio Gugur</span>
+                      <span>{ratioDitolak}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1">
+                      <div className="bg-red-500 h-1 rounded-full" style={{ width: `${ratioDitolak}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menunggu */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.015)] hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold text-amber-500 uppercase tracking-wider">Menunggu</span>
+                    <span className="p-2 rounded-xl bg-amber-50 text-amber-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className="text-3xl font-black text-amber-500 tracking-tight">{pendaftaranStats.totalPending}</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Jiwa</span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                      <span>Rasio Antrean</span>
+                      <span>{ratioPending}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1">
+                      <div className="bg-amber-500 h-1 rounded-full" style={{ width: `${ratioPending}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Total Siswa */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.015)] hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Total Siswa</span>
+                    <span className="p-2 rounded-xl bg-slate-50 text-slate-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className="text-3xl font-black text-slate-800 tracking-tight">{data.length}</span>
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase">Siswa</span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                      <span>Keaktifan</span>
+                      <span>100%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1">
+                      <div className="bg-slate-800 h-1 rounded-full w-full"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Keaktifan */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.015)] hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between col-span-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold text-slate-500 uppercase tracking-wider">Keaktifan Kelas</span>
+                    <span className="p-2 rounded-xl bg-slate-50 text-slate-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-6 mt-4">
+                    <div>
+                      <span className="text-2xl font-black text-slate-800 tracking-tight">{siswaStats.totalAktif}</span>
+                      <span className="text-[10px] text-slate-400 font-extrabold uppercase ml-1">Aktif</span>
+                    </div>
+                    <div className="border-l border-slate-200 h-6"></div>
+                    <div>
+                      <span className="text-2xl font-black text-red-500 tracking-tight">{siswaStats.totalTidakAktif}</span>
+                      <span className="text-[10px] text-slate-400 font-extrabold uppercase ml-1">Tidak Aktif</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                        <span>Aktif</span>
+                        <span>{ratioAktif}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-1">
+                        <div className="bg-slate-800 h-1 rounded-full" style={{ width: `${ratioAktif}%` }}></div>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                        <span>Tidak Aktif</span>
+                        <span>{ratioTidakAktif}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-1">
+                        <div className="bg-red-500 h-1 rounded-full" style={{ width: `${ratioTidakAktif}%` }}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tahun Masuk Terbaru */}
+                <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.015)] hover:scale-[1.01] transition-all duration-350 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Tahun Terbaru</span>
+                    <span className="p-2 rounded-xl bg-slate-50 text-slate-600">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className="text-2xl font-black text-slate-800 tracking-tight">
+                      {data.length > 0 ? Math.max(...data.map(s => s.tahun_masuk || 0)) : '-'}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-extrabold mb-1">
+                      <span>Status</span>
+                      <span>Terdata</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-1">
+                      <div className="bg-emerald-500 h-1 rounded-full w-full"></div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Chart Cards */}
+          <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[300px]">
+            <div className="mb-4">
+              <h4 className="text-sm font-bold text-slate-800">
+                {reportType === 'pendaftaran' ? 'Tren Pendaftaran Tahunan' : 'Tren Penerimaan Siswa Baru'}
+              </h4>
+              <p className="text-[11px] font-medium text-slate-400 mt-0.5">
+                Statistik jumlah yang dikelompokkan berdasarkan tahun masuk / tahun pendaftaran.
+              </p>
+            </div>
+            <div className="flex-1 flex items-center justify-center py-2">
+              {reportType === 'pendaftaran' ? (
+                <BarChart data={getPendaftaranStats().yearData} />
+              ) : (
+                <SiswaBarChart data={getSiswaStats().yearData} />
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between min-h-[300px]">
+            <div className="mb-4">
+              <h4 className="text-sm font-bold text-slate-800">Distribusi Status</h4>
+              <p className="text-[11px] font-medium text-slate-400 mt-0.5">Persentase distribusi status dari seluruh data saat ini.</p>
+            </div>
+            <div className="flex-1 flex items-center justify-center py-2">
+              {reportType === 'pendaftaran' ? (
+                <DonutChart 
+                  diterima={getPendaftaranStats().totalDiterima}
+                  ditolak={getPendaftaranStats().totalDitolak}
+                  pending={getPendaftaranStats().totalPending}
+                />
+              ) : (
+                <SiswaDonutChart 
+                  aktif={getSiswaStats().totalAktif}
+                  tidakAktif={getSiswaStats().totalTidakAktif}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Table Container */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-150">
+      <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] animate-fade-up delay-150">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-[16px] font-bold text-[#1e293b]">
-            Hasil Laporan {reportType === 'pendaftaran' ? 'Pendaftaran' : 'Siswa'}
-          </h3>
-          <span className="text-xs font-bold px-3 py-1 bg-slate-50 text-slate-800 rounded-full">
-            Total: {data.length} data
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-slate-900"></span>
+            <h3 className="text-sm font-black text-slate-800">
+              Hasil Data Terperinci
+            </h3>
+          </div>
+          <span className="text-[10px] font-extrabold px-3 py-1 bg-slate-50 text-slate-500 rounded-full border border-slate-100">
+            Total: {data.length} Baris
           </span>
         </div>
 
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-              <div className="w-10 h-10 border-4 border-slate-100 border-t-slate-800 rounded-full animate-spin"></div>
-              <p className="text-sm font-medium">Memuat data laporan...</p>
+              <div className="w-8 h-8 border-4 border-slate-100 border-t-slate-950 rounded-full animate-spin"></div>
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Sinkronisasi Data...</p>
             </div>
           ) : error ? (
             <div className="py-20 text-center text-red-500">
               <p>{error}</p>
-              <button onClick={fetchReportData} className="mt-2 text-blue-500 underline text-sm">Coba lagi</button>
+              <button onClick={fetchReportData} className="mt-2 text-slate-800 font-extrabold underline text-xs">Coba lagi</button>
             </div>
           ) : (
             <table className="w-full text-left responsive border-collapse">
               <thead>
                 {reportType === 'pendaftaran' ? (
-                  <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <tr className="border-b border-slate-100 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
                     <th className="pb-3 pl-2">No. Pendaftaran</th>
                     <th className="pb-3">NISN</th>
                     <th className="pb-3">Nama Lengkap</th>
@@ -310,64 +1081,64 @@ const Laporan = () => {
                     <th className="pb-3">Status</th>
                   </tr>
                 ) : (
-                  <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <tr className="border-b border-slate-100 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">
                     <th className="pb-3 pl-2">NIS</th>
                     <th className="pb-3">Nama Lengkap</th>
                     <th className="pb-3">Tahun Masuk</th>
                     <th className="pb-3">Tahun Ajaran</th>
                     <th className="pb-3">Status Aktif</th>
-                    <th className="pb-3">Tanggal Data Dibuat</th>
+                    <th className="pb-3">Tanggal Terdata</th>
                   </tr>
                 )}
               </thead>
-              <tbody className="text-[13px] text-slate-600">
+              <tbody className="text-xs font-medium text-slate-600">
                 {data.map((item, index) => (
-                  <tr key={item.id || index} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                  <tr key={item.id || index} className="border-b border-slate-50 hover:bg-slate-50/40 transition-colors">
                     {reportType === 'pendaftaran' ? (
                       <>
-                        <td className="py-4 pl-2 font-medium text-slate-400">{item.no_pendaftaran || '-'}</td>
-                        <td className="py-4 text-slate-600">{item.nisn || '-'}</td>
-                        <td className="py-4 font-bold text-slate-700">{item.nama_lengkap}</td>
-                        <td className="py-4">{item.asal_sekolah}</td>
+                        <td className="py-4 pl-2 font-extrabold text-slate-400">{item.no_pendaftaran || '-'}</td>
+                        <td className="py-4 text-slate-600 font-semibold">{item.nisn || '-'}</td>
+                        <td className="py-4 font-extrabold text-slate-800">{item.nama_lengkap}</td>
+                        <td className="py-4 text-slate-500 font-bold">{item.asal_sekolah}</td>
                         <td className="py-4">
                           {item.jalur ? (
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-slate-50 text-slate-600 border-slate-100`}>
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border bg-slate-50 text-slate-500 border-slate-200/40">
                               {item.jalur.replace('_', ' ')}
                             </span>
                           ) : '-'}
                         </td>
-                        <td className="py-4 text-slate-500">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                        <td className="py-4 text-slate-400 font-bold">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
                         <td className="py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(item.status || 'pending')}`}>
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border ${getStatusColor(item.status || 'pending')}`}>
                             {getStatusText(item.status || 'pending')}
                           </span>
                         </td>
                       </>
                     ) : (
                       <>
-                        <td className="py-4 pl-2 font-medium text-slate-600">{item.nis || '-'}</td>
-                        <td className="py-4 font-bold text-slate-700">{item.nama_lengkap}</td>
-                        <td className="py-4 text-slate-600">{item.tahun_masuk}</td>
-                        <td className="py-4 text-slate-600">{item.tahun_ajaran?.tahun || '-'}</td>
+                        <td className="py-4 pl-2 font-extrabold text-slate-800">{item.nis || '-'}</td>
+                        <td className="py-4 font-black text-slate-800">{item.nama_lengkap}</td>
+                        <td className="py-4 text-slate-600 font-bold">{item.tahun_masuk}</td>
+                        <td className="py-4 text-slate-600 font-extrabold">{item.tahun_ajaran?.tahun || '-'}</td>
                         <td className="py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
-                            item.is_active ? 'bg-slate-800 text-white border-slate-800' : 'bg-red-50 text-red-600 border-red-100'
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-extrabold uppercase tracking-wider border ${
+                            item.is_active ? 'bg-slate-900 text-white border-slate-900' : 'bg-red-50 text-red-600 border-red-100'
                           }`}>
                             {item.is_active ? 'Aktif' : 'Tidak Aktif'}
                           </span>
                         </td>
-                        <td className="py-4 text-slate-500">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                        <td className="py-4 text-slate-400 font-bold">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
                       </>
                     )}
                   </tr>
                 ))}
                 {data.length === 0 && (
                   <tr>
-                    <td colSpan={reportType === 'pendaftaran' ? "7" : "6"} className="py-12 text-center text-slate-400">
-                      <svg className="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <td colSpan={reportType === 'pendaftaran' ? "7" : "6"} className="py-16 text-center text-slate-400">
+                      <svg className="w-10 h-10 mx-auto mb-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <p>Tidak ada data laporan untuk ditampilkan.</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tidak ada data laporan ditemukan</p>
                     </td>
                   </tr>
                 )}

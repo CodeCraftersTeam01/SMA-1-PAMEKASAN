@@ -33,6 +33,17 @@ jobs:
         env:
           VITE_API_BASE_URL: https://api.smansa.m-tech.fun
 
+      - name: 🛠️ Prepare and Clean Frontend Directory on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            mkdir -p ~/frontend/dist
+            rm -rf ~/frontend/dist/*
+
       - name: 🚀 Upload Frontend Dist to VPS via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -43,7 +54,7 @@ jobs:
           source: "Frontend/dist/*"
           target: "frontend/dist/"
           strip_components: 2
-          rm: true
+          rm: false
 
       - name: 🚀 Upload Backend to VPS via SCP
         uses: appleboy/scp-action@v0.1.7
