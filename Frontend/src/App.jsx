@@ -14,12 +14,7 @@ import UserManagement from './pages/user-management';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import LoginPage from './pages/auth/login';
-import StudentLogin from './pages/auth/StudentLogin';
-import StudentDashboardLayout from './pages/dashboard-siswa/StudentDashboardLayout';
-import StudentDashboard from './pages/dashboard-siswa/StudentDashboard';
-import AlumniTracking from './pages/dashboard-siswa/AlumniTracking';
-import GantiPassword from './pages/dashboard-siswa/GantiPassword';
-import ProfileSiswa from './pages/dashboard-siswa/ProfileSiswa';
+
 import AdminTrackingDashboard from './pages/admin/alumni-tracking/AdminTrackingDashboard';
 import PublicTracking from './pages/website/PublicTracking';
 
@@ -49,20 +44,6 @@ const AnimatedRoutes = () => {
         {/* Admin Login Portal - Redirect to homepage modal */}
         <Route path="/login" element={<Navigate to="/" replace />} />
 
-        {/* Dedicated Student Login Portal */}
-        <Route
-          path="/login-siswa"
-          element={
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <StudentLogin />
-            </motion.div>
-          }
-        />
 
         {/* Independent Public Alumni Tracking Page */}
         <Route
@@ -230,65 +211,7 @@ const AnimatedRoutes = () => {
             </Route>
           </Route>
 
-          {/* Student Dashboard Routes */}
-          <Route path="/dashboard-siswa" element={<StudentDashboardLayout />}>
-            <Route
-              index
-              element={
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-full"
-                >
-                  <StudentDashboard />
-                </motion.div>
-              }
-            />
-            <Route
-              path="alumni-tracking"
-              element={
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-full"
-                >
-                  <AlumniTracking />
-                </motion.div>
-              }
-            />
-            <Route
-              path="profile"
-              element={
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-full"
-                >
-                  <ProfileSiswa />
-                </motion.div>
-              }
-            />
-            <Route
-              path="ganti-password"
-              element={
-                <motion.div
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.3 }}
-                  className="w-full h-full"
-                >
-                  <GantiPassword />
-                </motion.div>
-              }
-            />
-          </Route>
+
         </Route>
 
         {/* Fallback */}
