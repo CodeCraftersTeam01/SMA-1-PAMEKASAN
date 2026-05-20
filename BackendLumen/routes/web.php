@@ -106,6 +106,10 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->post('student/tracking', 'AlumniTrackingController@store');
     $router->get('alumni', 'AlumniTrackingController@alumniList');
 
+    // Routes untuk AI Import (Dynamic Excel)
+    $router->post('ai-import/analyze', 'AiImportController@analyze');
+    $router->post('ai-import/execute', 'AiImportController@execute');
+
 });
 
 //hello 
