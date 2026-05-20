@@ -16,6 +16,7 @@ import { AuthProvider } from './context/AuthContext';
 import LoginPage from './pages/auth/login';
 
 import AdminTrackingDashboard from './pages/admin/alumni-tracking/AdminTrackingDashboard';
+import AlumniList from './pages/admin/alumni/AlumniList';
 import PublicTracking from './pages/website/PublicTracking';
 
 
@@ -186,6 +187,20 @@ const AnimatedRoutes = () => {
                   className="w-full h-full"
                 >
                   <AdminTrackingDashboard />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/admin/alumni"
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <AlumniList />
                 </motion.div>
               }
             />

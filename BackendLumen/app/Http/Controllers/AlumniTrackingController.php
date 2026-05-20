@@ -14,64 +14,7 @@ class AlumniTrackingController extends Controller
      */
     public function index()
     {
-        try {
-            $siswaList = Siswa::with(['pendaftaran', 'tahunAjaran', 'rencanaKarir'])->get();
-            
-            $formatted = $siswaList->map(function ($siswa) {
-                $rk = $siswa->rencanaKarir;
-                
-                // Determine pilihan_1 details dynamically for easy display in table rows
-                $pilihan1 = null;
-                if ($rk) {
-                    if ($rk->kategori_pilihan === 'kuliah') {
-                        $pilihan1 = [
-                            'universitas' => $rk->univ_pilihan_1,
-                            'jurusan' => $rk->jurusan_pilihan_1,
-                        ];
-                    } elseif ($rk->kategori_pilihan === 'kerja') {
-                        $pilihan1 = [
-                            'universitas' => $rk->nama_perusahaan,
-                            'jurusan' => $rk->posisi_pekerjaan,
-                        ];
-                    } elseif ($rk->kategori_pilihan === 'bisnis') {
-                        $pilihan1 = [
-                            'universitas' => $rk->nama_bisnis,
-                            'jurusan' => $rk->bidang_bisnis,
-                        ];
-                    }
-                }
-
-                return [
-                    'id' => $siswa->id,
-                    'nama' => $siswa->nama_lengkap,
-                    'nis' => $siswa->nis,
-                    'kelas_asal' => $siswa->pendaftaran->jalur ?? '-',
-                    'tahun_lulus' => $siswa->tahun_lulus ?? '-',
-                    'status_pengisian' => $rk ? 'Lengkap' : 'Pending',
-                    'kategori_pilihan' => $rk ? $rk->kategori_pilihan : null,
-                    'pilihan_1' => $pilihan1,
-                    'rencana_detail' => $rk,
-                    
-                    // Extra fields for detail modal
-                    'nisn' => $siswa->pendaftaran->nisn ?? 'Tidak tersedia',
-                    'no_pendaftaran' => $siswa->pendaftaran->no_pendaftaran ?? 'Tidak tersedia',
-                    'asal_sekolah' => $siswa->pendaftaran->asal_sekolah ?? 'Tidak tersedia',
-                    'alamat' => $siswa->pendaftaran->alamat ?? 'Tidak tersedia',
-                    'tahun_masuk' => $siswa->tahun_masuk ?? 'Tidak tersedia',
-                    'tahun_ajaran' => $siswa->tahunAjaran->tahun_ajaran ?? 'Tidak tersedia',
-                ];
-            });
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $formatted
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Gagal mengambil data penelusuran alumni: ' . $e->getMessage()
-            ], 500);
-        }
+        return $this->alumniList();
     }
 
     /**
@@ -145,6 +88,109 @@ class AlumniTrackingController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all alumni students (whose academic year is 3 years or more below the active year)
+     */
+    public function alumniList()
+    {
+        try {
+            $activeTahunAjaran = \App\Models\TahunAjaran::where('is_active', true)->first();
+            
+            if (!$activeTahunAjaran) {
+                return response()->json([
+                    'status' => 'success',
+                    'active_tahun_ajaran' => null,
+                    'data' => []
+                ], 200);
+            }
+
+            $parts = explode('/', $activeTahunAjaran->tahun);
+            $activeYear = (int)$parts[0];
+
+            $siswaList = Siswa::with(['pendaftaran', 'tahunAjaran', 'rencanaKarir'])->get();
+            
+            $alumni = $siswaList->filter(function ($siswa) use ($activeYear) {
+                // If there's a graduation year explicitly set, check if it's less than or equal to active year
+                if ($siswa->tahun_lulus) {
+                    return true;
+                }
+                
+                if (!$siswa->tahunAjaran) {
+                    return false;
+                }
+
+                $parts = explode('/', $siswa->tahunAjaran->tahun);
+                $siswaYear = (int)$parts[0];
+
+                // Alumni logic: Difference is at least 3 years
+                return ($activeYear - $siswaYear) >= 3;
+            })->values();
+
+            $formatted = $alumni->map(function ($siswa) {
+                $rk = $siswa->rencanaKarir;
+                
+                $pilihan1 = null;
+                if ($rk) {
+                    if ($rk->kategori_pilihan === 'kuliah') {
+                        $pilihan1 = [
+                            'universitas' => $rk->univ_pilihan_1,
+                            'jurusan' => $rk->jurusan_pilihan_1,
+                        ];
+                    } elseif ($rk->kategori_pilihan === 'kerja') {
+                        $pilihan1 = [
+                            'universitas' => $rk->nama_perusahaan,
+                            'jurusan' => $rk->posisi_pekerjaan,
+                        ];
+                    } elseif ($rk->kategori_pilihan === 'bisnis') {
+                        $pilihan1 = [
+                            'universitas' => $rk->nama_bisnis,
+                            'jurusan' => $rk->bidang_bisnis,
+                        ];
+                    }
+                }
+
+                // Determine estimated graduation year if not filled
+                $tahunLulus = $siswa->tahun_lulus;
+                if (!$tahunLulus && $siswa->tahunAjaran) {
+                    $parts = explode('/', $siswa->tahunAjaran->tahun);
+                    $startYear = (int)$parts[0];
+                    $tahunLulus = $startYear + 3; // Standard high school is 3 years
+                }
+
+                return [
+                    'id' => $siswa->id,
+                    'nama' => $siswa->nama_lengkap,
+                    'nis' => $siswa->nis,
+                    'kelas_asal' => $siswa->pendaftaran->jalur ?? '-',
+                    'tahun_masuk' => $siswa->tahun_masuk ?? ($siswa->tahunAjaran ? explode('/', $siswa->tahunAjaran->tahun)[0] : '-'),
+                    'tahun_lulus' => $tahunLulus ?? '-',
+                    'status_pengisian' => $rk ? 'Lengkap' : 'Pending',
+                    'kategori_pilihan' => $rk ? $rk->kategori_pilihan : 'belum',
+                    'pilihan_1' => $pilihan1,
+                    'rencana_detail' => $rk,
+                    'tahun_ajaran' => $siswa->tahunAjaran->tahun ?? '-',
+                    
+                    // Extra fields for details
+                    'nisn' => $siswa->pendaftaran->nisn ?? 'Tidak tersedia',
+                    'no_pendaftaran' => $siswa->pendaftaran->no_pendaftaran ?? 'Tidak tersedia',
+                    'asal_sekolah' => $siswa->pendaftaran->asal_sekolah ?? 'Tidak tersedia',
+                    'alamat' => $siswa->pendaftaran->alamat ?? 'Tidak tersedia',
+                ];
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'active_tahun_ajaran' => $activeTahunAjaran->tahun,
+                'data' => $formatted
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal mengambil daftar alumni: ' . $e->getMessage()
             ], 500);
         }
     }

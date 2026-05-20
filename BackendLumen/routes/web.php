@@ -104,6 +104,7 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     // Routes untuk Alumni Tracking Admin
     $router->get('alumni-tracking', 'AlumniTrackingController@index');
     $router->post('student/tracking', 'AlumniTrackingController@store');
+    $router->get('alumni', 'AlumniTrackingController@alumniList');
 
 });
 
