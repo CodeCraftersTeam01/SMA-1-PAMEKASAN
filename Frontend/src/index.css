@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "bootstrap-icons/font/bootstrap-icons.css";
 
 @theme {
   --animate-fade-up: fade-up 0.5s ease-out both;
