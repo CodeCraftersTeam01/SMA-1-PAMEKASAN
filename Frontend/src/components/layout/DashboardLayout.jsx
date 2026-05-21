@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -33,6 +33,23 @@ const DashboardLayout = () => {
 
   // User data always comes from the server-verified AuthContext, not localStorage
   const { user, logout } = useAuth();
+
+  const [activeTahunAjaran, setActiveTahunAjaran] = useState(null);
+
+  useEffect(() => {
+    const fetchActiveTahunAjaran = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/tahun-ajaran/aktif`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setActiveTahunAjaran(data.tahun);
+        }
+      } catch {}
+    };
+    fetchActiveTahunAjaran();
+  }, []);
   const getAvatarUrl = () => {
     if (user?.photo) return `${API_BASE_URL}/storage/${user.photo}`;
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'A')}&background=eff6ff`;
@@ -378,6 +395,16 @@ const DashboardLayout = () => {
               </svg>
               <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 border-2 border-white rounded-full"></span>
             </button>
+
+            {/* Active Tahun Ajaran */}
+            {activeTahunAjaran && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg">
+                <svg className="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="text-[11px] font-semibold text-blue-700">{activeTahunAjaran}</span>
+              </div>
+            )}
 
             {/* User Profile Mini */}
             <button onClick={() => navigate('/profile')} className="hidden sm:flex items-center gap-2.5 pl-3 border-l border-slate-200 hover:opacity-80 transition-opacity">
