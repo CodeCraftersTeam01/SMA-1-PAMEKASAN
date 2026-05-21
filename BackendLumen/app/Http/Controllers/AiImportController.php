@@ -453,6 +453,10 @@ class AiImportController extends Controller
             $dataRows = array_slice($allRows, $headerRow + 1);
 
             return response()->stream(function () use ($dataRows, $mapping, $headers, $targetTable, $headerRow) {
+                // Prevent PHP timeout for long imports + disable output buffering for SSE
+                set_time_limit(0);
+                if (ob_get_level()) ob_end_clean();
+                
                 $successCount = 0;
                 $failCount    = 0;
                 $errors       = [];
