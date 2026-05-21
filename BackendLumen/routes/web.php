@@ -70,6 +70,7 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     // Routes untuk Tahun Ajaran
     $router->get('tahun-ajaran', 'TahunAjaranController@index');
     $router->post('tahun-ajaran', 'TahunAjaranController@store');
+    $router->get('tahun-ajaran/aktif', 'TahunAjaranController@aktif');
     $router->get('tahun-ajaran/{id}', 'TahunAjaranController@show');
     $router->put('tahun-ajaran/{id}', 'TahunAjaranController@update');
     $router->delete('tahun-ajaran/{id}', 'TahunAjaranController@destroy');
@@ -87,6 +88,7 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->post('siswa/migrate', 'SiswaController@migrate');
     $router->get('siswa', 'SiswaController@index');
     $router->get('siswa/{id}', 'SiswaController@show');
+    $router->post('siswa', 'SiswaController@store');
     $router->put('siswa/{id}', 'SiswaController@update');
     $router->delete('siswa/{id}', 'SiswaController@destroy');
 
@@ -105,6 +107,10 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('alumni-tracking', 'AlumniTrackingController@index');
     $router->post('student/tracking', 'AlumniTrackingController@store');
     $router->get('alumni', 'AlumniTrackingController@alumniList');
+
+    // Routes untuk AI Import (Dynamic Excel)
+    $router->post('ai-import/analyze', 'AiImportController@analyze');
+    $router->post('ai-import/execute', 'AiImportController@execute');
 
 });
 
