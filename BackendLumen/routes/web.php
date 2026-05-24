@@ -108,6 +108,10 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->put('users/{id}', 'UserController@update');
     $router->delete('users/{id}', 'UserController@destroy');
 
+    // Routes untuk Hak Akses (Permissions)
+    $router->get('users/{id}/permissions', 'UserController@getPermissions');
+    $router->put('users/{id}/permissions', 'UserController@updatePermissions');
+
     // Routes untuk Alumni Tracking Admin
     $router->get('alumni-tracking', 'AlumniTrackingController@index');
     $router->post('student/tracking', 'AlumniTrackingController@store');

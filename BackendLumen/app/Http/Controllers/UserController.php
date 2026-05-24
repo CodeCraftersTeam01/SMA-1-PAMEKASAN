@@ -85,6 +85,7 @@ class UserController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'role' => $request->role,
+                'permissions' => $request->permissions,
             ]);
 
             return response()->json([
@@ -137,9 +138,12 @@ class UserController extends Controller
             $user->email = $request->email;
             $user->role = $request->role;
 
-            // Update password only if provided
             if ($request->filled('password')) {
                 $user->password = Hash::make($request->password);
+            }
+
+            if ($request->has('permissions')) {
+                $user->permissions = $request->permissions;
             }
 
             $user->save();
@@ -176,7 +180,6 @@ class UserController extends Controller
                 ], 404);
             }
 
-            // Prevent deleting yourself
             if ($user->id === auth()->id()) {
                 return response()->json([
                     'message' => 'Tidak dapat menghapus pengguna yang sedang login'
@@ -191,6 +194,72 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal menghapus pengguna',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get permissions for a user
+     */
+    public function getPermissions($id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Pengguna tidak ditemukan'
+                ], 404);
+            }
+
+            return response()->json([
+                'data' => $user->permissions ?? $user->getDefaultPermissions(),
+                'is_admin' => $user->role === 'admin',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mengambil izin pengguna',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update permissions for a user
+     */
+    public function updatePermissions(Request $request, $id)
+    {
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Pengguna tidak ditemukan'
+                ], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'permissions' => 'required|array',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validasi gagal',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $user->permissions = $request->permissions;
+            $user->save();
+
+            return response()->json([
+                'message' => 'Izin pengguna berhasil diperbarui',
+                'data' => $user->permissions
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal memperbarui izin pengguna',
                 'error' => $e->getMessage()
             ], 500);
         }

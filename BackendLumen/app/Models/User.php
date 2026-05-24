@@ -20,11 +20,26 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password',
         'role',
         'photo',
+        'permissions',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'permissions' => 'array',
+    ];
+
+    protected static $defaultPermissions = [
+        'pendaftaran' => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'siswa'       => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'tahun_ajaran'=> ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'laporan'     => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'alumni'      => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'alumni_tracking' => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'pengaturan'  => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
     ];
 
     public function getJWTIdentifier()
@@ -35,5 +50,35 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public function getJWTCustomClaims()
     {
         return [];
+    }
+
+    public function hasPermission($resource, $action)
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+
+        $permissions = $this->permissions ?? static::$defaultPermissions;
+
+        if (!isset($permissions[$resource])) {
+            return false;
+        }
+
+        return ($permissions[$resource][$action] ?? false) === true;
+    }
+
+    public function hasAnyPermission($resource, array $actions)
+    {
+        foreach ($actions as $action) {
+            if ($this->hasPermission($resource, $action)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getDefaultPermissions()
+    {
+        return static::$defaultPermissions;
     }
 }
