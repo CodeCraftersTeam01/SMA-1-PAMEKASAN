@@ -4,6 +4,13 @@ import * as XLSX from 'xlsx';
 const AI_STEPS = { UPLOAD: 1, ANALYZING: 2, MAPPING: 3, PREVIEW: 4, IMPORTING: 5, RESULT: 6 };
 const STEP_LABELS = ['Upload', 'Analisis AI', 'Mapping', 'Preview', 'Import'];
 
+const DetailField = ({ label, value, highlight }) => (
+  <div>
+    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{label}</p>
+    <p className={`text-sm ${highlight ? 'font-bold text-slate-800' : 'font-medium text-slate-600'}`}>{value || '-'}</p>
+  </div>
+);
+
 
 // Toast Component
 const Toast = ({ message, type, onClose }) => {
@@ -51,6 +58,8 @@ const Siswa = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [formSiswa, setFormSiswa] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [viewSiswa, setViewSiswa] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // AI wizard
   const [isAiWizardOpen, setIsAiWizardOpen] = useState(false);
@@ -63,6 +72,14 @@ const Siswa = () => {
   const [aiResult, setAiResult]             = useState(null);
   const [aiError, setAiError]               = useState('');
   const [importProgress, setImportProgress] = useState(null);
+
+  // Batch selection
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [isBulkEditModalOpen, setIsBulkEditModalOpen] = useState(false);
+  const [bulkEditMode, setBulkEditMode] = useState('massal');
+  const [bulkEditData, setBulkEditData] = useState({ is_active: '' });
+  const [perUserData, setPerUserData] = useState({});
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
 
   // Pagination & Filters
   const [currentPage, setCurrentPage] = useState(1);
@@ -126,7 +143,7 @@ const Siswa = () => {
   const openFormForCreate = () => {
     setIsSelectionModalOpen(false);
     setFormSiswa({
-      nis: '', nama_lengkap: '', jenis_kelamin: '', nisn: '',
+      nis: '', kelas: '', nama_lengkap: '', jenis_kelamin: '', nisn: '',
       tempat_lahir: '', tanggal_lahir: '', agama: '',
       alamat: '', nomor_hp: '', email: '',
       penerima_kps: false, nomor_kps: '',
@@ -139,6 +156,11 @@ const Siswa = () => {
   const openFormForEdit = (siswa) => {
     setFormSiswa({ ...siswa });
     setIsFormModalOpen(true);
+  };
+
+  const openViewModal = (siswa) => {
+    setViewSiswa(siswa);
+    setIsViewModalOpen(true);
   };
 
   const openAiWizardFromSelection = () => {
@@ -155,7 +177,7 @@ const Siswa = () => {
     try {
       const payload = {};
       const fields = [
-        'nis', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
+        'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
         'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
         'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
         'is_active',
@@ -194,6 +216,143 @@ const Siswa = () => {
     }
   };
 
+  // ── Batch Selection ──────────────────────────────────────────────────────────
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const pageIds = paginatedSiswa.map(s => s.id);
+    const allSelected = pageIds.every(id => selectedIds.has(id));
+    if (allSelected) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        pageIds.forEach(id => next.delete(id));
+        return next;
+      });
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        pageIds.forEach(id => next.add(id));
+        return next;
+      });
+    }
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Yakin ingin menghapus ${selectedIds.size} data siswa?`)) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/siswa/bulk-delete`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ ids: [...selectedIds] }),
+      });
+      if (response.ok) {
+        showToast(`${selectedIds.size} data siswa berhasil dihapus`, 'success');
+        clearSelection();
+        fetchSiswa();
+      } else {
+        const data = await response.json();
+        showToast(data.message || 'Gagal menghapus data', 'error');
+      }
+    } catch {
+      showToast('Terjadi kesalahan koneksi', 'error');
+    }
+  };
+
+  const openBulkEdit = () => {
+    setBulkEditMode('massal');
+    setBulkEditData({ is_active: '' });
+    const initial = {};
+    siswaList.filter(s => selectedIds.has(s.id)).forEach(s => {
+      initial[s.id] = { ...s };
+    });
+    setPerUserData(initial);
+    setIsBulkEditModalOpen(true);
+  };
+
+  const handleBulkUpdate = async () => {
+    if (selectedIds.size === 0) return;
+    setIsBulkSaving(true);
+    try {
+      if (bulkEditMode === 'massal') {
+        const payload = {};
+        if (bulkEditData.is_active !== '') payload.is_active = bulkEditData.is_active === '1';
+        if (Object.keys(payload).length === 0) {
+          showToast('Pilih setidaknya satu field untuk diubah', 'error');
+          setIsBulkSaving(false);
+          return;
+        }
+        const response = await fetch(`${API_BASE_URL}/api/siswa/bulk-update`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ ids: [...selectedIds], data: payload }),
+        });
+        if (response.ok) {
+          showToast(`${selectedIds.size} data siswa berhasil diperbarui`, 'success');
+        } else {
+          const data = await response.json();
+          showToast(data.message || 'Gagal memperbarui data', 'error');
+          setIsBulkSaving(false);
+          return;
+        }
+      } else {
+        const updates = [];
+        for (const id of selectedIds) {
+          const orig = siswaList.find(s => s.id === id);
+          const edited = perUserData[id];
+          if (!orig || !edited) continue;
+          const data = {};
+          const fields = [
+            'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
+            'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
+            'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip', 'is_active',
+          ];
+          fields.forEach(f => {
+            if (f === 'is_active') {
+              if (String(edited[f]) !== String(orig[f])) data[f] = !!edited[f];
+            } else if (String(edited[f] || '') !== String(orig[f] || '')) {
+              data[f] = edited[f];
+            }
+          });
+          if (Object.keys(data).length > 0) updates.push({ id, data });
+        }
+        if (updates.length === 0) {
+          showToast('Tidak ada perubahan data', 'info');
+          setIsBulkSaving(false);
+          return;
+        }
+        const response = await fetch(`${API_BASE_URL}/api/siswa/bulk-update-per-user`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ updates }),
+        });
+        if (response.ok) {
+          showToast(`${updates.length} data siswa berhasil diperbarui`, 'success');
+        } else {
+          const data = await response.json();
+          showToast(data.message || 'Gagal memperbarui data', 'error');
+          setIsBulkSaving(false);
+          return;
+        }
+      }
+      setIsBulkEditModalOpen(false);
+      clearSelection();
+      fetchSiswa();
+    } catch {
+      showToast('Terjadi kesalahan koneksi', 'error');
+    } finally {
+      setIsBulkSaving(false);
+    }
+  };
+
   const tahunMasukOptions = [...new Set(siswaList.map(s => s.tahun_masuk).filter(Boolean))].sort();
   const tahunAjaranOptions = [...new Set(siswaList.map(s => s.tahun_ajaran?.tahun).filter(Boolean))].sort();
 
@@ -201,7 +360,8 @@ const Siswa = () => {
     const matchSearch = !searchQuery ||
       s.nama_lengkap?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.nis?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.nisn?.toLowerCase().includes(searchQuery.toLowerCase());
+      s.nisn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.kelas?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchTahunMasuk = !filterTahunMasuk || s.tahun_masuk?.toString() === filterTahunMasuk;
     const matchTahunAjaran = !filterTahunAjaran || s.tahun_ajaran?.tahun === filterTahunAjaran;
     return matchSearch && matchTahunMasuk && matchTahunAjaran;
@@ -422,6 +582,33 @@ const Siswa = () => {
           </div>
         </div>
 
+        {/* Batch Action Bar */}
+        {selectedIds.size > 0 && (
+          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 mb-4 animate-fade-up">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-slate-800"></span>
+              <span className="text-sm font-semibold text-slate-700">{selectedIds.size} siswa dipilih</span>
+              <button onClick={clearSelection} className="text-xs text-slate-400 hover:text-slate-600 ml-1 font-medium">Batal</button>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={openBulkEdit}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 transition-all flex items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                Edit Massal
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 transition-all flex items-center gap-1.5"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                Hapus Massal
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
@@ -432,7 +619,16 @@ const Siswa = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="pb-3 pl-2 w-10">
+                    <input
+                      type="checkbox"
+                      checked={paginatedSiswa.length > 0 && paginatedSiswa.every(s => selectedIds.has(s.id))}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 cursor-pointer"
+                    />
+                  </th>
                   <th className="pb-3 pl-2">NIS</th>
+                  <th className="pb-3">Kelas</th>
                   <th className="pb-3">Nama Lengkap</th>
                   <th className="pb-3">JK</th>
                   <th className="pb-3">NISN</th>
@@ -444,10 +640,23 @@ const Siswa = () => {
               </thead>
               <tbody className="text-[13px] text-slate-600">
                 {paginatedSiswa.map((item) => (
-                  <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                  <tr key={item.id} className={`border-b border-slate-50 hover:bg-slate-50/50 transition-colors ${selectedIds.has(item.id) ? 'bg-slate-50' : ''}`}>
+                    <td className="py-4 pl-2 w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(item.id)}
+                        onChange={() => toggleSelect(item.id)}
+                        className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 cursor-pointer"
+                      />
+                    </td>
                     <td className="py-4 pl-2">
                       <span className="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded-lg text-xs">
                         {item.nis || '-'}
+                      </span>
+                    </td>
+                    <td className="py-4 text-slate-500">
+                      <span className="px-2 py-1 rounded-md text-[10px] font-bold border bg-slate-50 text-slate-600 border-slate-200">
+                        {item.kelas || '-'}
                       </span>
                     </td>
                     <td className="py-4 font-bold text-slate-700">{item.nama_lengkap}</td>
@@ -483,6 +692,13 @@ const Siswa = () => {
                     <td className="py-4 text-right pr-2">
                       <div className="flex items-center justify-end gap-1">
                         <button
+                          onClick={() => openViewModal(item)}
+                          className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                          title="Lihat Detail"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        </button>
+                        <button
                           onClick={() => openFormForEdit(item)}
                           className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
                           title="Edit"
@@ -506,7 +722,7 @@ const Siswa = () => {
                 ))}
                 {paginatedSiswa.length === 0 && !isLoading && (
                   <tr>
-                    <td colSpan="8" className="py-16 text-center">
+                    <td colSpan="10" className="py-16 text-center">
                       <div className="flex flex-col items-center gap-2 text-slate-400">
                         <svg className="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -1016,6 +1232,17 @@ const Siswa = () => {
                   <input type="text" value={formSiswa.nis || ''} onChange={e => setFormSiswa(prev => ({ ...prev, nis: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
                 </div>
 
+                {/* Kelas */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas</label>
+                  <select value={formSiswa.kelas || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
+                    <option value="">— Pilih —</option>
+                    <option value="X">X</option>
+                    <option value="XI">XI</option>
+                    <option value="XII">XII</option>
+                  </select>
+                </div>
+
                 {/* NISN */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">NISN</label>
@@ -1156,7 +1383,225 @@ const Siswa = () => {
         </div>
       )}
 
+      {/* ── View Detail Modal ──────────────────────────────────────────────────── */}
+      {isViewModalOpen && viewSiswa && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="text-lg font-bold text-slate-800">Detail Siswa</h3>
+              <button onClick={() => { setIsViewModalOpen(false); setViewSiswa(null); }} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                <DetailField label="NIS" value={viewSiswa.nis} highlight />
+                <DetailField label="NISN" value={viewSiswa.nisn} />
+                <DetailField label="Nama Lengkap" value={viewSiswa.nama_lengkap} highlight />
+                <DetailField label="Kelas" value={viewSiswa.kelas} />
+                <DetailField label="Jenis Kelamin" value={viewSiswa.jenis_kelamin === 'L' ? 'Laki-laki' : viewSiswa.jenis_kelamin === 'P' ? 'Perempuan' : '-'} />
+                <DetailField label="Tempat Lahir" value={viewSiswa.tempat_lahir} />
+                <DetailField label="Tanggal Lahir" value={viewSiswa.tanggal_lahir ? new Date(viewSiswa.tanggal_lahir).toLocaleDateString('id-ID') : '-'} />
+                <DetailField label="Agama" value={viewSiswa.agama} />
+                <DetailField label="Nomor HP" value={viewSiswa.nomor_hp} />
+                <DetailField label="Email" value={viewSiswa.email} />
+                <DetailField label="Tahun Masuk" value={viewSiswa.tahun_masuk} />
+                <DetailField label="Tahun Ajaran" value={viewSiswa.tahun_ajaran?.tahun} />
+                <DetailField label="Status" value={viewSiswa.is_active ? 'Aktif' : 'Alumni'} />
+                <DetailField label="Tahun Lulus" value={viewSiswa.tahun_lulus} />
+                <DetailField label="Penerima KPS" value={viewSiswa.penerima_kps ? 'Ya' : 'Tidak'} />
+                <DetailField label="Nomor KPS" value={viewSiswa.nomor_kps} />
+                <DetailField label="Penerima KIP" value={viewSiswa.penerima_kip ? 'Ya' : 'Tidak'} />
+                <DetailField label="Nomor KIP" value={viewSiswa.nomor_kip} />
+                <div className="sm:col-span-2">
+                  <DetailField label="Alamat" value={viewSiswa.alamat} />
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button onClick={() => { setIsViewModalOpen(false); setViewSiswa(null); }} className="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">Tutup</button>
+                <button onClick={() => { setIsViewModalOpen(false); openFormForEdit(viewSiswa); }} className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-900/20 transition-all">
+                  Edit Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* ── Bulk Edit Modal ───────────────────────────────────────────────────── */}
+      {isBulkEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="text-lg font-bold text-slate-800">Edit ({selectedIds.size} siswa)</h3>
+              <button onClick={() => setIsBulkEditModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            {/* Mode Toggle */}
+            <div className="px-6 pt-5 pb-2">
+              <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl w-fit">
+                <button
+                  onClick={() => setBulkEditMode('massal')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bulkEditMode === 'massal' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Edit Massal
+                </button>
+                <button
+                  onClick={() => setBulkEditMode('per-user')}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bulkEditMode === 'per-user' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Edit Per-User
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                {bulkEditMode === 'massal'
+                  ? 'Semua siswa yang dipilih akan mendapatkan nilai yang sama.'
+                  : 'Edit data masing-masing siswa secara terpisah.'}
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 pt-3">
+              {bulkEditMode === 'massal' ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Status</label>
+                    <select value={bulkEditData.is_active} onChange={e => setBulkEditData(prev => ({ ...prev, is_active: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
+                      <option value="">— Tidak diubah —</option>
+                      <option value="1">Aktif</option>
+                      <option value="0">Alumni</option>
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {[...selectedIds].map(id => {
+                    const s = perUserData[id];
+                    if (!s) return null;
+                    return (
+                      <div key={id} className="border border-slate-200 rounded-2xl overflow-hidden">
+                        <div className="px-5 py-3 bg-slate-50 border-b border-slate-100">
+                          <p className="text-sm font-bold text-slate-700">{s.nama_lengkap || 'Tanpa Nama'} <span className="font-mono text-slate-400 font-normal">({s.nis || '-'})</span></p>
+                        </div>
+                        <div className="p-5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">NIS</label>
+                              <input type="text" value={s.nis || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nis: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Kelas</label>
+                              <select value={s.kelas || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], kelas: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm">
+                                <option value="">— Pilih —</option>
+                                <option value="X">X</option>
+                                <option value="XI">XI</option>
+                                <option value="XII">XII</option>
+                              </select>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
+                              <input type="text" value={s.nama_lengkap || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nama_lengkap: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Jenis Kelamin</label>
+                              <select value={s.jenis_kelamin || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], jenis_kelamin: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm">
+                                <option value="">— Pilih —</option>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">NISN</label>
+                              <input type="text" value={s.nisn || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nisn: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Tempat Lahir</label>
+                              <input type="text" value={s.tempat_lahir || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], tempat_lahir: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Tanggal Lahir</label>
+                              <input type="date" value={s.tanggal_lahir || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], tanggal_lahir: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Agama</label>
+                              <select value={s.agama || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], agama: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm">
+                                <option value="">— Pilih —</option>
+                                <option value="Islam">Islam</option>
+                                <option value="Kristen">Kristen</option>
+                                <option value="Katolik">Katolik</option>
+                                <option value="Hindu">Hindu</option>
+                                <option value="Buddha">Buddha</option>
+                                <option value="Konghucu">Konghucu</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor HP</label>
+                              <input type="text" value={s.nomor_hp || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nomor_hp: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+                              <input type="email" value={s.email || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], email: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label>
+                              <textarea rows={2} value={s.alamat || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], alamat: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm resize-none" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Status</label>
+                              <select value={s.is_active ? '1' : '0'} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], is_active: e.target.value === '1' } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm">
+                                <option value="1">Aktif</option>
+                                <option value="0">Alumni</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Penerima KPS</label>
+                              <select value={s.penerima_kps ? '1' : '0'} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], penerima_kps: e.target.value === '1' } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm">
+                                <option value="0">Tidak</option>
+                                <option value="1">Ya</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor KPS</label>
+                              <input type="text" value={s.nomor_kps || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nomor_kps: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Penerima KIP</label>
+                              <select value={s.penerima_kip ? '1' : '0'} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], penerima_kip: e.target.value === '1' } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm">
+                                <option value="0">Tidak</option>
+                                <option value="1">Ya</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor KIP</label>
+                              <input type="text" value={s.nomor_kip || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nomor_kip: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            <div className="p-6 border-t border-slate-100 flex justify-end gap-3">
+              <button onClick={() => setIsBulkEditModalOpen(false)} className="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">
+                Batal
+              </button>
+              <button onClick={handleBulkUpdate} disabled={isBulkSaving} className="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-900/20 transition-all disabled:opacity-40 flex items-center gap-2">
+                {isBulkSaving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  'Simpan Perubahan'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (

@@ -51,8 +51,16 @@ class PendaftaranController extends Controller
             'no_pendaftaran' => 'required|unique:pendaftarans',
             'nisn' => 'required|unique:pendaftarans',
             'nama_lengkap' => 'required',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'tempat_lahir' => 'nullable|string|max:100',
+            'tanggal_lahir' => 'nullable|date',
+            'nik' => 'nullable|string|max:20',
+            'agama' => 'nullable|string|max:50',
             'asal_sekolah' => 'required',
+            'kecamatan' => 'nullable|string|max:100',
             'alamat' => 'required',
+            'email' => 'nullable|email|max:100',
+            'nomor_hp' => 'nullable|string|max:20',
             'status' => 'nullable|in:pending,diterima,ditolak',
         ]);
 
@@ -96,8 +104,16 @@ class PendaftaranController extends Controller
             'no_pendaftaran' => 'sometimes|required|unique:pendaftarans,no_pendaftaran,' . $id,
             'nisn' => 'sometimes|required|unique:pendaftarans,nisn,' . $id,
             'nama_lengkap' => 'sometimes|required',
+            'jenis_kelamin' => 'nullable|in:L,P',
+            'tempat_lahir' => 'nullable|string|max:100',
+            'tanggal_lahir' => 'nullable|date',
+            'nik' => 'nullable|string|max:20',
+            'agama' => 'nullable|string|max:50',
             'asal_sekolah' => 'sometimes|required',
+            'kecamatan' => 'nullable|string|max:100',
             'alamat' => 'sometimes|required',
+            'email' => 'nullable|email|max:100',
+            'nomor_hp' => 'nullable|string|max:20',
             'status' => 'sometimes|required|in:pending,diterima,ditolak',
         ]);
 
@@ -131,6 +147,101 @@ class PendaftaranController extends Controller
         return response()->json([
             'message' => 'Data berhasil dihapus'
         ]);
+    }
+
+    // BULK DELETE
+    public function bulkDelete(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:pendaftarans,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        Siswa::whereIn('pendaftar_id', $request->ids)->delete();
+        $count = Pendaftaran::whereIn('id', $request->ids)->delete();
+        return response()->json(['message' => "{$count} data pendaftar berhasil dihapus"]);
+    }
+
+    // BULK UPDATE
+    public function bulkUpdate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:pendaftarans,id',
+            'data' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        $allowedFields = [
+            'no_pendaftaran', 'nisn', 'nama_lengkap', 'jenis_kelamin',
+            'tempat_lahir', 'tanggal_lahir', 'nik', 'agama',
+            'asal_sekolah', 'kecamatan', 'status', 'alamat',
+            'email', 'nomor_hp', 'jalur',
+        ];
+        $updateData = array_intersect_key($request->data, array_flip($allowedFields));
+
+        if (empty($updateData)) {
+            return response()->json(['message' => 'Tidak ada field yang valid untuk diupdate'], 422);
+        }
+
+        $count = Pendaftaran::whereIn('id', $request->ids)->update($updateData);
+
+        // Sync siswa status for each updated record
+        if (isset($updateData['status'])) {
+            $records = Pendaftaran::whereIn('id', $request->ids)->get();
+            foreach ($records as $record) {
+                try { $this->syncSiswaStatus($record); } catch (\Throwable $e) {}
+            }
+        }
+
+        return response()->json(['message' => "{$count} data pendaftar berhasil diperbarui"]);
+    }
+
+    // BULK UPDATE PER-USER
+    public function bulkUpdatePerUser(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'updates' => 'required|array',
+            'updates.*.id' => 'required|integer|exists:pendaftarans,id',
+            'updates.*.data' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        $allowedFields = [
+            'no_pendaftaran', 'nisn', 'nama_lengkap', 'jenis_kelamin',
+            'tempat_lahir', 'tanggal_lahir', 'nik', 'agama',
+            'asal_sekolah', 'kecamatan', 'status', 'alamat',
+            'email', 'nomor_hp', 'jalur',
+        ];
+
+        $count = 0;
+        foreach ($request->updates as $update) {
+            $updateData = array_intersect_key($update['data'], array_flip($allowedFields));
+            if (empty($updateData)) continue;
+
+            Pendaftaran::where('id', $update['id'])->update($updateData);
+
+            if (isset($updateData['status'])) {
+                $record = Pendaftaran::find($update['id']);
+                if ($record) {
+                    try { $this->syncSiswaStatus($record); } catch (\Throwable $e) {}
+                }
+            }
+
+            $count++;
+        }
+
+        return response()->json(['message' => "{$count} data pendaftar berhasil diperbarui"]);
     }
 
     // IMPORT data (CSV & Excel)
@@ -333,6 +444,13 @@ class PendaftaranController extends Controller
                     'tahun_ajaran_id' => $tahunAjaranAktif->id,
                     'nis'             => $nis,
                     'nama_lengkap'    => $pendaftaran->nama_lengkap,
+                    'jenis_kelamin'   => $pendaftaran->jenis_kelamin,
+                    'tempat_lahir'    => $pendaftaran->tempat_lahir,
+                    'tanggal_lahir'   => $pendaftaran->tanggal_lahir,
+                    'agama'           => $pendaftaran->agama,
+                    'alamat'          => $pendaftaran->alamat,
+                    'nomor_hp'        => $pendaftaran->nomor_hp,
+                    'email'           => $pendaftaran->email,
                     'is_active'       => true,
                     'tahun_masuk'     => $tahunMasuk,
                 ]);

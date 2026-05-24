@@ -10,6 +10,7 @@ class Siswa extends Model
                 'pendaftar_id',
                 'tahun_ajaran_id',
                 'nis',
+                'kelas',
                 'nama_lengkap',
                 'jenis_kelamin',
                 'nisn',
