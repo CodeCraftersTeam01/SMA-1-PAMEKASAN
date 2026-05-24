@@ -19,8 +19,16 @@ class AiImportController extends Controller
             'no_pendaftaran' => 'Nomor pendaftaran unik, biasanya auto-generate, abaikan jika tidak ada di Excel',
             'nisn'           => 'Nomor Induk Siswa Nasional (10 digit), kolom utama identitas siswa',
             'nama_lengkap'   => 'Nama lengkap siswa, bisa berupa "Nama", "Nama Siswa", "Nama Peserta Didik"',
+            'jenis_kelamin'  => 'Jenis kelamin: L (Laki-laki) atau P (Perempuan), bisa juga ditulis "Laki-laki" atau "Perempuan"',
+            'tempat_lahir'   => 'Tempat lahir siswa, bisa berupa "Tempat Lahir", "Ttl", "Tempat Lahir Siswa"',
+            'tanggal_lahir'  => 'Tanggal lahir siswa format YYYY-MM-DD, bisa berupa "Tanggal Lahir", "Tgl Lahir", "Ttl" atau "Birth Date"',
+            'nik'            => 'Nomor Induk Kependudukan (NIK) sesuai KTP/Kartu Keluarga',
+            'agama'          => 'Agama siswa: Islam/Kristen/Katolik/Hindu/Buddha/Konghucu',
             'asal_sekolah'   => 'Nama sekolah asal (SMP/MTs), bisa berupa "Sekolah Asal", "Asal Sekolah", "SMP Asal"',
+            'kecamatan'      => 'Kecamatan tempat tinggal siswa',
             'alamat'         => 'Alamat tempat tinggal siswa, bisa berupa "Alamat", "Domisili", "Alamat Rumah"',
+            'email'          => 'Alamat email siswa',
+            'nomor_hp'       => 'Nomor handphone/telepon siswa, bisa berupa "No HP", "Telepon", "Telp", "Phone"',
             'jalur'          => 'Jalur pendaftaran: zonasi/afirmasi/prestasi/perpindahan_tugas',
             'status'         => 'Status pendaftaran: pending/diterima/ditolak, biasanya tidak ada di Excel',
         ],
@@ -553,13 +561,9 @@ class AiImportController extends Controller
                         }
 
                         $kelas = $data['kelas'] ?? '';
-                        unset($data['kelas']);
                         
                         $activeTa = DB::table('tahun_ajarans')->where('is_active', 1)->first();
-                        $baseYear = (int)date('Y');
-                        if ($activeTa && preg_match('/^(\d{4})/', $activeTa->tahun, $matches)) {
-                            $baseYear = (int)$matches[1];
-                        }
+                        $baseYear = $activeTa ? (int)substr($activeTa->tahun, 0, 4) : (int)date('Y');
                         
                         $tahunMasuk = $baseYear;
                         $kelasUpper = strtoupper(trim($kelas));
@@ -570,11 +574,11 @@ class AiImportController extends Controller
                         }
                         $data['tahun_masuk'] = $tahunMasuk;
                         
-                        $entryTa = DB::table('tahun_ajarans')->where('tahun', 'LIKE', $tahunMasuk . '/%')->first();
+                        $entryTa = DB::table('tahun_ajarans')
+                            ->where('tahun', $tahunMasuk . '/' . ($tahunMasuk + 1))
+                            ->first();
                         if ($entryTa) {
                             $data['tahun_ajaran_id'] = $entryTa->id;
-                        } elseif ($activeTa) {
-                            $data['tahun_ajaran_id'] = $activeTa->id;
                         } else {
                             $taId = DB::table('tahun_ajarans')->insertGetId([
                                 'tahun' => $tahunMasuk . '/' . ($tahunMasuk + 1),

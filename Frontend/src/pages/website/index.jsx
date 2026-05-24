@@ -59,7 +59,7 @@ export default function WebsiteHome() {
     };
   }, []);
 
-  // Fetch Dashboard Data for real-time stats on homepage
+  // Fetch Dashboard Data for live stats on homepage (polling every 30s)
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -74,6 +74,8 @@ export default function WebsiteHome() {
       }
     };
     fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Load Bootstrap ONLY for the website page

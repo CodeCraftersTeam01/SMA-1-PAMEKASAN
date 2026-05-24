@@ -23,7 +23,7 @@ export default function Announcement() {
         <div className="row mb-5 justify-content-between align-items-end">
           <div className="col-lg-7">
             <span className="section-tag">Log Informasi</span>
-            <h2 className="display-6 fw-800 mb-0">Warta Terbaru</h2>
+            <h2 className="display-6 fw-800 mb-0">Informasi Terbaru</h2>
           </div>
           <div className="col-lg-3 text-lg-end mt-3 mt-lg-0">
              <button className="btn btn-link text-dark fw-bold text-decoration-none p-0">Lihat Semua Arsip <i className="bi bi-arrow-right"></i></button>
