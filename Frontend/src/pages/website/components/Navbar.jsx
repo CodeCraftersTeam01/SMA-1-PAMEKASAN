@@ -46,7 +46,7 @@ export default function Navbar({ onLoginClick, isScrolled, isLoginOpen }) {
                 <a className="nav-link fw-medium" href="#fitur" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Fitur</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link fw-medium" href="#pengumuman" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Warta</a>
+                <a className="nav-link fw-medium" href="#pengumuman" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Informasi</a>
               </li>
               <li className="nav-item">
                 <a className="nav-link fw-medium" href="#kontak" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Kontak</a>

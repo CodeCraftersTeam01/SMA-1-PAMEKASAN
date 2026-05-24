@@ -23,6 +23,8 @@ $router->get('/', function () use ($router) {
 $router->post('api/register', 'AuthController@register');
 $router->post('api/login', 'AuthController@login');
 
+$router->get('api/dashboard', 'DashboardController@index');
+
 $router->post('api/public/alumni-tracking/verify', 'PublicTrackingController@verify');
 $router->post('api/public/alumni-tracking/submit', 'PublicTrackingController@submit');
 $router->get('api/public/alumni-tracking/status', 'PublicTrackingController@status');
@@ -51,9 +53,6 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->post('logout', 'AuthController@logout');
     $router->get('user', 'AuthController@user');
 
-    // Route untuk Dashboard
-    $router->get('dashboard', 'DashboardController@index');
-
     // Routes untuk Profile
     $router->post('profile', 'ProfileController@updateProfile');
     $router->put('profile/password', 'ProfileController@updatePassword');
@@ -61,6 +60,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
 
     // Routes untuk Pendaftaran
     $router->post('pendaftaran/import', 'PendaftaranController@import');
+    $router->post('pendaftaran/bulk-delete', 'PendaftaranController@bulkDelete');
+    $router->put('pendaftaran/bulk-update', 'PendaftaranController@bulkUpdate');
+    $router->put('pendaftaran/bulk-update-per-user', 'PendaftaranController@bulkUpdatePerUser');
     $router->get('pendaftaran', 'PendaftaranController@index');
     $router->post('pendaftaran', 'PendaftaranController@store');
     $router->get('pendaftaran/{id}', 'PendaftaranController@show');
@@ -86,6 +88,9 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
 
     // Routes untuk Siswa
     $router->post('siswa/migrate', 'SiswaController@migrate');
+    $router->post('siswa/bulk-delete', 'SiswaController@bulkDelete');
+    $router->put('siswa/bulk-update', 'SiswaController@bulkUpdate');
+    $router->put('siswa/bulk-update-per-user', 'SiswaController@bulkUpdatePerUser');
     $router->get('siswa', 'SiswaController@index');
     $router->get('siswa/{id}', 'SiswaController@show');
     $router->post('siswa', 'SiswaController@store');

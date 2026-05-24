@@ -40,7 +40,7 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $allowedFields = [
-            'nis', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
+            'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
             'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
             'is_active', 'tahun_masuk', 'tahun_ajaran_id',
@@ -71,7 +71,7 @@ class SiswaController extends Controller
         }
 
         $allowedFields = [
-            'nis', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
+            'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
             'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
             'is_active', 'tahun_lulus',
@@ -91,6 +91,92 @@ class SiswaController extends Controller
 
         $siswa->delete();
         return response()->json(['message' => 'Data siswa berhasil dihapus']);
+    }
+
+    // BULK DELETE
+    public function bulkDelete(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:siswas,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        $count = Siswa::whereIn('id', $request->ids)->delete();
+        return response()->json(['message' => "{$count} data siswa berhasil dihapus"]);
+    }
+
+    // BULK UPDATE
+    public function bulkUpdate(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:siswas,id',
+            'data' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        $allowedFields = [
+            'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
+            'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
+            'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
+            'is_active', 'tahun_lulus', 'tahun_ajaran_id',
+        ];
+
+        $updateData = array_intersect_key($request->data, array_flip($allowedFields));
+
+        if (isset($updateData['is_active'])) {
+            $updateData['is_active'] = filter_var($updateData['is_active'], FILTER_VALIDATE_BOOLEAN);
+        }
+
+        if (empty($updateData)) {
+            return response()->json(['message' => 'Tidak ada field yang valid untuk diupdate'], 422);
+        }
+
+        $count = Siswa::whereIn('id', $request->ids)->update($updateData);
+        return response()->json(['message' => "{$count} data siswa berhasil diperbarui"]);
+    }
+
+    // BULK UPDATE PER-USER
+    public function bulkUpdatePerUser(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'updates' => 'required|array',
+            'updates.*.id' => 'required|integer|exists:siswas,id',
+            'updates.*.data' => 'required|array',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
+        }
+
+        $allowedFields = [
+            'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
+            'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
+            'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
+            'is_active', 'tahun_lulus',
+        ];
+
+        $count = 0;
+        foreach ($request->updates as $update) {
+            $updateData = array_intersect_key($update['data'], array_flip($allowedFields));
+            if (empty($updateData)) continue;
+
+            if (isset($updateData['is_active'])) {
+                $updateData['is_active'] = filter_var($updateData['is_active'], FILTER_VALIDATE_BOOLEAN);
+            }
+
+            Siswa::where('id', $update['id'])->update($updateData);
+            $count++;
+        }
+
+        return response()->json(['message' => "{$count} data siswa berhasil diperbarui"]);
     }
 
     /**
