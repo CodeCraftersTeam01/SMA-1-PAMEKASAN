@@ -39,6 +39,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'laporan'     => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'alumni'      => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'alumni_tracking' => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'kelas'       => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'pengaturan'  => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
     ];
 

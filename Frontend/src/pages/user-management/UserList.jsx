@@ -7,6 +7,7 @@ const RESOURCE_LABELS = {
   laporan: 'Laporan',
   alumni: 'Alumni',
   alumni_tracking: 'Tracking',
+  kelas: 'Kelas',
   pengaturan: 'Pengaturan',
 };
 
