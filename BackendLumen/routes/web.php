@@ -77,6 +77,13 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->put('tahun-ajaran/{id}', 'TahunAjaranController@update');
     $router->delete('tahun-ajaran/{id}', 'TahunAjaranController@destroy');
 
+    // Routes untuk Kelas
+    $router->get('kelas', 'KelasController@index');
+    $router->post('kelas', 'KelasController@store');
+    $router->get('kelas/{id}', 'KelasController@show');
+    $router->put('kelas/{id}', 'KelasController@update');
+    $router->delete('kelas/{id}', 'KelasController@destroy');
+
     // Routes untuk Pengaturan NIS
     $router->get('pengaturan-nis', 'PengaturanNisController@index');
     $router->put('pengaturan-nis', 'PengaturanNisController@update');

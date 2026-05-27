@@ -7,6 +7,7 @@ const RESOURCES = [
   { key: 'laporan', label: 'Laporan' },
   { key: 'alumni', label: 'Alumni' },
   { key: 'alumni_tracking', label: 'Penelusuran Alumni' },
+  { key: 'kelas', label: 'Kelas' },
   { key: 'pengaturan', label: 'Pengaturan' },
 ];
 

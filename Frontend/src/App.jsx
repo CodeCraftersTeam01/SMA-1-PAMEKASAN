@@ -9,6 +9,7 @@ import Profile from './pages/profile';
 import NisConfig from './pages/pengaturan/NisConfig';
 import TrackingConfig from './pages/pengaturan/TrackingConfig';
 import Siswa from './pages/siswa';
+import Kelas from './pages/kelas';
 import Laporan from './pages/laporan';
 import UserManagement from './pages/user-management';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -159,6 +160,20 @@ const AnimatedRoutes = () => {
                   className="w-full h-full"
                 >
                   <Siswa />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/kelas"
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <Kelas />
                 </motion.div>
               }
             />
