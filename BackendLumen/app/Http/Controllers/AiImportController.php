@@ -235,6 +235,7 @@ class AiImportController extends Controller
             }
 
             $cleanMapping = [];
+            $usedDbCols = []; // Track mapped columns to prevent overwriting correct early columns
             foreach ($headers as $idx => $h) {
                 $mappedTo = $aiMapping[$h] ?? null;
 
@@ -244,58 +245,75 @@ class AiImportController extends Controller
                     $isParentCol = preg_match('/ayah|ibu|wali|periodik|kesejahteraan/i', $lowerH);
                     
                     if ($targetTable === 'siswas') {
-                        if (!$isParentCol && preg_match('/^(nama|nama lengkap|nama siswa|nama peserta didik)$/i', trim(explode('-', $h)[1] ?? $h))) {
+                        if (!$isParentCol && preg_match('/nama|peserta didik/i', trim(explode('-', $h)[1] ?? $h)) && !preg_match('/ayah|ibu|wali|rekening|bank|kip|kps|pihak|kks/i', $lowerH)) {
                             $mappedTo = 'nama_lengkap';
-                        } elseif (!$isParentCol && preg_match('/^(nisn|no nisn|nomor nisn)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
                             $mappedTo = 'nisn';
-                        } elseif (!$isParentCol && preg_match('/^(nis|nipd|no induk|no nipd)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/nis|nipd|induk/i', $lowerH) && !preg_match('/nisn|jenis/i', $lowerH)) {
                             $mappedTo = 'nis';
                         } elseif (!$isParentCol && preg_match('/kelas|rombel/i', $lowerH)) {
                             $mappedTo = 'kelas';
-                        } elseif (!$isParentCol && preg_match('/^(jenis.kelamin|kelamin|jk|laki|perempuan|jenis kelamin)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/kelamin|jk/i', $lowerH)) {
                             $mappedTo = 'jenis_kelamin';
-                        } elseif (!$isParentCol && preg_match('/^tempat.lahir$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/tempat.*lahir/i', $lowerH)) {
                             $mappedTo = 'tempat_lahir';
-                        } elseif (!$isParentCol && preg_match('/^(tanggal.lahir|tgl.lahir|tgl lahir|birth|ttl)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/tanggal.*lahir|tgl.*lahir|birth|ttl/i', $lowerH)) {
                             $mappedTo = 'tanggal_lahir';
-                        } elseif (!$isParentCol && preg_match('/^agama$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/agama/i', $lowerH)) {
                             $mappedTo = 'agama';
-                        } elseif (!$isParentCol && preg_match('/^(alamat|domisili|alamat.rumah)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/alamat|domisili/i', $lowerH)) {
                             $mappedTo = 'alamat';
-                        } elseif (!$isParentCol && preg_match('/^(no.hp|nomor.hp|telepon|telp|hp|no.telepon|phone|no.telp)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
                             $mappedTo = 'nomor_hp';
-                        } elseif (!$isParentCol && preg_match('/^email$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
                             $mappedTo = 'email';
-                        } elseif (!$isParentCol && preg_match('/^(penerima.kps|kps)$/i', $lowerH)) {
-                            $mappedTo = 'penerima_kps';
-                        } elseif (!$isParentCol && preg_match('/^nomor.kps$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/nomor.*kps|no.*kps/i', $lowerH)) {
                             $mappedTo = 'nomor_kps';
-                        } elseif (!$isParentCol && preg_match('/^(penerima.kip|kip)$/i', $lowerH)) {
-                            $mappedTo = 'penerima_kip';
-                        } elseif (!$isParentCol && preg_match('/^nomor.kip$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/penerima.*kps|^kps\b/i', $lowerH)) {
+                            $mappedTo = 'penerima_kps';
+                        } elseif (!$isParentCol && preg_match('/nomor.*kip|no.*kip/i', $lowerH)) {
                             $mappedTo = 'nomor_kip';
+                        } elseif (!$isParentCol && preg_match('/penerima.*kip|^kip\b/i', $lowerH)) {
+                            $mappedTo = 'penerima_kip';
                         }
                     } elseif ($targetTable === 'pendaftarans') {
-                        if (!$isParentCol && preg_match('/^(nama|nama lengkap|nama siswa|nama peserta didik)$/i', trim(explode('-', $h)[1] ?? $h))) {
+                        if (!$isParentCol && preg_match('/nama|peserta didik/i', trim(explode('-', $h)[1] ?? $h)) && !preg_match('/ayah|ibu|wali|rekening|bank|kip|kps|pihak|kks/i', $lowerH)) {
                             $mappedTo = 'nama_lengkap';
-                        } elseif (!$isParentCol && preg_match('/^(nisn|no nisn|nomor nisn)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
                             $mappedTo = 'nisn';
-                        } elseif (preg_match('/^(no\.? pendaftaran|no pendaftaran|nomor pendaftaran|no\.? daftar)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/nik/i', $lowerH)) {
+                            $mappedTo = 'nik';
+                        } elseif (!$isParentCol && preg_match('/kelamin|jk/i', $lowerH)) {
+                            $mappedTo = 'jenis_kelamin';
+                        } elseif (!$isParentCol && preg_match('/tempat.*lahir/i', $lowerH)) {
+                            $mappedTo = 'tempat_lahir';
+                        } elseif (!$isParentCol && preg_match('/tanggal.*lahir|tgl.*lahir|birth|ttl/i', $lowerH)) {
+                            $mappedTo = 'tanggal_lahir';
+                        } elseif (!$isParentCol && preg_match('/agama/i', $lowerH)) {
+                            $mappedTo = 'agama';
+                        } elseif (preg_match('/pendaftaran|daftar/i', $lowerH)) {
                             $mappedTo = 'no_pendaftaran';
-                        } elseif (preg_match('/^(asal sekolah|sekolah asal|smp|smp asal|sekolah)$/i', $lowerH)) {
+                        } elseif (preg_match('/asal.*sekolah|sekolah.*asal|smp/i', $lowerH)) {
                             $mappedTo = 'asal_sekolah';
-                        } elseif (preg_match('/^(alamat|domisili|alamat rumah|alamat lengkap)$/i', $lowerH)) {
+                        } elseif (preg_match('/alamat|domisili/i', $lowerH)) {
                             $mappedTo = 'alamat';
-                        } elseif (preg_match('/^(jalur|jalur pendaftaran|penerimaan)$/i', $lowerH)) {
+                        } elseif (preg_match('/kecamatan/i', $lowerH)) {
+                            $mappedTo = 'kecamatan';
+                        } elseif (preg_match('/jalur|penerimaan/i', $lowerH)) {
                             $mappedTo = 'jalur';
-                        } elseif (!$isParentCol && preg_match('/^(status|pendaftaran)$/i', $lowerH)) {
+                        } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
+                            $mappedTo = 'email';
+                        } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
+                            $mappedTo = 'nomor_hp';
+                        } elseif (!$isParentCol && preg_match('/status/i', $lowerH)) {
                             $mappedTo = 'status';
                         }
                     }
                 }
 
-                if ($mappedTo && in_array($mappedTo, $dbColumnNames)) {
+                if ($mappedTo && in_array($mappedTo, $dbColumnNames) && !in_array($mappedTo, $usedDbCols)) {
                     $cleanMapping[$h] = $mappedTo;
+                    $usedDbCols[] = $mappedTo;
                 } else {
                     $cleanMapping[$h] = null;
                 }
@@ -549,24 +567,71 @@ class AiImportController extends Controller
                         // Normalisasi tanggal_lahir — coba berbagai format
                         if (isset($data['tanggal_lahir']) && !empty($data['tanggal_lahir'])) {
                             $tgl = trim($data['tanggal_lahir']);
-                            // Jika format dd/mm/yyyy atau dd-mm-yyyy
                             if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $tgl, $m)) {
                                 $data['tanggal_lahir'] = sprintf('%04d-%02d-%02d', $m[3], $m[2], $m[1]);
                             } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl)) {
                                 // sudah format YYYY-MM-DD, biarkan
                             } else {
-                                // tidak dikenali, set null agar tidak error
                                 unset($data['tanggal_lahir']);
                             }
                         }
 
                         $kelas = $data['kelas'] ?? '';
+                        $kelasUpper = strtoupper(trim($kelas));
+
+                        // Normalisasi spasi setelah titik, misal "X. A" jadi "X.A"
+                        $kelasUpper = preg_replace('/\.\s+/', '.', $kelasUpper);
+                        if (!empty($kelasUpper)) {
+                            $data['kelas'] = $kelasUpper;
+                        }
+
+                        if (!empty($kelasUpper)) {
+                            $existsKelas = DB::table('kelas')->where('nama_kelas', $kelasUpper)->exists();
+                            if (!$existsKelas) {
+                                $tingkat = '10';
+                                if (str_starts_with($kelasUpper, 'XII') || str_starts_with($kelasUpper, '12')) {
+                                    $tingkat = '12';
+                                } elseif (str_starts_with($kelasUpper, 'XI') || str_starts_with($kelasUpper, '11')) {
+                                    $tingkat = '11';
+                                }
+
+                                $jurusan = null;
+                                $rombel = null;
+
+                                // Ekstrak jurusan & rombel
+                                if (str_contains($kelasUpper, '.')) {
+                                    $parts = explode('.', $kelasUpper, 2);
+                                    $rest = $parts[1] ?? '';
+                                    if (preg_match('/^(IPA|IPS|MIPA|IIS|BAHASA)[\-\s_]*(.*)$/i', $rest, $m)) {
+                                        $jurusan = strtoupper($m[1]);
+                                        $rombel = strtoupper($m[2]) !== '' ? strtoupper($m[2]) : null;
+                                    } else {
+                                        $rombel = strtoupper($rest);
+                                    }
+                                } else {
+                                    if (preg_match('/^(X|XI|XII|10|11|12)\s+(IPA|IPS|MIPA|IIS|BAHASA)\s+(.*)$/i', $kelasUpper, $m)) {
+                                        $jurusan = strtoupper($m[2]);
+                                        $rombel = strtoupper($m[3]);
+                                    }
+                                }
+
+                                DB::table('kelas')->insert([
+                                    'nama_kelas' => $kelasUpper,
+                                    'tingkat'    => $tingkat,
+                                    'jurusan'    => $jurusan,
+                                    'rombel'     => $rombel,
+                                    'is_active'  => 1,
+                                    'created_at' => date('Y-m-d H:i:s'),
+                                    'updated_at' => date('Y-m-d H:i:s'),
+                                ]);
+                            }
+                            $data['kelas'] = $kelasUpper;
+                        }
                         
                         $activeTa = DB::table('tahun_ajarans')->where('is_active', 1)->first();
                         $baseYear = $activeTa ? (int)substr($activeTa->tahun, 0, 4) : (int)date('Y');
                         
                         $tahunMasuk = $baseYear;
-                        $kelasUpper = strtoupper(trim($kelas));
                         if (str_starts_with($kelasUpper, 'XII') || str_starts_with($kelasUpper, '12')) {
                             $tahunMasuk = $baseYear - 2;
                         } elseif (str_starts_with($kelasUpper, 'XI') || str_starts_with($kelasUpper, '11')) {
