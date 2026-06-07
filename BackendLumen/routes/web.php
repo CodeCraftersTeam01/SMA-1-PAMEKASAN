@@ -23,6 +23,16 @@ $router->get('/', function () use ($router) {
 $router->post('api/register', 'AuthController@register');
 $router->post('api/login', 'AuthController@login');
 
+// =====================================================
+// PUBLIC Routes untuk Landing Page (Tanpa Auth)
+// =====================================================
+$router->group(['prefix' => 'api/public'], function () use ($router) {
+    $router->get('facilities', 'LandingPageController@getFacilities');
+    $router->get('achievements', 'LandingPageController@getAchievements');
+    $router->get('testimonials', 'LandingPageController@getTestimonials');
+    $router->get('news', 'LandingPageController@getNews');
+});
+
 // API prefix group with Auth middleware
 $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($router) {
     $router->post('logout', 'AuthController@logout');
@@ -76,6 +86,10 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->post('users', 'UserController@store');
     $router->put('users/{id}', 'UserController@update');
     $router->delete('users/{id}', 'UserController@destroy');
+
+    // Routes untuk Alumni Management
+    $router->get('alumni', 'AlumniController@index');
+    $router->post('alumni', 'AlumniController@store');
 });
 
 //hello 
