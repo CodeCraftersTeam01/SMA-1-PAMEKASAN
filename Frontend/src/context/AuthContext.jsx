@@ -101,12 +101,12 @@ export const AuthProvider = ({ children }) => {
     return user && roles.includes(user.role);
   };
 
-  const can = (resource, action = 'view') => {
+  const can = (resource, action) => {
+    // Basic implementation: if user is admin, allow all. 
+    // Extend this logic later if you have granular permissions.
     if (!user) return false;
-    if (user.role === 'admin') return true;
-    const perms = user.permissions;
-    if (!perms || !perms[resource]) return false;
-    return perms[resource][action] === true;
+    if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'Admin') return true;
+    return false;
   };
 
   return (
