@@ -48,6 +48,16 @@ $router->get('api/test-mail', function() {
     }
 });
 
+// =====================================================
+// PUBLIC Routes untuk Landing Page (Tanpa Auth)
+// =====================================================
+$router->group(['prefix' => 'api/public'], function () use ($router) {
+    $router->get('facilities', 'LandingPageController@getFacilities');
+    $router->get('achievements', 'LandingPageController@getAchievements');
+    $router->get('testimonials', 'LandingPageController@getTestimonials');
+    $router->get('news', 'LandingPageController@getNews');
+});
+
 // API prefix group with Auth middleware
 $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($router) {
     $router->post('logout', 'AuthController@logout');
@@ -122,12 +132,15 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     // Routes untuk Alumni Tracking Admin
     $router->get('alumni-tracking', 'AlumniTrackingController@index');
     $router->post('student/tracking', 'AlumniTrackingController@store');
-    $router->get('alumni', 'AlumniTrackingController@alumniList');
+    // $router->get('alumni', 'AlumniTrackingController@alumniList'); // Conflict with AlumniController
 
     // Routes untuk AI Import (Dynamic Excel)
     $router->post('ai-import/analyze', 'AiImportController@analyze');
     $router->post('ai-import/execute', 'AiImportController@execute');
 
+    // Routes untuk Alumni Management
+    $router->get('alumni', 'AlumniController@index');
+    $router->post('alumni', 'AlumniController@store');
 });
 
 //hello 

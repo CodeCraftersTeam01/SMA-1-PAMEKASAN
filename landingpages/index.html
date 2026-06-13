@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>SMAN 1 Pamekasan</title>
+  <link rel="stylesheet" href="/src/style.css"/>
+</head>
+<body class="bg-white text-[#333]">
+
+<!-- MODAL OVERLAY -->
+<div id="modal-overlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div id="login-modal" class="bg-white rounded-2xl w-full max-w-md p-8 shadow-xl translate-y-4 opacity-0 pointer-events-none transition-all">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h2 class="text-xl font-bold text-[#333]">Masuk ke Portal</h2>
+        <p class="text-sm text-[#717171] mt-1">SMAN 1 Pamekasan — Staff & Admin</p>
+      </div>
+      <button data-action="close-login" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-[#717171] transition-colors">✕</button>
+    </div>
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-[#333] mb-1.5 uppercase tracking-wide">Email Address</label>
+        <input id="login-email" type="email" placeholder="admin@sman1pamekasan.sch.id" required
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#008080] focus:ring-2 focus:ring-[#008080]/10 transition-all"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-[#333] mb-1.5 uppercase tracking-wide">Password</label>
+        <div class="relative">
+          <input id="login-password" type="password" placeholder="••••••••" required
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 pr-11 text-sm focus:outline-none focus:border-[#008080] focus:ring-2 focus:ring-[#008080]/10 transition-all"/>
+          <button type="button" id="pw-toggle" class="absolute right-3 top-1/2 -translate-y-1/2 text-[#717171] hover:text-[#333] transition-colors">
+            <svg id="pw-eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <!-- Error message -->
+      <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3"></div>
+      <button id="login-submit-btn" type="submit"
+        class="w-full bg-[#333] hover:bg-[#444] text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+        <svg id="login-spinner" class="hidden w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+        </svg>
+        <span id="login-btn-text">Masuk ke Dashboard</span>
+      </button>
+    </form>
+    <p class="text-xs text-center text-[#717171] mt-5">Lupa password? Hubungi administrator sekolah.</p>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav id="main-navbar" class="fixed top-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-100 transition-shadow">
+  <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2.5 flex-shrink-0">
+      <div class="w-8 h-8 bg-[#008080] rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <span class="font-bold text-[#333] text-sm hidden sm:block">SMAN 1 Pamekasan</span>
+    </a>
+    <!-- Desktop Nav -->
+    <div class="hidden lg:flex items-center gap-6">
+      <a href="#beranda"   class="nav-link">Beranda</a>
+      <a href="#profil"    class="nav-link">Profil</a>
+      <a href="#akademik"  class="nav-link">Akademik</a>
+      <a href="#fasilitas" class="nav-link">Fasilitas</a>
+      <a href="#berita"    class="nav-link">Berita</a>
+      <a href="#ppdb"      class="nav-link">PPDB</a>
+      <a href="http://localhost:5173/alumni" class="nav-link">Alumni Tracker</a>
+    </div>
+    <!-- CTA -->
+    <div class="flex items-center gap-2.5">
+      <button data-action="open-login" class="hidden sm:block border border-gray-200 hover:border-[#008080] text-[#333] text-sm font-medium px-4 py-2 rounded-lg transition-colors">Login</button>
+      <a href="#ppdb" class="bg-[#333] hover:bg-[#444] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap">Daftar PPDB</a>
+      <button id="mobile-menu-btn" class="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden lg:hidden border-t border-gray-100 bg-white px-5 py-4 flex flex-col gap-3">
+    <a href="#beranda"   class="text-sm text-[#717171] py-1.5">Beranda</a>
+    <a href="#profil"    class="text-sm text-[#717171] py-1.5">Profil</a>
+    <a href="#akademik"  class="text-sm text-[#717171] py-1.5">Akademik</a>
+    <a href="#fasilitas" class="text-sm text-[#717171] py-1.5">Fasilitas</a>
+    <a href="#berita"    class="text-sm text-[#717171] py-1.5">Berita</a>
+    <a href="#ppdb"      class="text-sm text-[#717171] py-1.5">PPDB</a>
+    <a href="http://localhost:5173/alumni" class="text-sm text-[#717171] py-1.5">Alumni Tracker</a>
+    <button data-action="open-login" class="border border-gray-200 text-[#333] text-sm font-medium px-4 py-2.5 rounded-lg text-left mt-1">Login →</button>
+  </div>
+</nav>
+
+<!-- HERO CAROUSEL -->
+<section id="beranda" class="pt-16">
+  <div id="carousel-wrapper" class="relative select-none">
+    <!-- Skeleton -->
+    <div id="carousel-skeleton" class="skeleton h-[520px] md:h-[520px]"></div>
+    <!-- Slides injected by JS -->
+    <div id="carousel-track" class="hidden"></div>
+    <!-- Arrows -->
+    <button id="carousel-prev" class="absolute left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+    <button id="carousel-next" class="absolute right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <!-- Dots -->
+    <div id="carousel-dots" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2"></div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<section class="border-b border-gray-100">
+  <div class="max-w-7xl mx-auto">
+    <div id="stats-container" class="grid grid-cols-2 md:grid-cols-4">
+      <div class="skeleton h-24 m-4 rounded-xl"></div>
+      <div class="skeleton h-24 m-4 rounded-xl"></div>
+      <div class="skeleton h-24 m-4 rounded-xl"></div>
+      <div class="skeleton h-24 m-4 rounded-xl"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ACADEMIC EXCELLENCE -->
+<section id="profil" class="py-24 px-5">
+  <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+    <div>
+      <p class="text-xs font-bold text-[#008080] tracking-widest uppercase mb-4">Profil Sekolah</p>
+      <h2 class="text-4xl md:text-5xl font-extrabold text-[#333] leading-tight tracking-tight mb-6">
+        Membentuk<br>Karakter.<br>Membangun<br>Masa Depan.
+      </h2>
+      <p class="text-[#717171] text-base leading-relaxed mb-8 max-w-md">Berdiri sejak 1966, SMAN 1 Pamekasan adalah institusi pendidikan unggulan terakreditasi A yang berkomitmen mencetak generasi berkualitas, berkarakter, dan berdaya saing global.</p>
+      <div class="flex gap-3 flex-wrap">
+        <a href="#ppdb" class="bg-[#333] text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-[#444] transition-colors inline-flex items-center gap-2">
+          Daftar PPDB <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="#fasilitas" class="border border-gray-200 text-[#333] font-semibold text-sm px-6 py-3 rounded-xl hover:border-[#333] transition-colors">Lihat Fasilitas</a>
+      </div>
+    </div>
+    <!-- Visual -->
+    <div class="relative">
+      <div class="bg-gradient-to-br from-teal-50 to-slate-100 rounded-2xl p-10 flex items-center justify-center aspect-[4/3]">
+        <svg class="w-2/3" viewBox="0 0 300 200" fill="none">
+          <rect x="40" y="60" width="220" height="120" rx="8" fill="#008080" opacity=".08"/>
+          <rect x="60" y="80" width="180" height="80" rx="6" fill="#008080" opacity=".12"/>
+          <rect x="80" y="100" width="140" height="40" rx="4" fill="#008080" opacity=".2"/>
+          <circle cx="150" cy="50" r="22" fill="#008080" opacity=".15"/>
+          <circle cx="150" cy="50" r="12" fill="#008080" opacity=".3"/>
+          <text x="150" y="175" text-anchor="middle" font-family="Inter" font-size="9" fill="#008080" font-weight="700" opacity=".6">SMAN 1 PAMEKASAN · Est. 1966</text>
+        </svg>
+      </div>
+      <div class="absolute -bottom-4 -right-4 bg-[#008080] text-white rounded-xl px-5 py-3 shadow-lg">
+        <div class="font-extrabold text-2xl">A</div>
+        <div class="text-xs opacity-80">Akreditasi</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENTO KEUNGGULAN -->
+<section id="akademik" class="py-20 px-5 bg-gray-50">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-12">
+      <p class="text-xs font-bold text-[#008080] tracking-widest uppercase mb-3">Keunggulan</p>
+      <h2 class="text-3xl md:text-4xl font-extrabold text-[#333] tracking-tight">Mengapa SMAN 1 Pamekasan?</h2>
+    </div>
+    <div class="bento-grid">
+      <!-- Tall card -->
+      <div class="bento-tall bg-white border border-gray-200 rounded-2xl p-8 flex flex-col justify-between hover:border-[#008080]/30 transition-colors">
+        <div>
+          <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center mb-6">
+            <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6"/></svg>
+          </div>
+          <h3 class="text-xl font-bold text-[#333] mb-3">Prestasi Akademik</h3>
+          <p class="text-[#717171] text-sm leading-relaxed">Kurikulum Merdeka terstruktur, didukung guru bersertifikat profesional dan metodologi berbasis riset. Siswa kami konsisten meraih prestasi di tingkat nasional.</p>
+        </div>
+        <a href="#" class="text-[#008080] text-sm font-semibold inline-flex items-center gap-1 hover:underline">Lihat Program <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg></a>
+      </div>
+      <!-- Stat card -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-8 hover:border-[#008080]/30 transition-colors">
+        <div class="text-6xl font-black text-[#333] tracking-tight leading-none">98<span class="text-3xl text-[#008080]">%</span></div>
+        <div class="text-xs font-bold text-[#717171] uppercase tracking-widest mt-3">Tingkat Kelulusan</div>
+        <p class="text-[#717171] text-sm mt-4 leading-relaxed">Konsistensi kelulusan tertinggi di Kabupaten Pamekasan selama 10 tahun berturut-turut.</p>
+      </div>
+      <!-- Lab card -->
+      <div class="bg-white border border-gray-200 rounded-2xl p-8 hover:border-[#008080]/30 transition-colors">
+        <div class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center mb-5">
+          <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+        </div>
+        <h3 class="text-lg font-bold text-[#333] mb-2">Lab & Fasilitas Modern</h3>
+        <p class="text-[#717171] text-sm leading-relaxed">Lab IPA, Komputer, Bahasa, dan Multimedia berstandar tinggi untuk pembelajaran optimal.</p>
+      </div>
+      <!-- Teal wide card -->
+      <div class="bg-[#008080] rounded-2xl p-8 flex flex-col justify-between" style="grid-column: span 1;">
+        <h3 class="text-lg font-bold text-white leading-snug mb-4">Bergabunglah dengan ribuan alumni sukses SMAN 1 Pamekasan</h3>
+        <a href="#ppdb" class="inline-flex items-center gap-2 bg-white text-[#008080] text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-teal-50 transition-colors w-fit">
+          Apply Now <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BERITA -->
+<section id="berita" class="py-20 px-5">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-end justify-between mb-10 flex-wrap gap-4">
+      <div>
+        <p class="text-xs font-bold text-[#008080] tracking-widest uppercase mb-3">Informasi Terkini</p>
+        <h2 class="text-3xl font-extrabold text-[#333] tracking-tight">Berita &amp; Pengumuman</h2>
+      </div>
+      <a href="#" class="text-sm font-semibold text-[#008080] hover:underline inline-flex items-center gap-1">Semua Berita →</a>
+    </div>
+    <div id="news-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="skeleton h-64 rounded-2xl"></div>
+      <div class="skeleton h-64 rounded-2xl"></div>
+      <div class="skeleton h-64 rounded-2xl"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PPDB CTA -->
+<section id="ppdb" class="py-20 px-5 bg-gray-50">
+  <div class="max-w-5xl mx-auto">
+    <div class="bg-[#333] rounded-2xl p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div class="max-w-lg">
+        <p class="text-xs font-bold text-[#008080] tracking-widest uppercase mb-3">PPDB 2025/2026</p>
+        <h2 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4">Mulai perjalananmu di sini.</h2>
+        <p class="text-slate-400 text-sm leading-relaxed">Pendaftaran Penerimaan Peserta Didik Baru resmi dibuka. Kuota sangat terbatas — segera amankan tempat Anda.</p>
+      </div>
+      <div class="flex flex-col gap-3 flex-shrink-0">
+        <a href="http://localhost:5173" class="bg-white text-[#333] font-bold text-sm px-8 py-3.5 rounded-xl hover:bg-gray-100 transition-colors text-center">Daftar Sekarang</a>
+        <p class="text-xs text-slate-500 text-center">Batas: 30 Juni 2025</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-gray-100 py-12 px-5">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid md:grid-cols-4 gap-10 mb-10">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="w-8 h-8 bg-[#008080] rounded-lg flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <span class="font-bold text-[#333]">SMAN 1 Pamekasan</span>
+        </div>
+        <p class="text-sm text-[#717171] leading-relaxed max-w-xs">Jl. Pramuka No.2, Pamekasan, Madura, Jawa Timur 69317</p>
+        <div class="mt-4 space-y-1">
+          <p class="text-sm text-[#717171]">📞 (0324) 321049</p>
+          <p class="text-sm text-[#717171]">✉️ sman1pamekasan@gmail.com</p>
+        </div>
+        <div class="flex gap-3 mt-5">
+          <a href="#" class="w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center text-[#717171] hover:border-[#008080] hover:text-[#008080] text-xs transition-colors">f</a>
+          <a href="#" class="w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center text-[#717171] hover:border-[#008080] hover:text-[#008080] text-xs transition-colors">ig</a>
+          <a href="#" class="w-8 h-8 border border-gray-200 rounded-lg flex items-center justify-center text-[#717171] hover:border-[#008080] hover:text-[#008080] text-xs transition-colors">yt</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-xs font-bold text-[#333] uppercase tracking-widest mb-4">Navigasi</h4>
+        <ul class="space-y-2.5">
+          <li><a href="#profil"   class="text-sm text-[#717171] hover:text-[#333] transition-colors">Profil Sekolah</a></li>
+          <li><a href="#akademik" class="text-sm text-[#717171] hover:text-[#333] transition-colors">Akademik</a></li>
+          <li><a href="#berita"   class="text-sm text-[#717171] hover:text-[#333] transition-colors">Berita</a></li>
+          <li><a href="#ppdb"     class="text-sm text-[#717171] hover:text-[#333] transition-colors">PPDB</a></li>
+          <li><a href="http://localhost:5173/alumni" class="text-sm text-[#008080] hover:underline font-medium">Alumni Tracker →</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-xs font-bold text-[#333] uppercase tracking-widest mb-4">Portal</h4>
+        <ul class="space-y-2.5">
+          <li><button data-action="open-login" class="text-sm text-[#717171] hover:text-[#333] transition-colors">Login Staff</button></li>
+          <li><a href="http://localhost:5173/dashboard" class="text-sm text-[#717171] hover:text-[#333] transition-colors">Admin Dashboard</a></li>
+          <li><a href="http://localhost:5173" class="text-sm text-[#717171] hover:text-[#333] transition-colors">Portal Sekolah</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gray-100 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-xs text-[#717171]">© 2026 SMA Negeri 1 Pamekasan. All rights reserved.</p>
+      <p class="text-xs text-[#717171]">Dibuat dengan ❤️ untuk kemajuan pendidikan Madura</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Show carousel track once slides are rendered
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      const track = document.getElementById('carousel-track');
+      const skel  = document.getElementById('carousel-skeleton');
+      if (track && track.innerHTML.trim()) {
+        skel?.classList.add('hidden');
+        track.classList.remove('hidden');
+      }
+    }, 1500);
+  });
+</script>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

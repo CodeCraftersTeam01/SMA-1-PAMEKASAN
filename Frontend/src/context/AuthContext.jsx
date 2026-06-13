@@ -32,6 +32,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyAuth = async () => {
+      // Intercept token from URL query string if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromUrl = urlParams.get('token');
+      if (tokenFromUrl) {
+        localStorage.setItem('token', tokenFromUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
 
       if (!storedToken) {
