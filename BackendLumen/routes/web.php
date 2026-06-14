@@ -60,6 +60,10 @@ $router->group(['prefix' => 'api/public', 'middleware' => 'api.key'], function (
     $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
     $router->get('forum', 'LandingPageController@getForum');
     $router->get('teachers', 'LandingPageController@getTeachers');
+
+    // Dynamic CMS Content
+    $router->get('navbars', 'PublicContentController@getNavbars');
+    $router->get('pages/{slug}', 'PublicContentController@getPage');
 });
 
 // API prefix group with Auth middleware
@@ -164,6 +168,18 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('admin/facilities/{id}', 'AdminFacilityController@show');
     $router->put('admin/facilities/{id}', 'AdminFacilityController@update');
     $router->delete('admin/facilities/{id}', 'AdminFacilityController@destroy');
+
+    $router->get('admin/pages', 'AdminPageController@index');
+    $router->post('admin/pages', 'AdminPageController@store');
+    $router->get('admin/pages/{id}', 'AdminPageController@show');
+    $router->put('admin/pages/{id}', 'AdminPageController@update');
+    $router->delete('admin/pages/{id}', 'AdminPageController@destroy');
+
+    $router->get('admin/navbars', 'AdminNavbarController@index');
+    $router->post('admin/navbars', 'AdminNavbarController@store');
+    $router->get('admin/navbars/{id}', 'AdminNavbarController@show');
+    $router->put('admin/navbars/{id}', 'AdminNavbarController@update');
+    $router->delete('admin/navbars/{id}', 'AdminNavbarController@destroy');
 });
 
 //hello 

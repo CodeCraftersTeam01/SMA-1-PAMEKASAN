@@ -24,6 +24,8 @@ import PublicTracking from './pages/website/PublicTracking';
 import AdminNews from './pages/admin/website/news';
 import AdminPrestasi from './pages/admin/website/prestasi';
 import AdminFasilitas from './pages/admin/website/fasilitas';
+import AdminPages from './pages/admin/website/pages';
+import AdminNavbar from './pages/admin/website/navbar';
 
 // Komponen pembantu untuk animasi transisi halaman
 const AnimatedRoutes = () => {
@@ -67,8 +69,12 @@ const AnimatedRoutes = () => {
         />
 
         {/* Protected Routes */}
+
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
+            <Route path="/admin/website/fasilitas" element={<AdminFasilitas />} />
+            <Route path="/admin/website/pages" element={<AdminPages />} />
+            <Route path="/admin/website/navbar" element={<AdminNavbar />} />
             <Route
               path="/dashboard"
               element={
