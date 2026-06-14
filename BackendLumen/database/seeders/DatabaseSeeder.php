@@ -13,6 +13,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(PengaturanNisSeeder::class);
+
         // 1. Akun Admin Default
         \Illuminate\Support\Facades\DB::table('users')->insert([
             'name' => 'Administrator',

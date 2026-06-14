@@ -54,6 +54,20 @@ class TahunAjaranController extends Controller
     }
 
     /**
+     * Get active tahun ajaran.
+     */
+    public function aktif()
+    {
+        $data = TahunAjaran::where('is_active', true)->first();
+
+        if (!$data) {
+            return response()->json(['message' => 'Tidak ada tahun ajaran aktif'], 404);
+        }
+
+        return response()->json($data);
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(string $id)

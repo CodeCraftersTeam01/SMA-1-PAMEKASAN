@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -55,6 +55,10 @@ class AuthController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
+
+        // Remember me: ingat = 7 hari, tidak ingat = 2 jam
+        $remember = (bool) $request->input('remember', false);
+        JWTAuth::factory()->setTTL($remember ? 10080 : 120);
 
         $credentials = $request->only('email', 'password');
 

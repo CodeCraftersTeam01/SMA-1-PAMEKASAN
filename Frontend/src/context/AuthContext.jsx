@@ -7,7 +7,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Verifying on load
+  const [isLoading, setIsLoading] = useState(true);
 
   const refreshUser = async () => {
     const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // On app mount, verify token against the backend
   useEffect(() => {
     const verifyAuth = async () => {
       // Intercept token from URL query string if present
@@ -49,7 +48,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        // Fetch fresh user data from server — NOT from stored JSON
         const response = await fetch(`${API_BASE_URL}/api/user`, {
           headers: {
             'Accept': 'application/json',
@@ -59,14 +57,12 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const userData = await response.json();
-          setUser(userData);   // Role comes from the SERVER, not storage
+          setUser(userData);
           setToken(storedToken);
         } else {
-          // Token is invalid or expired — force logout
           clearStorage();
         }
       } catch {
-        // Network error, clear state
         clearStorage();
       } finally {
         setIsLoading(false);
@@ -88,7 +84,6 @@ export const AuthProvider = ({ children }) => {
   const login = (userData, tokenValue, remember) => {
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem('token', tokenValue);
-    // Note: We only store token. User data is always fetched from server.
     setUser(userData);
     setToken(tokenValue);
   };
@@ -114,8 +109,16 @@ export const AuthProvider = ({ children }) => {
     return user && roles.includes(user.role);
   };
 
+  const can = (resource, action) => {
+    // Basic implementation: if user is admin, allow all. 
+    // Extend this logic later if you have granular permissions.
+    if (!user) return false;
+    if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'Admin') return true;
+    return false;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, hasRole, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, logout, hasRole, can, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

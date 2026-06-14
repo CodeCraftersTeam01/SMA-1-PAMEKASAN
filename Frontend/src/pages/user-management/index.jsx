@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import UserList from './UserList';
 import UserForm from './UserForm';
+import PermissionModal from './PermissionModal';
 
 const Toast = ({ message, type, onClose }) => {
   useEffect(() => {
@@ -38,18 +40,20 @@ const Toast = ({ message, type, onClose }) => {
 };
 
 const UserManagement = () => {
-  const { token } = useAuth();
+  const { token, user, isLoading } = useAuth();
+  const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const [users, setUsers] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const [toast, setToast] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [permModalUser, setPermModalUser] = useState(null);
 
   // Fetch all users
   const fetchUsers = async () => {
-    setIsLoading(true);
+    setIsFetchingUsers(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'GET',
@@ -66,7 +70,7 @@ const UserManagement = () => {
     } catch (error) {
       setToast({ message: error.message, type: 'error' });
     } finally {
-      setIsLoading(false);
+      setIsFetchingUsers(false);
     }
   };
 
@@ -149,6 +153,39 @@ const UserManagement = () => {
     }
   };
 
+  // Save permissions
+  const handleSavePermissions = async (userId, permissions) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/${userId}/permissions`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ permissions }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal menyimpan hak akses');
+      }
+
+      setToast({ message: 'Hak akses berhasil disimpan', type: 'success' });
+      setPermModalUser(null);
+      fetchUsers();
+    } catch (error) {
+      setToast({ message: error.message, type: 'error' });
+    }
+  };
+
+  // Redirect non-admin users away from this page
+  useEffect(() => {
+    if (!isLoading && user && user.role !== 'admin') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isLoading, user, navigate]);
+
   // Load users on mount
   useEffect(() => {
     fetchUsers();
@@ -210,17 +247,28 @@ const UserManagement = () => {
           <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
             <UserList
               users={users}
-              isLoading={isLoading}
+              isLoading={isFetchingUsers}
               onEdit={(user) => {
                 setEditingUser(user);
                 setShowForm(true);
               }}
               onDelete={handleDeleteUser}
               onRefresh={fetchUsers}
+              onManagePermissions={(user) => setPermModalUser(user)}
             />
           </div>
         )}
       </div>
+
+      {/* Permission Modal */}
+      <PermissionModal
+        user={permModalUser}
+        isOpen={!!permModalUser}
+        onClose={() => setPermModalUser(null)}
+        onSave={handleSavePermissions}
+        API_BASE_URL={API_BASE_URL}
+        token={token}
+      />
 
       {/* Toast Notifications */}
       {toast && (

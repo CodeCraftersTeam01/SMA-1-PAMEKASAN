@@ -10,9 +10,17 @@ class Pendaftaran extends Model
         'no_pendaftaran',
         'nisn',
         'nama_lengkap',
+        'jenis_kelamin',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'nik',
+        'agama',
         'asal_sekolah',
+        'kecamatan',
         'status',
         'alamat',
+        'email',
+        'nomor_hp',
         'jalur',
     ];
 

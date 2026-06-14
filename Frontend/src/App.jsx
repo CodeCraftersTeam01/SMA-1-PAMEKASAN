@@ -9,10 +9,21 @@ import Profile from './pages/profile';
 import NisConfig from './pages/pengaturan/NisConfig';
 import TrackingConfig from './pages/pengaturan/TrackingConfig';
 import Siswa from './pages/siswa';
+import Kelas from './pages/kelas';
+import SetKelas from './pages/set-kelas';
 import Laporan from './pages/laporan';
 import UserManagement from './pages/user-management';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import LoginPage from './pages/auth/login';
+
+import AdminTrackingDashboard from './pages/admin/alumni-tracking/AdminTrackingDashboard';
+import AlumniList from './pages/admin/alumni/AlumniList';
+import PublicTracking from './pages/website/PublicTracking';
+
+import AdminNews from './pages/admin/website/news';
+import AdminPrestasi from './pages/admin/website/prestasi';
+import AdminFasilitas from './pages/admin/website/fasilitas';
 
 // Komponen pembantu untuk animasi transisi halaman
 const AnimatedRoutes = () => {
@@ -36,8 +47,24 @@ const AnimatedRoutes = () => {
           }
         />
 
-        {/* Redirect /login to / (modal dipakai di website) */}
+        {/* Admin Login Portal - Redirect to homepage modal */}
         <Route path="/login" element={<Navigate to="/" replace />} />
+
+
+        {/* Independent Public Alumni Tracking Page */}
+        <Route
+          path="/siswas/tracking"
+          element={
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <PublicTracking />
+            </motion.div>
+          }
+        />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
@@ -141,6 +168,34 @@ const AnimatedRoutes = () => {
               }
             />
             <Route
+              path="/kelas"
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <Kelas />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/set-kelas"
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <SetKelas />
+                </motion.div>
+              }
+            />
+            <Route
               path="/laporan"
               element={
                 <motion.div
@@ -155,7 +210,7 @@ const AnimatedRoutes = () => {
               }
             />
             <Route
-              path="/user-management"
+              path="/admin/alumni-tracking"
               element={
                 <motion.div
                   initial={{ opacity: 0, y: 15 }}
@@ -164,11 +219,91 @@ const AnimatedRoutes = () => {
                   transition={{ duration: 0.3 }}
                   className="w-full h-full"
                 >
-                  <UserManagement />
+                  <AdminTrackingDashboard />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/admin/alumni"
+              element={
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <AlumniList />
                 </motion.div>
               }
             />
           </Route>
+
+            {/* User Management (Admin Only) */}
+          <Route element={<ProtectedRoute requiredRole="admin" />}>
+            <Route element={<DashboardLayout />}>
+              <Route
+                path="/user-management"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <UserManagement />
+                  </motion.div>
+                }
+              />
+              
+              {/* Website CMS (Admin Only) */}
+              <Route
+                path="/admin/website/news"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <AdminNews />
+                  </motion.div>
+                }
+              />
+              <Route
+                path="/admin/website/prestasi"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <AdminPrestasi />
+                  </motion.div>
+                }
+              />
+              <Route
+                path="/admin/website/fasilitas"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <AdminFasilitas />
+                  </motion.div>
+                }
+              />
+            </Route>
+          </Route>
+
+
         </Route>
 
         {/* Fallback */}

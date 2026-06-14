@@ -54,22 +54,6 @@ export default function Hero({ onLoginClick, stats }) {
               </a>
             </div>
 
-            {/* Typography Stats - Bold & Minimal */}
-            <div className="row g-4 mt-5 justify-content-center pt-5 border-top border-light">
-              <div className="col-md-3">
-                <div className="h3 fw-900 text-dark mb-0">{stats?.total_siswa?.toLocaleString() || '0'}</div>
-                <div className="small text-muted font-bold text-uppercase tracking-widest" style={{ fontSize: '10px' }}>Total Siswa</div>
-              </div>
-              <div className="col-md-3">
-                <div className="h3 fw-900 text-dark mb-0">{stats?.total_pendaftar?.toLocaleString() || '0'}</div>
-                <div className="small text-muted font-bold text-uppercase tracking-widest" style={{ fontSize: '10px' }}>Pendaftar Aktif</div>
-              </div>
-              <div className="col-md-3">
-                <div className="h3 fw-900 text-dark mb-0">{stats?.tahun_ajaran || '-'}</div>
-                <div className="small text-muted font-bold text-uppercase tracking-widest" style={{ fontSize: '10px' }}>Tahun Ajaran</div>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>

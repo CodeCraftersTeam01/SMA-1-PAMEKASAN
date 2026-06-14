@@ -59,12 +59,16 @@ export default function WebsiteHome() {
     };
   }, []);
 
-  // Fetch Dashboard Data for real-time stats on homepage
+  // Fetch Dashboard Data for live stats on homepage (polling every 30s)
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.smansa.m-tech.fun";
-        const res = await fetch(`${API_BASE_URL}/api/dashboard`);
+        const res = await fetch(`${API_BASE_URL}/api/dashboard`, {
+          headers: {
+            'x-api-key': import.meta.env.VITE_API_KEY || 'smansa-secure-key-2026'
+          }
+        });
         if (res.ok) {
           const data = await res.json();
           setDashboardStats(data.stats);
@@ -74,6 +78,8 @@ export default function WebsiteHome() {
       }
     };
     fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Load Bootstrap ONLY for the website page

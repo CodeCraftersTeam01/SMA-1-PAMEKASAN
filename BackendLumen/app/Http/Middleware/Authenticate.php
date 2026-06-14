@@ -35,10 +35,25 @@ class Authenticate
      */
     public function handle($request, Closure $next, $guard = null)
     {
-        if ($this->auth->guard($guard)->guest()) {
-            return response('Unauthorized.', 401);
+        // If a specific guard is provided, check that guard
+        if ($guard) {
+            if ($this->auth->guard($guard)->guest()) {
+                return response('Unauthorized.', 401);
+            }
+            return $next($request);
         }
 
-        return $next($request);
+        // If no guard is specified, try 'api' first, then 'students'
+        if (!$this->auth->guard('api')->guest()) {
+            $this->auth->shouldUse('api');
+            return $next($request);
+        }
+
+        if (!$this->auth->guard('students')->guest()) {
+            $this->auth->shouldUse('students');
+            return $next($request);
+        }
+
+        return response('Unauthorized.', 401);
     }
 }

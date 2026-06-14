@@ -63,4 +63,53 @@ class LandingPageController extends Controller
             'data' => $news,
         ]);
     }
+
+    public function getAcademicCalendar()
+    {
+        $calendars = \Illuminate\Support\Facades\DB::table('academic_calendars')
+            ->orderBy('event_date', 'asc')
+            ->take(5)
+            ->get();
+        return response()->json([
+            'success' => true,
+            'data' => $calendars,
+        ]);
+    }
+
+    public function getVirtualClassroom()
+    {
+        $classes = \Illuminate\Support\Facades\DB::table('virtual_classrooms')
+            ->orderBy('created_at', 'desc')
+            ->take(6)
+            ->get();
+        return response()->json([
+            'success' => true,
+            'data' => $classes,
+        ]);
+    }
+
+    public function getForum()
+    {
+        $forums = \Illuminate\Support\Facades\DB::table('discussion_forums')
+            ->orderBy('last_active', 'desc')
+            ->take(5)
+            ->get();
+        return response()->json([
+            'success' => true,
+            'data' => $forums,
+        ]);
+    }
+
+    public function getTeachers()
+    {
+        $teachers = \Illuminate\Support\Facades\DB::table('users')
+            ->where('role', 'guru')
+            ->select('id', 'name', 'photo', 'email')
+            ->orderBy('name', 'asc')
+            ->get();
+        return response()->json([
+            'success' => true,
+            'data' => $teachers,
+        ]);
+    }
 }
