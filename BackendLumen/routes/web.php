@@ -23,7 +23,7 @@ $router->get('/', function () use ($router) {
 $router->post('api/register', 'AuthController@register');
 $router->post('api/login', 'AuthController@login');
 
-$router->get('api/dashboard', 'DashboardController@index');
+$router->get('api/dashboard', ['middleware' => 'api.key', 'uses' => 'DashboardController@index']);
 
 $router->post('api/public/alumni-tracking/verify', 'PublicTrackingController@verify');
 $router->post('api/public/alumni-tracking/submit', 'PublicTrackingController@submit');
@@ -51,11 +51,15 @@ $router->get('api/test-mail', function() {
 // =====================================================
 // PUBLIC Routes untuk Landing Page (Tanpa Auth)
 // =====================================================
-$router->group(['prefix' => 'api/public'], function () use ($router) {
+$router->group(['prefix' => 'api/public', 'middleware' => 'api.key'], function () use ($router) {
     $router->get('facilities', 'LandingPageController@getFacilities');
     $router->get('achievements', 'LandingPageController@getAchievements');
     $router->get('testimonials', 'LandingPageController@getTestimonials');
     $router->get('news', 'LandingPageController@getNews');
+    $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
+    $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
+    $router->get('forum', 'LandingPageController@getForum');
+    $router->get('teachers', 'LandingPageController@getTeachers');
 });
 
 // API prefix group with Auth middleware
@@ -141,6 +145,25 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     // Routes untuk Alumni Management
     $router->get('alumni', 'AlumniController@index');
     $router->post('alumni', 'AlumniController@store');
+
+    // Routes untuk Website Content Management (CMS)
+    $router->get('admin/news', 'AdminNewsController@index');
+    $router->post('admin/news', 'AdminNewsController@store');
+    $router->get('admin/news/{id}', 'AdminNewsController@show');
+    $router->put('admin/news/{id}', 'AdminNewsController@update');
+    $router->delete('admin/news/{id}', 'AdminNewsController@destroy');
+
+    $router->get('admin/achievements', 'AdminAchievementController@index');
+    $router->post('admin/achievements', 'AdminAchievementController@store');
+    $router->get('admin/achievements/{id}', 'AdminAchievementController@show');
+    $router->put('admin/achievements/{id}', 'AdminAchievementController@update');
+    $router->delete('admin/achievements/{id}', 'AdminAchievementController@destroy');
+
+    $router->get('admin/facilities', 'AdminFacilityController@index');
+    $router->post('admin/facilities', 'AdminFacilityController@store');
+    $router->get('admin/facilities/{id}', 'AdminFacilityController@show');
+    $router->put('admin/facilities/{id}', 'AdminFacilityController@update');
+    $router->delete('admin/facilities/{id}', 'AdminFacilityController@destroy');
 });
 
 //hello 

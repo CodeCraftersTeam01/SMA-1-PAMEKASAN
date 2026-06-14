@@ -9,6 +9,8 @@ const RESOURCES = [
   { key: 'alumni_tracking', label: 'Penelusuran Alumni' },
   { key: 'kelas', label: 'Kelas' },
   { key: 'pengaturan', label: 'Pengaturan' },
+  { key: 'prestasi', label: 'Prestasi' },
+  { key: 'berita', label: 'Berita' },
 ];
 
 const ACTIONS = [

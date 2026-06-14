@@ -14,7 +14,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(PengaturanNisSeeder::class);
-        $this->call(AkunSiswaSeeder::class);
 
         // 1. Akun Admin Default
         \Illuminate\Support\Facades\DB::table('users')->insert([

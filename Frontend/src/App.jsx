@@ -21,6 +21,9 @@ import AdminTrackingDashboard from './pages/admin/alumni-tracking/AdminTrackingD
 import AlumniList from './pages/admin/alumni/AlumniList';
 import PublicTracking from './pages/website/PublicTracking';
 
+import AdminNews from './pages/admin/website/news';
+import AdminPrestasi from './pages/admin/website/prestasi';
+import AdminFasilitas from './pages/admin/website/fasilitas';
 
 // Komponen pembantu untuk animasi transisi halaman
 const AnimatedRoutes = () => {
@@ -236,7 +239,7 @@ const AnimatedRoutes = () => {
             />
           </Route>
 
-          {/* User Management (Admin Only) */}
+            {/* User Management (Admin Only) */}
           <Route element={<ProtectedRoute requiredRole="admin" />}>
             <Route element={<DashboardLayout />}>
               <Route
@@ -250,6 +253,50 @@ const AnimatedRoutes = () => {
                     className="w-full h-full"
                   >
                     <UserManagement />
+                  </motion.div>
+                }
+              />
+              
+              {/* Website CMS (Admin Only) */}
+              <Route
+                path="/admin/website/news"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <AdminNews />
+                  </motion.div>
+                }
+              />
+              <Route
+                path="/admin/website/prestasi"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <AdminPrestasi />
+                  </motion.div>
+                }
+              />
+              <Route
+                path="/admin/website/fasilitas"
+                element={
+                  <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full"
+                  >
+                    <AdminFasilitas />
                   </motion.div>
                 }
               />

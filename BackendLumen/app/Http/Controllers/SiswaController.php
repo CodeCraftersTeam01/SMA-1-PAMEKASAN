@@ -44,6 +44,7 @@ class SiswaController extends Controller
             'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
             'is_active', 'tahun_masuk', 'tahun_ajaran_id',
+            'kelas_10', 'kelas_11', 'kelas_12',
         ];
 
         $data = $request->only($allowedFields);
@@ -75,6 +76,7 @@ class SiswaController extends Controller
             'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
             'is_active', 'tahun_lulus',
+            'kelas_10', 'kelas_11', 'kelas_12',
         ];
         $siswa->update($request->only($allowedFields));
 
@@ -127,6 +129,7 @@ class SiswaController extends Controller
             'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
             'is_active', 'tahun_lulus', 'tahun_ajaran_id',
+            'kelas_10', 'kelas_11', 'kelas_12',
         ];
 
         $updateData = array_intersect_key($request->data, array_flip($allowedFields));
@@ -161,6 +164,7 @@ class SiswaController extends Controller
             'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
             'is_active', 'tahun_lulus',
+            'kelas_10', 'kelas_11', 'kelas_12',
         ];
 
         $count = 0;

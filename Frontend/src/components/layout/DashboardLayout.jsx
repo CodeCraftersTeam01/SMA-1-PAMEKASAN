@@ -117,7 +117,7 @@ const DashboardLayout = () => {
           path: '/kelas',
           label: 'Kelas',
           icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-          permission: null,
+          permission: { resource: 'kelas', action: 'view' },
         },
         {
           path: '/set-kelas',
@@ -154,6 +154,18 @@ const DashboardLayout = () => {
         },
       ],
     },
+    {
+      key: 'website',
+      label: 'Website CMS',
+      dotClass: 'bg-slate-300',
+      activeClass: 'bg-slate-800 text-white shadow-[0_3px_10px_rgba(30,41,59,0.2)]',
+      hoverClass: 'hover:bg-slate-50 hover:text-slate-800',
+      items: [
+        { path: '/admin/website/news', label: 'Berita Sekolah', icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z', permission: { resource: 'berita', action: 'view' } },
+        { path: '/admin/website/prestasi', label: 'Prestasi Siswa', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', permission: { resource: 'prestasi', action: 'view' } },
+        { path: '/admin/website/fasilitas', label: 'Fasilitas', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', permission: { resource: 'fasilitas', action: 'view' } },
+      ],
+    },
   ];
 
   const settingMenuItems = [
@@ -162,10 +174,7 @@ const DashboardLayout = () => {
     { path: '/user-management', label: 'Manajemen Pengguna', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z', permission: null, adminOnly: true },
   ];
 
-  const webSettingMenuItems = [
-    { path: '/admin/prestasi', label: 'Prestasi', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-    { path: '/admin/berita', label: 'Berita', icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z' },
-  ];
+
 
   // Per-category open state
   const [openCategories, setOpenCategories] = useState(() => {
@@ -360,70 +369,7 @@ const DashboardLayout = () => {
               </div>
             </div>
 
-            {/* ── Settingan Website Category ──────────────────────────────── */}
-            <div className="mb-1">
-              <button
-                onClick={toggleWebSettingsMenu}
-                className={`w-full flex items-center justify-between mb-1 mt-3 text-[9px] font-bold text-slate-400 uppercase tracking-widest transition-all ${
-                  isSidebarCollapsed ? 'px-0 justify-center' : 'px-3'
-                }`}
-                title={isSidebarCollapsed ? 'Settingan Website' : ''}
-              >
-                {isSidebarCollapsed ? (
-                  <span className="w-5 h-0.5 rounded-full bg-slate-200 inline-block"></span>
-                ) : (
-                  <>
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-300 inline-block shrink-0"></span>
-                      Settingan Website
-                    </span>
-                    <svg
-                      className={`w-2.5 h-2.5 transition-transform duration-300 ${isWebSettingsMenuOpen ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </>
-                )}
-              </button>
 
-              <div
-                className={`space-y-0.5 transition-all duration-300 ease-in-out overflow-hidden ${
-                  (!isSidebarCollapsed ? isWebSettingsMenuOpen : true)
-                    ? 'max-h-[300px] opacity-100'
-                    : 'max-h-0 opacity-0 pointer-events-none'
-                }`}
-              >
-                {webSettingMenuItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <button
-                      key={item.path}
-                      onClick={() => navigate(item.path)}
-                      className={`w-full flex items-center gap-2.5 py-2 rounded-xl transition-all group ${
-                        isSidebarCollapsed ? 'justify-center px-0' : 'px-3 text-left'
-                      } ${isActive
-                        ? 'bg-slate-800 text-white shadow-[0_3px_10px_rgba(30,41,59,0.2)]'
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
-                      }`}
-                      title={isSidebarCollapsed ? item.label : ''}
-                    >
-                      <svg
-                        className={`w-4 h-4 shrink-0 ${isSidebarCollapsed ? 'mx-auto' : ''} ${isActive ? 'text-white' : 'text-slate-400'}`}
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                      </svg>
-                      {!isSidebarCollapsed && (
-                        <span className={`text-[12px] ${isActive ? 'font-semibold' : 'font-medium'}`}>
-                          {item.label}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
           </nav>
 

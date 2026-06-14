@@ -12,7 +12,7 @@ class CorsMiddleware
             'Access-Control-Allow-Origin'      => $request->header('Origin') ?: '*',
             'Access-Control-Allow-Methods'     => 'POST, GET, OPTIONS, PUT, DELETE',
             'Access-Control-Allow-Credentials' => 'true',
-            'Access-Control-Allow-Headers'     => 'Content-Type, Authorization, X-Requested-With, Accept, Origin'
+            'Access-Control-Allow-Headers'     => 'Content-Type, Authorization, X-Requested-With, Accept, Origin, x-api-key'
         ];
 
         if ($request->isMethod('OPTIONS')) {
