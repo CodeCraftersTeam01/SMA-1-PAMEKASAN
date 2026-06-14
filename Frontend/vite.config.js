@@ -13,6 +13,18 @@ export default defineConfig({
       'pc.leopard-gila.ts.net',
       'smansa.m-tech.fun'
     ]
-    
+  },
+  build: {
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-anim': ['framer-motion'],
+          'vendor-recharts': ['recharts'],
+          'vendor-xlsx': ['xlsx'],
+        }
+      }
+    }
   }
 })

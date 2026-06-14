@@ -9,95 +9,80 @@ use App\Models\News;
 
 class LandingPageController extends Controller
 {
+    private function cached($data, int $seconds = 300)
+    {
+        return response()->json(['success' => true, 'data' => $data])
+            ->header('Cache-Control', "public, max-age={$seconds}, stale-while-revalidate=60")
+            ->header('Vary', 'Accept');
+    }
+
     /**
      * GET /api/public/facilities
-     * Mengembalikan daftar fasilitas sekolah, diurutkan berdasarkan 'order'.
      */
     public function getFacilities()
     {
-        $facilities = Facility::orderBy('order', 'asc')->get();
-        return response()->json([
-            'success' => true,
-            'data' => $facilities,
-        ]);
+        $facilities = Facility::select('id', 'name', 'description', 'image_url', 'order')
+            ->orderBy('order', 'asc')->get();
+        return $this->cached($facilities);
     }
 
     /**
      * GET /api/public/achievements
-     * Mengembalikan daftar prestasi terbaru, diurutkan berdasarkan tahun.
      */
     public function getAchievements()
     {
-        $achievements = Achievement::orderBy('year', 'desc')->get();
-        return response()->json([
-            'success' => true,
-            'data' => $achievements,
-        ]);
+        $achievements = Achievement::select('id', 'title', 'category', 'year', 'level', 'description')
+            ->orderBy('year', 'desc')->limit(12)->get();
+        return $this->cached($achievements);
     }
 
     /**
      * GET /api/public/testimonials
-     * Mengembalikan daftar testimoni alumni/siswa.
      */
     public function getTestimonials()
     {
-        $testimonials = Testimonial::orderBy('created_at', 'desc')->get();
-        return response()->json([
-            'success' => true,
-            'data' => $testimonials,
-        ]);
+        $testimonials = Testimonial::select('id', 'name', 'content', 'role', 'photo')
+            ->orderBy('created_at', 'desc')->limit(6)->get();
+        return $this->cached($testimonials);
     }
 
     /**
      * GET /api/public/news
-     * Mengembalikan 3 berita terbaru yang sudah dipublikasikan.
      */
     public function getNews()
     {
         $news = News::whereNotNull('published_at')
+            ->select('id', 'title', 'category', 'image_url', 'published_at')
             ->orderBy('published_at', 'desc')
-            ->take(3)
-            ->get();
-        return response()->json([
-            'success' => true,
-            'data' => $news,
-        ]);
+            ->limit(6)->get();
+        return $this->cached($news);
     }
 
     public function getAcademicCalendar()
     {
         $calendars = \Illuminate\Support\Facades\DB::table('academic_calendars')
+            ->select('id', 'title', 'event_date', 'type')
             ->orderBy('event_date', 'asc')
-            ->take(5)
-            ->get();
-        return response()->json([
-            'success' => true,
-            'data' => $calendars,
-        ]);
+            ->limit(5)->get();
+        return $this->cached($calendars);
     }
 
     public function getVirtualClassroom()
     {
         $classes = \Illuminate\Support\Facades\DB::table('virtual_classrooms')
+            ->select('id', 'title', 'subject', 'teacher', 'thumbnail')
             ->orderBy('created_at', 'desc')
-            ->take(6)
-            ->get();
-        return response()->json([
-            'success' => true,
-            'data' => $classes,
-        ]);
+            ->limit(6)->get();
+        return $this->cached($classes);
     }
 
     public function getForum()
     {
         $forums = \Illuminate\Support\Facades\DB::table('discussion_forums')
+            ->select('id', 'title', 'category', 'replies', 'last_active')
             ->orderBy('last_active', 'desc')
-            ->take(5)
-            ->get();
-        return response()->json([
-            'success' => true,
-            'data' => $forums,
-        ]);
+            ->limit(5)->get();
+        return $this->cached($forums);
     }
 
     public function getTeachers()
@@ -107,9 +92,6 @@ class LandingPageController extends Controller
             ->select('id', 'name', 'photo', 'email')
             ->orderBy('name', 'asc')
             ->get();
-        return response()->json([
-            'success' => true,
-            'data' => $teachers,
-        ]);
+        return $this->cached($teachers, 600);
     }
 }

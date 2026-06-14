@@ -1,22 +1,56 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import Lenis from 'lenis';
 import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users, Building, ChevronRight, Play, BookOpen, Monitor, Award, Heart, LayoutGrid, Users2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import DarkVeil from './DarkVeil';
 import SideRays from './SideRays';
 import SplitText from './SplitText';
 import CountUp from './CountUp';
 import Navbar from './components/Navbar';
-import DynamicPage from './pages/DynamicPage';
+const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const API_KEY = 'smansa123';
 const API_BASE = 'http://localhost:8000/api/public';
+
+// Full-page loading screen component
+const LoadingScreen = () => (
+    <motion.div
+      key="loading"
+      initial={{ opacity: 1, y: "0%" }}
+      exit={{ opacity: 1, y: "-100%" }}
+      transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }} // smooth curtain-like slide up
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-smansa-navy origin-top"
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center gap-6"
+      >
+        <img src="/logo-sma.png" alt="Logo SMAN 1" className="w-20 h-20 object-contain" />
+        <div className="text-center">
+          <p className="text-white font-bold text-xl tracking-widest uppercase">SMAN 1 Pamekasan</p>
+          <p className="text-blue-200 text-xs mt-1 tracking-[0.3em]">School of Excellence</p>
+        </div>
+        <div className="flex items-center gap-2 mt-4">
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              className="w-2.5 h-2.5 bg-smansa-gold rounded-full"
+              animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+            />
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+);
 
 export default function App() {
   const [data, setData] = useState({
@@ -27,6 +61,8 @@ export default function App() {
     teachers: [],
     facilities: []
   });
+  const [navItems, setNavItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -58,12 +94,12 @@ export default function App() {
         { left: "-150%" },
         {
           left: "150%",
-          ease: "none",
+          ease: "power1.inOut",
           scrollTrigger: {
             trigger: statsCardRef.current,
-            start: "top 60%", // Start when the card is 60% down the viewport (after it scales up a bit)
-            end: "center 30%",
-            scrub: 1,
+            start: "top 90%",   // Digeser lebih ke bawah sedikit
+            end: "bottom 30%",  // Midpoint sekarang berada di sekitar 60% layar (sedikit di bawah tengah)
+            scrub: 1.5,
           }
         }
       );
@@ -74,13 +110,14 @@ export default function App() {
     "/gerbang-sma.jpg",
   ];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+  const handleScroll = useCallback(() => {
+    setIsScrolled(window.scrollY > 50);
   }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [handleScroll]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -97,48 +134,69 @@ export default function App() {
     }
     requestAnimationFrame(raf);
 
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const headers = { 'x-api-key': API_KEY, 'Accept': 'application/json' };
+
+    // 1️⃣ Fetch NAVBAR dulu → segera sembunyikan loading screen
+    fetch(`${API_BASE}/navbars`, { headers, signal })
+      .then(r => r.ok ? r.json() : [])
+      .then(navbars => {
+        setNavItems(Array.isArray(navbars) ? navbars : []);
+        // Jeda sangat singkat (150ms) agar transisi DOM React selesai sebelum layar dihilangkan
+        setTimeout(() => setIsLoading(false), 150);
+      })
+      .catch((error) => {
+        if (error.name !== 'AbortError') {
+          setIsLoading(false); // Sembunyikan loading jika error murni (bukan karena dibatalkan oleh React)
+        }
+      });
+
+    // 2️⃣ Fetch data lain di background (tidak memblokir tampilan)
     const fetchData = async () => {
       try {
-        const headers = { 'x-api-key': API_KEY, 'Accept': 'application/json' };
         const [newsRes, calRes, forumRes, achRes, teacherRes, facRes] = await Promise.all([
-          fetch(`${API_BASE}/news`, { headers }),
-          fetch(`${API_BASE}/academic-calendar`, { headers }),
-          fetch(`${API_BASE}/forum`, { headers }),
-          fetch(`${API_BASE}/achievements`, { headers }),
-          fetch(`${API_BASE}/teachers`, { headers }),
-          fetch(`${API_BASE}/facilities`, { headers })
+          fetch(`${API_BASE}/news`, { headers, signal }),
+          fetch(`${API_BASE}/academic-calendar`, { headers, signal }),
+          fetch(`${API_BASE}/forum`, { headers, signal }),
+          fetch(`${API_BASE}/achievements`, { headers, signal }),
+          fetch(`${API_BASE}/teachers`, { headers, signal }),
+          fetch(`${API_BASE}/facilities`, { headers, signal }),
         ]);
-        
-        const news = newsRes.ok ? await newsRes.json() : { data: [] };
-        const calendar = calRes.ok ? await calRes.json() : { data: [] };
-        const forums = forumRes.ok ? await forumRes.json() : { data: [] };
-        const achievements = achRes.ok ? await achRes.json() : { data: [] };
-        const teachers = teacherRes.ok ? await teacherRes.json() : { data: [] };
-        const facilities = facRes.ok ? await facRes.json() : { data: [] };
-        
+        const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+        const [news, calendar, forums, achievements, teachers, facilities] = await Promise.all([
+          newsRes.ok ? newsRes.json() : [],
+          calRes.ok ? calRes.json() : [],
+          forumRes.ok ? forumRes.json() : [],
+          achRes.ok ? achRes.json() : [],
+          teacherRes.ok ? teacherRes.json() : [],
+          facRes.ok ? facRes.json() : [],
+        ]);
         setData({
-          news: Array.isArray(news.data) ? news.data : (Array.isArray(news) ? news : []),
-          calendar: Array.isArray(calendar.data) ? calendar.data : (Array.isArray(calendar) ? calendar : []),
-          forums: Array.isArray(forums.data) ? forums.data : (Array.isArray(forums) ? forums : []),
-          achievements: Array.isArray(achievements.data) ? achievements.data : (Array.isArray(achievements) ? achievements : []),
-          teachers: Array.isArray(teachers.data) ? teachers.data : (Array.isArray(teachers) ? teachers : []),
-          facilities: Array.isArray(facilities.data) ? facilities.data : (Array.isArray(facilities) ? facilities : [])
+          news: toArr(news),
+          calendar: toArr(calendar),
+          forums: toArr(forums),
+          achievements: toArr(achievements),
+          teachers: toArr(teachers),
+          facilities: toArr(facilities)
         });
       } catch (error) {
-        console.error('Error fetching data:', error);
+        if (error.name !== 'AbortError') console.error('Error fetching data:', error);
       }
     };
     fetchData();
+
+    return () => controller.abort();
   }, []);
 
-  const fadeUp = {
+  const fadeUp = useMemo(() => ({
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-  };
-  const staggerContainer = {
+  }), []);
+  const staggerContainer = useMemo(() => ({
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
-  };
+    visible: { opacity: 1, transition: { delayChildren: 0.8, staggerChildren: 0.2 } }
+  }), []);
 
   const programs = {
     'MIPA': {
@@ -172,11 +230,35 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 selection:bg-smansa-navy selection:text-white font-sans text-gray-800">
+      <AnimatePresence>
+        {isLoading && <LoadingScreen />}
+      </AnimatePresence>
       
-      <Navbar isScrolled={isScrolled} />
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: !isLoading ? 0 : -100, opacity: !isLoading ? 1 : 0 }}
+        transition={{ duration: 0.8, delay: 0.8, ease: [0.76, 0, 0.24, 1] }}
+        className="relative z-[60]"
+      >
+        <Navbar isScrolled={isScrolled} navItems={navItems} />
+      </motion.div>
 
       <Routes>
-        <Route path="/p/:slug" element={<DynamicPage />} />
+        <Route path="/p/:slug" element={
+          <React.Suspense fallback={
+            <div className="min-h-screen bg-smansa-navy flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                {[0,1,2].map(i => (
+                  <motion.div key={i} className="w-3 h-3 bg-smansa-gold rounded-full"
+                    animate={{ scale: [1,1.5,1], opacity: [0.5,1,0.5] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
+                ))}
+              </div>
+            </div>
+          }>
+            <DynamicPage />
+          </React.Suspense>
+        } />
         <Route path="/" element={
           <main>
         
@@ -188,6 +270,7 @@ export default function App() {
                 key={idx}
                 src={img}
                 alt={`Slide ${idx}`}
+                fetchpriority="high"
                 className="absolute inset-0 w-full h-full object-cover object-center"
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: currentSlide === idx ? 1 : 0, scale: currentSlide === idx ? 1 : 1.05 }}
@@ -217,22 +300,15 @@ export default function App() {
           </div>
 
           <div className="relative z-10 w-full px-6 max-w-4xl mx-auto flex flex-col pt-20 lg:pt-0 text-center items-center">
-            <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-3xl flex flex-col items-center">
+            <motion.div initial="hidden" animate={!isLoading ? "visible" : "hidden"} variants={staggerContainer} className="max-w-3xl flex flex-col items-center">
               <div className="mb-4 w-full flex justify-center">
-                <SplitText
-                  text="Mencetak Generasi Cerdas & Berwawasan Global"
+                <motion.h1 
+                  variants={fadeUp}
                   className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-[1.2] drop-shadow-md tracking-tight text-center"
                   style={{ fontFamily: "'Inter', sans-serif" }}
-                  delay={40}
-                  duration={1.2}
-                  ease="power3.out"
-                  splitType="words"
-                  from={{ opacity: 0, y: 30 }}
-                  to={{ opacity: 1, y: 0 }}
-                  threshold={0.1}
-                  textAlign="center"
-                  tag="h1"
-                />
+                >
+                  Mencetak Generasi Cerdas & Berwawasan Global
+                </motion.h1>
               </div>
               <motion.p variants={fadeUp} className="text-sm md:text-base lg:text-lg text-white/90 mb-8 leading-relaxed font-normal opacity-90 text-center max-w-xl drop-shadow">
                 Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.
@@ -249,7 +325,12 @@ export default function App() {
           </div>
 
           {/* Floating Stats Card (Overlapping Bottom) */}
-          <div className="absolute -bottom-12 left-0 right-0 z-20 px-4 flex justify-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: !isLoading ? 1 : 0, y: !isLoading ? 0 : 50 }}
+            transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
+            className="absolute -bottom-12 left-0 right-0 z-20 px-4 flex justify-center"
+          >
             <div 
               ref={statsCardRef}
               className="bg-white rounded-[2rem] shadow-lg p-5 md:p-6 max-w-4xl w-full flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
@@ -274,7 +355,7 @@ export default function App() {
                 <p className="text-gray-500 text-sm font-medium">Alumni Sukses</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* SAMBUTAN KEPALA SEKOLAH */}
