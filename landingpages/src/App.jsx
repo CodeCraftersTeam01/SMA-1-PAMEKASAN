@@ -59,7 +59,10 @@ export default function App() {
     forums: [],
     achievements: [],
     teachers: [],
-    facilities: []
+    facilities: [],
+    features: [],
+    programs: [],
+    settings: {}
   });
   const [navItems, setNavItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,9 +109,11 @@ export default function App() {
     }
   });
 
-  const heroImages = [
-    "/gerbang-sma.jpg",
-  ];
+  const STORAGE_BASE = API_BASE.replace('/api/public', '/storage');
+  
+  const heroImages = data.settings?.hero_image 
+    ? [`${STORAGE_BASE}/${data.settings.hero_image}`] 
+    : ["/gerbang-sma.jpg"];
 
   const handleScroll = useCallback(() => {
     setIsScrolled(window.scrollY > 50);
@@ -134,12 +139,10 @@ export default function App() {
     }
     requestAnimationFrame(raf);
 
-    const controller = new AbortController();
-    const signal = controller.signal;
     const headers = { 'x-api-key': API_KEY, 'Accept': 'application/json' };
 
     // 1️⃣ Fetch NAVBAR dulu → segera sembunyikan loading screen
-    fetch(`${API_BASE}/navbars`, { headers, signal })
+    fetch(`${API_BASE}/navbars`, { headers })
       .then(r => r.ok ? r.json() : [])
       .then(navbars => {
         setNavItems(Array.isArray(navbars) ? navbars : []);
@@ -147,30 +150,34 @@ export default function App() {
         setTimeout(() => setIsLoading(false), 150);
       })
       .catch((error) => {
-        if (error.name !== 'AbortError') {
-          setIsLoading(false); // Sembunyikan loading jika error murni (bukan karena dibatalkan oleh React)
-        }
+        setIsLoading(false);
       });
 
-    // 2️⃣ Fetch data lain di background (tidak memblokir tampilan)
-    const fetchData = async () => {
+    const fetchSettingsAndData = async () => {
       try {
-        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes] = await Promise.all([
-          fetch(`${API_BASE}/news`, { headers, signal }),
-          fetch(`${API_BASE}/academic-calendar`, { headers, signal }),
-          fetch(`${API_BASE}/forum`, { headers, signal }),
-          fetch(`${API_BASE}/achievements`, { headers, signal }),
-          fetch(`${API_BASE}/teachers`, { headers, signal }),
-          fetch(`${API_BASE}/facilities`, { headers, signal }),
+        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes] = await Promise.all([
+          fetch(`${API_BASE}/news`, { headers }),
+          fetch(`${API_BASE}/academic-calendar`, { headers }),
+          fetch(`${API_BASE}/forum`, { headers }),
+          fetch(`${API_BASE}/achievements`, { headers }),
+          fetch(`${API_BASE}/teachers`, { headers }),
+          fetch(`${API_BASE}/facilities`, { headers }),
+          fetch(`${API_BASE}/features`, { headers }),
+          fetch(`${API_BASE}/programs`, { headers }),
+          fetch(`${API_BASE}/landing-settings`, { headers }),
         ]);
         const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-        const [news, calendar, forums, achievements, teachers, facilities] = await Promise.all([
+        const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
+        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings] = await Promise.all([
           newsRes.ok ? newsRes.json() : [],
           calRes.ok ? calRes.json() : [],
           forumRes.ok ? forumRes.json() : [],
           achRes.ok ? achRes.json() : [],
           teacherRes.ok ? teacherRes.json() : [],
           facRes.ok ? facRes.json() : [],
+          featRes.ok ? featRes.json() : [],
+          progRes.ok ? progRes.json() : [],
+          settingsRes.ok ? settingsRes.json() : {},
         ]);
         setData({
           news: toArr(news),
@@ -178,15 +185,17 @@ export default function App() {
           forums: toArr(forums),
           achievements: toArr(achievements),
           teachers: toArr(teachers),
-          facilities: toArr(facilities)
+          facilities: toArr(facilities),
+          features: toArr(features),
+          programs: toArr(programs),
+          settings: toObj(settings),
         });
       } catch (error) {
-        if (error.name !== 'AbortError') console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error);
       }
     };
-    fetchData();
+    fetchSettingsAndData();
 
-    return () => controller.abort();
   }, []);
 
   const fadeUp = useMemo(() => ({
@@ -198,7 +207,7 @@ export default function App() {
     visible: { opacity: 1, transition: { delayChildren: 0.8, staggerChildren: 0.2 } }
   }), []);
 
-  const programs = {
+  const defaultPrograms = {
     'MIPA': {
       desc: 'Fokus pada Matematika dan Ilmu Pengetahuan Alam, mencetak siswa dengan nalar analitis dan riset yang kuat.',
       features: [
@@ -225,7 +234,29 @@ export default function App() {
     }
   };
 
+  const dynamicPrograms = {};
+  if (data.programs && data.programs.length > 0) {
+    data.programs.forEach(prog => {
+      dynamicPrograms[prog.title] = {
+        desc: prog.description,
+        features: (prog.features_json || []).map(feat => ({
+          icon: <i className={`bi ${feat.icon || 'bi-star'} text-2xl text-smansa-navy`}></i>,
+          title: feat.title,
+          desc: feat.desc
+        }))
+      };
+    });
+  }
+
+  const programs = Object.keys(dynamicPrograms).length > 0 ? dynamicPrograms : defaultPrograms;
   const programTabs = Object.keys(programs);
+
+  useEffect(() => {
+    if (programTabs.length > 0 && !programTabs.includes(activeTab)) {
+      setActiveTab(programTabs[0]);
+    }
+  }, [programTabs, activeTab]);
+
   const categories = ['Semua', 'Kegiatan Sekolah', 'Prestasi', 'Pengumuman', 'Kemitraan & Kerja Sama'];
 
   return (
@@ -270,7 +301,7 @@ export default function App() {
                 key={idx}
                 src={img}
                 alt={`Slide ${idx}`}
-                fetchpriority="high"
+                fetchPriority="high"
                 className="absolute inset-0 w-full h-full object-cover object-center"
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: currentSlide === idx ? 1 : 0, scale: currentSlide === idx ? 1 : 1.05 }}
@@ -307,17 +338,17 @@ export default function App() {
                   className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-[1.2] drop-shadow-md tracking-tight text-center"
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
-                  Mencetak Generasi Cerdas & Berwawasan Global
+                  {data.settings?.hero_title || 'Mencetak Generasi Cerdas & Berwawasan Global'}
                 </motion.h1>
               </div>
               <motion.p variants={fadeUp} className="text-sm md:text-base lg:text-lg text-white/90 mb-8 leading-relaxed font-normal opacity-90 text-center max-w-xl drop-shadow">
-                Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.
+                {data.settings?.hero_subtitle || 'Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.'}
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-4">
-                <a href="http://localhost:5173" className="bg-smansa-gold text-white font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-sm">
+                <a href={data.settings?.ppdb_link || "http://localhost:5173"} className="bg-smansa-gold text-white font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-sm">
                   Daftar Sekarang <ArrowRight className="w-4 h-4" />
                 </a>
-                <a href="#video-profil" className="bg-transparent border border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white hover:text-smansa-navy transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
+                <a href={data.settings?.video_link || "#video-profil"} className="bg-transparent border border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white hover:text-smansa-navy transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
                   <Play className="w-4 h-4" fill="currentColor"/> Video Profil
                 </a>
               </motion.div>
@@ -364,27 +395,26 @@ export default function App() {
             <div className="flex flex-col lg:flex-row items-center gap-16">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="w-full lg:w-5/12">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/5] bg-gray-200">
-                  <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop" alt="Kepala Sekolah" className="w-full h-full object-cover" />
+                  <img src={data.settings?.headmaster_photo ? `${STORAGE_BASE}/${data.settings.headmaster_photo}` : "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop"} alt="Kepala Sekolah" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/80 to-transparent"></div>
                   <div className="absolute bottom-6 left-6 text-white">
-                    <p className="font-bold text-xl">Drs. Moh. Ali, M.Pd</p>
-                    <p className="text-blue-200 text-sm">Kepala SMAN 1 Pamekasan</p>
+                    <p className="font-bold text-xl">{data.settings?.headmaster_name || 'Drs. Moh. Ali, M.Pd'}</p>
+                    <p className="text-blue-200 text-sm">{data.settings?.headmaster_title || 'Kepala SMAN 1 Pamekasan'}</p>
                   </div>
                 </div>
               </motion.div>
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="w-full lg:w-7/12">
+                <motion.div variants={fadeUp} className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-1 bg-smansa-gold"></div>
+                  <span className="text-smansa-navy font-bold tracking-wider uppercase">Sambutan</span>
+                </motion.div>
                 <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-6 tracking-tight leading-tight">
                   Sambutan Kepala Sekolah<br/><span className="text-smansa-gold">SMAN 1 Pamekasan</span>
                 </motion.h2>
-                <motion.div variants={fadeUp} className="text-gray-600 text-lg leading-relaxed space-y-6">
-                  <p>
-                    Segala puji bagi Allah SWT Tuhan Yang Maha Esa atas rahmat dan karunia-Nya. Selamat datang di portal resmi SMAN 1 Pamekasan.
-                  </p>
-                  <p>
-                    Di era digital yang serba cepat ini, kami berkomitmen tidak hanya mencetak siswa yang unggul secara akademik, namun juga tangguh karakternya, serta memiliki wawasan teknologi yang mumpuni untuk bersaing secara global. Mari bersama mewujudkan masa depan yang cemerlang!
-                  </p>
+                <motion.div variants={fadeUp} className="text-gray-600 text-lg leading-relaxed space-y-6 whitespace-pre-wrap">
+                  <p>{data.settings?.headmaster_message || 'Segala puji bagi Allah SWT Tuhan Yang Maha Esa atas rahmat dan karunia-Nya. Selamat datang di portal resmi SMAN 1 Pamekasan.\n\nDi era digital yang serba cepat ini, kami berkomitmen tidak hanya mencetak siswa yang unggul secara akademik, namun juga tangguh karakternya, serta memiliki wawasan teknologi yang mumpuni untuk bersaing secara global. Mari bersama mewujudkan masa depan yang cemerlang!'}</p>
                   <p className="font-bold text-smansa-navy mt-8 text-xl italic">
-                    — Drs. Moh. Ali, M.Pd
+                    — {data.settings?.headmaster_name || 'Drs. Moh. Ali, M.Pd'}
                   </p>
                 </motion.div>
               </motion.div>
@@ -401,14 +431,14 @@ export default function App() {
                 <p className="text-gray-600 text-lg">Sekolah unggulan dengan segudang prestasi dan fasilitas berstandar internasional.</p>
               </motion.div>
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-                <a href="http://localhost:5173" className="bg-smansa-navy text-white px-8 py-4 rounded-full text-base font-bold inline-flex items-center gap-2 hover:bg-blue-900 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+                <a href={data.settings?.ppdb_link || "http://localhost:5173"} className="bg-smansa-navy text-white px-8 py-4 rounded-full text-base font-bold inline-flex items-center gap-2 hover:bg-blue-900 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
                   Daftar PPDB <ArrowRight className="w-5 h-5"/>
                 </a>
               </motion.div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {data.facilities.length > 0 ? data.facilities.map((item, i) => (
+              {data.features.length > 0 ? data.features.map((item, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
@@ -418,9 +448,9 @@ export default function App() {
                   className="bg-white p-8 rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 group"
                 >
                   <div className="w-14 h-14 bg-blue-50 text-smansa-navy rounded-2xl flex items-center justify-center mb-6 group-hover:bg-smansa-navy group-hover:text-white transition-colors duration-300">
-                    <Building className="w-7 h-7" />
+                    <i className={`bi ${item.icon || 'bi-star-fill'} text-2xl`}></i>
                   </div>
-                  <h3 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">{item.name}</h3>
+                  <h3 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">{item.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{item.description}</p>
                 </motion.div>
               )) : [
@@ -653,12 +683,12 @@ export default function App() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {data.teachers.length > 0 ? data.teachers.slice(0, 4).map((teacher, index) => (
                 <div key={index} className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-100 aspect-[3/4]">
-                  <img src={teacher.photo || `https://source.unsplash.com/random/400x500/?portrait,teacher,${index}`} className="absolute inset-0 w-full h-full object-cover" alt="Guru" />
+                  <img src={teacher.photo ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` : `https://source.unsplash.com/random/400x500/?portrait,teacher,${index}`} className="absolute inset-0 w-full h-full object-cover z-10" alt={teacher.name} />
                   <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover -z-10" alt="fallback" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300 z-20"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 z-30">
                     <h3 className="text-lg font-bold">{teacher.name}</h3>
-                    <p className="text-blue-200 text-xs">{teacher.role || 'Guru Mata Pelajaran'}</p>
+                    <p className="text-blue-200 text-xs">{teacher.subject || 'Guru Mata Pelajaran'}</p>
                   </div>
                 </div>
               )) : [1, 2, 3, 4].map((item) => (
@@ -755,15 +785,21 @@ export default function App() {
               <div className="space-y-3 pt-4 border-t border-white/10">
                 <div className="flex items-start gap-3 text-sm text-blue-100">
                   <Mail className="w-5 h-5 text-smansa-gold shrink-0"/>
-                  <span>informasi@sman1pamekasan.sch.id</span>
+                  <span>{data.settings?.contact_email || 'informasi@sman1pamekasan.sch.id'}</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm text-blue-100">
                   <Phone className="w-5 h-5 text-smansa-gold shrink-0"/>
-                  <span>(0324) 321049</span>
+                  <span>{data.settings?.contact_phone || '(0324) 321049'}</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm text-blue-100">
                   <MapPin className="w-5 h-5 text-smansa-gold shrink-0"/>
-                  <span>Jl. Pramuka No.2, Barurambat Kota, Pamekasan, Jawa Timur</span>
+                  {data.settings?.contact_map_url ? (
+                    <a href={data.settings.contact_map_url} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                      {data.settings?.contact_address || 'Jl. Pramuka No.2, Barurambat Kota, Pamekasan, Jawa Timur'}
+                    </a>
+                  ) : (
+                    <span>{data.settings?.contact_address || 'Jl. Pramuka No.2, Barurambat Kota, Pamekasan, Jawa Timur'}</span>
+                  )}
                 </div>
               </div>
             </div>

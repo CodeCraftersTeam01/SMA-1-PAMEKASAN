@@ -87,11 +87,32 @@ class LandingPageController extends Controller
 
     public function getTeachers()
     {
-        $teachers = \Illuminate\Support\Facades\DB::table('users')
-            ->where('role', 'guru')
-            ->select('id', 'name', 'photo', 'email')
+        $teachers = \App\Models\Teacher::select('id', 'name', 'subject', 'photo')
+            ->orderBy('order', 'asc')
             ->orderBy('name', 'asc')
             ->get();
         return $this->cached($teachers, 600);
+    }
+
+    public function getFeatures()
+    {
+        $features = \App\Models\Feature::select('id', 'title', 'description', 'icon')
+            ->orderBy('order', 'asc')
+            ->get();
+        return $this->cached($features, 600);
+    }
+
+    public function getPrograms()
+    {
+        $programs = \App\Models\Program::select('id', 'title', 'description', 'features_json')
+            ->orderBy('order', 'asc')
+            ->get();
+        return $this->cached($programs, 600);
+    }
+
+    public function getSettings()
+    {
+        $settings = \App\Models\LandingPageSetting::first();
+        return $this->cached($settings, 600);
     }
 }

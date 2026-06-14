@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 
 class AiImportController extends Controller
 {
+    protected array $allowedTables = ['siswas', 'pendaftarans'];
+
     protected array $systemColumns = [
         'id', 'created_at', 'updated_at', 'deleted_at',
         'remember_token', 'email_verified_at',
@@ -68,6 +70,10 @@ class AiImportController extends Controller
         }
 
         $targetTable = $request->input('target_table');
+
+        if (!in_array($targetTable, $this->allowedTables, true)) {
+            return response()->json(['message' => "Tabel '{$targetTable}' tidak diizinkan untuk import."], 422);
+        }
 
         $tableExists = DB::select(
             "SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?",
@@ -388,6 +394,10 @@ class AiImportController extends Controller
         $targetTable = $request->input('target_table');
         $headerRow   = (int) $request->input('header_row');
         $mapping     = json_decode($request->input('mapping'), true);
+
+        if (!in_array($targetTable, $this->allowedTables, true)) {
+            return response()->json(['message' => "Tabel '{$targetTable}' tidak diizinkan untuk import."], 422);
+        }
 
         if (!is_array($mapping)) {
             return response()->json(['message' => 'Format mapping tidak valid.'], 422);

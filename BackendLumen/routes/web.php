@@ -60,6 +60,9 @@ $router->group(['prefix' => 'api/public', 'middleware' => 'api.key'], function (
     $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
     $router->get('forum', 'LandingPageController@getForum');
     $router->get('teachers', 'LandingPageController@getTeachers');
+    $router->get('features', 'LandingPageController@getFeatures');
+    $router->get('programs', 'LandingPageController@getPrograms');
+    $router->get('landing-settings', 'LandingPageController@getSettings');
 
     // Dynamic CMS Content
     $router->get('navbars', 'PublicContentController@getNavbars');
@@ -174,6 +177,29 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('admin/pages/{id}', 'AdminPageController@show');
     $router->put('admin/pages/{id}', 'AdminPageController@update');
     $router->delete('admin/pages/{id}', 'AdminPageController@destroy');
+
+    $router->get('admin/teachers', 'AdminTeacherController@index');
+    $router->post('admin/teachers', 'AdminTeacherController@store');
+    $router->get('admin/teachers/{id}', 'AdminTeacherController@show');
+    $router->post('admin/teachers/{id}', 'AdminTeacherController@update'); // Use POST with _method=PUT for file upload
+    $router->delete('admin/teachers/{id}', 'AdminTeacherController@destroy');
+
+    $router->get('admin/features', 'AdminFeatureController@index');
+    $router->post('admin/features', 'AdminFeatureController@store');
+    $router->get('admin/features/{id}', 'AdminFeatureController@show');
+    $router->put('admin/features/{id}', 'AdminFeatureController@update');
+    $router->delete('admin/features/{id}', 'AdminFeatureController@destroy');
+
+    $router->get('admin/programs', 'AdminProgramController@index');
+    $router->post('admin/programs', 'AdminProgramController@store');
+    $router->get('admin/programs/{id}', 'AdminProgramController@show');
+    $router->put('admin/programs/{id}', 'AdminProgramController@update');
+    $router->delete('admin/programs/{id}', 'AdminProgramController@destroy');
+
+    // Landing Page Settings (Single Record)
+    $router->get('admin/landing-page-settings', 'AdminLandingPageSettingController@index');
+    $router->post('admin/landing-page-settings', 'AdminLandingPageSettingController@update'); // Use POST to allow multipart/form-data upload
+    $router->put('admin/landing-page-settings', 'AdminLandingPageSettingController@update'); // fallback
 
     $router->get('admin/navbars', 'AdminNavbarController@index');
     $router->post('admin/navbars', 'AdminNavbarController@store');

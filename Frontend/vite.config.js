@@ -9,6 +9,7 @@ export default defineConfig({
     include: ['ogl']
   },
   server: {
+    port: 5174,
     allowedHosts: [
       'pc.leopard-gila.ts.net',
       'smansa.m-tech.fun'
