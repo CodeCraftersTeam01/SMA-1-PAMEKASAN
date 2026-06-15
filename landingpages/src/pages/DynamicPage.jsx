@@ -46,7 +46,7 @@ export default function DynamicPage() {
       try {
         const baseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
         const response = await fetch(`${baseUrl}/api/public/pages/${slug}`, {
-          headers: { 'x-api-key': 'smansa123' },
+          headers: { 'x-api-key': import.meta.env.VITE_API_KEY || 'smansa123' },
           signal: controller.signal
         });
         if (response.ok) {

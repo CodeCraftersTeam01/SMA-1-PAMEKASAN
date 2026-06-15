@@ -16,6 +16,7 @@ import LoginModal from './components/LoginModal';
 const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
 const PrestasiDetail = React.lazy(() => import('./pages/PrestasiDetail'));
+const FormPrestasi = React.lazy(() => import('./pages/FormPrestasi'));
 
 // Shared minimal loading fallback for dynamic routes
 const MinimalLoader = () => (
@@ -44,7 +45,7 @@ const PageTransition = ({ children }) => (
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-const API_KEY = 'smansa123';
+const API_KEY = import.meta.env.VITE_API_KEY || 'smansa123';
 const API_BASE = 'http://localhost:8000/api/public';
 
 // Full-page loading screen component
@@ -353,6 +354,13 @@ export default function App() {
             <React.Suspense fallback={<MinimalLoader />}>
               <PageTransition>
                 <PrestasiDetail />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/prestasi/form" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <FormPrestasi />
               </PageTransition>
             </React.Suspense>
           } />
@@ -739,38 +747,45 @@ export default function App() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {data.achievements.slice(0, 3).map((item, index) => (
-                <div key={index} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center">
-                      <Trophy className="w-8 h-8" />
+                <div key={index} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden">
+                  {item.image_url && (
+                    <div className="aspect-[16/10] overflow-hidden bg-gray-100">
+                      <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
                     </div>
-                    <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-smansa-navy mb-4">{item.title} ({item.year})</h3>
-
-                  {item.siswas && item.siswas.length > 0 ? (
-                    <div className="flex flex-col gap-2 mb-4 self-start">
-                      {item.siswas.map((s, idx) => (
-                        <div key={idx} className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                          {s.nama_lengkap}
-                          {s.jenis_kelamin === 'L' && <span className="text-blue-500 font-black ml-1">(L)</span>}
-                          {s.jenis_kelamin === 'P' && <span className="text-pink-500 font-black ml-1">(P)</span>}
-                          {s.kelas && <span className="ml-1 text-xs font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  ) : item.student_name ? (
-                    <div className="flex flex-col gap-2 mb-4 self-start">
-                      <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                        {item.student_name}
+                  )}
+                  <div className="p-8 flex flex-col flex-1">
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center shrink-0">
+                        <Trophy className="w-8 h-8" />
                       </div>
+                      <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
                     </div>
-                  ) : null}
+                    
+                    <h3 className="text-xl font-bold text-smansa-navy mb-4">{item.title} ({item.year})</h3>
 
-                  <p className="text-gray-500 text-sm mb-6 flex-grow">{item.description}</p>
+                    {item.siswas && item.siswas.length > 0 ? (
+                      <div className="flex flex-col gap-2 mb-4 self-start">
+                        {item.siswas.map((s, idx) => (
+                          <div key={idx} className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            {s.nama_lengkap}
+                            {s.jenis_kelamin === 'L' && <span className="text-blue-500 font-black ml-1">(L)</span>}
+                            {s.jenis_kelamin === 'P' && <span className="text-pink-500 font-black ml-1">(P)</span>}
+                            {s.kelas && <span className="ml-1 text-xs font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    ) : item.student_name ? (
+                      <div className="flex flex-col gap-2 mb-4 self-start">
+                        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                          {item.student_name}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    <p className="text-gray-500 text-sm mt-auto">{item.description}</p>
+                  </div>
                 </div>
               ))}
             </div>

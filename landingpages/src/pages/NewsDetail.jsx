@@ -60,8 +60,8 @@ export default function NewsDetail() {
         
         // Fetch specific news and recent news in parallel
         const [newsRes, recentRes] = await Promise.all([
-          fetch(`${baseUrl}/api/public/news/${id}`, { headers: { 'x-api-key': 'smansa123' }, signal: controller.signal }),
-          fetch(`${baseUrl}/api/public/news`, { headers: { 'x-api-key': 'smansa123' }, signal: controller.signal })
+          fetch(`${baseUrl}/api/public/news/${id}`, { headers: { 'x-api-key': import.meta.env.VITE_API_KEY || 'smansa123' }, signal: controller.signal }),
+          fetch(`${baseUrl}/api/public/news`, { headers: { 'x-api-key': import.meta.env.VITE_API_KEY || 'smansa123' }, signal: controller.signal })
         ]);
 
         if (newsRes.ok) {
