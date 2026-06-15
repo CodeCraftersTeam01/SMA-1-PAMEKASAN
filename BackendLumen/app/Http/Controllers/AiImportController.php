@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 
 class AiImportController extends Controller
 {
+    protected array $allowedTables = ['siswas', 'pendaftarans'];
+
     protected array $systemColumns = [
         'id', 'created_at', 'updated_at', 'deleted_at',
         'remember_token', 'email_verified_at',
@@ -69,6 +71,10 @@ class AiImportController extends Controller
 
         $targetTable = $request->input('target_table');
 
+        if (!in_array($targetTable, $this->allowedTables, true)) {
+            return response()->json(['message' => "Tabel '{$targetTable}' tidak diizinkan untuk import."], 422);
+        }
+
         $tableExists = DB::select(
             "SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?",
             [$targetTable]
@@ -112,7 +118,7 @@ class AiImportController extends Controller
             foreach ($dbColumnsRaw as $col) {
                 $colName = $col->COLUMN_NAME;
                 if (in_array($colName, $this->systemColumns)) continue;
-                if ($targetTable === 'siswas' && in_array($colName, ['tahun_ajaran_id', 'tahun_masuk', 'pendaftar_id'])) continue;
+                if ($targetTable === 'siswas' && in_array($colName, ['tahun_ajaran_id', 'tahun_masuk', 'pendaftar_id', 'kelas_10', 'kelas_11', 'kelas_12'])) continue;
 
                 $isRequired = ($col->IS_NULLABLE === 'NO' && $col->COLUMN_DEFAULT === null);
                 if ($targetTable === 'siswas' && $colName === 'is_active') $isRequired = false;
@@ -389,6 +395,10 @@ class AiImportController extends Controller
         $headerRow   = (int) $request->input('header_row');
         $mapping     = json_decode($request->input('mapping'), true);
 
+        if (!in_array($targetTable, $this->allowedTables, true)) {
+            return response()->json(['message' => "Tabel '{$targetTable}' tidak diizinkan untuk import."], 422);
+        }
+
         if (!is_array($mapping)) {
             return response()->json(['message' => 'Format mapping tidak valid.'], 422);
         }
@@ -586,15 +596,15 @@ class AiImportController extends Controller
                         }
 
                         if (!empty($kelasUpper)) {
+                            $tingkat = '10';
+                            if (str_starts_with($kelasUpper, 'XII') || str_starts_with($kelasUpper, '12')) {
+                                $tingkat = '12';
+                            } elseif (str_starts_with($kelasUpper, 'XI') || str_starts_with($kelasUpper, '11')) {
+                                $tingkat = '11';
+                            }
+
                             $existsKelas = DB::table('kelas')->where('nama_kelas', $kelasUpper)->exists();
                             if (!$existsKelas) {
-                                $tingkat = '10';
-                                if (str_starts_with($kelasUpper, 'XII') || str_starts_with($kelasUpper, '12')) {
-                                    $tingkat = '12';
-                                } elseif (str_starts_with($kelasUpper, 'XI') || str_starts_with($kelasUpper, '11')) {
-                                    $tingkat = '11';
-                                }
-
                                 $jurusan = null;
                                 $rombel = null;
 
@@ -625,7 +635,17 @@ class AiImportController extends Controller
                                     'updated_at' => date('Y-m-d H:i:s'),
                                 ]);
                             }
+                            
                             $data['kelas'] = $kelasUpper;
+
+                            // Set ke kolom history kelas
+                            if ($tingkat === '12') {
+                                $data['kelas_12'] = $kelasUpper;
+                            } elseif ($tingkat === '11') {
+                                $data['kelas_11'] = $kelasUpper;
+                            } else {
+                                $data['kelas_10'] = $kelasUpper;
+                            }
                         }
                         
                         $activeTa = DB::table('tahun_ajarans')->where('is_active', 1)->first();

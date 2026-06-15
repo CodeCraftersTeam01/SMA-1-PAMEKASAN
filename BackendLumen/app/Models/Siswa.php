@@ -53,5 +53,11 @@ class Siswa extends Model
         {
                 return $this->hasOne(RencanaKarir::class, 'siswa_id');
         }
+
+        // Relasi ke Prestasi (Achievements)
+        public function achievements()
+        {
+                return $this->belongsToMany(Achievement::class, 'achievement_siswa', 'siswa_id', 'achievement_id');
+        }
 }
 

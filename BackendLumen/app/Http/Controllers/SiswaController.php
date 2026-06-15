@@ -13,9 +13,44 @@ class SiswaController extends Controller
 {
 
     // GET semua siswa (with relasi)
-    public function index()
+    public function index(Request $request)
     {
-        $data = Siswa::with(['pendaftaran', 'tahunAjaran'])->get();
+        $query = Siswa::with([
+            'pendaftaran:id,nama_lengkap,asal_sekolah',
+            'tahunAjaran:id,tahun',
+        ]);
+
+        // Server-side search (NIS, nama, NISN, kelas)
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('kelas', 'like', "%{$search}%");
+            });
+        }
+
+        // Optional filters
+        if ($request->filled('tahun_masuk')) {
+            $query->where('tahun_masuk', $request->query('tahun_masuk'));
+        }
+        if ($request->filled('tahun_ajaran_id')) {
+            $query->where('tahun_ajaran_id', $request->query('tahun_ajaran_id'));
+        }
+
+        $query->orderByDesc('id');
+
+        // Server-side pagination (opt-in via per_page / page).
+        // Without these params we keep returning the full list for
+        // backward compatibility with existing screens.
+        if ($request->filled('per_page') || $request->filled('page')) {
+            $perPage = (int) $request->query('per_page', 25);
+            $perPage = max(1, min($perPage, 200));
+            return response()->json($query->paginate($perPage));
+        }
+
+        $data = $query->get();
 
         if ($data->count() > 0) {
             return response()->json($data);

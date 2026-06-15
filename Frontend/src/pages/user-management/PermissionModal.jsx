@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
 
 const RESOURCES = [
-  { key: 'pendaftaran', label: 'Pendaftaran' },
-  { key: 'siswa', label: 'Siswa' },
-  { key: 'tahun_ajaran', label: 'Tahun Ajaran' },
-  { key: 'laporan', label: 'Laporan' },
-  { key: 'alumni', label: 'Alumni' },
-  { key: 'alumni_tracking', label: 'Penelusuran Alumni' },
-  { key: 'kelas', label: 'Kelas' },
-  { key: 'pengaturan', label: 'Pengaturan' },
-  { key: 'prestasi', label: 'Prestasi' },
-  { key: 'berita', label: 'Berita' },
+  // Utama
+  { key: 'dashboard', label: 'Dashboard Utama', group: 'Utama' },
+  // Data Akademik
+  { key: 'pendaftaran', label: 'Pendaftaran', group: 'Data Akademik' },
+  { key: 'siswa', label: 'Siswa', group: 'Data Akademik' },
+  { key: 'kelas', label: 'Kelas', group: 'Data Akademik' },
+  { key: 'tahun_ajaran', label: 'Tahun Ajaran', group: 'Data Akademik' },
+  { key: 'laporan', label: 'Laporan', group: 'Data Akademik' },
+  // Alumni
+  { key: 'alumni', label: 'Alumni', group: 'Alumni' },
+  { key: 'alumni_tracking', label: 'Penelusuran Alumni', group: 'Alumni' },
+  // Website CMS
+  { key: 'berita', label: 'Berita Sekolah', group: 'Website CMS' },
+  { key: 'prestasi', label: 'Prestasi Siswa', group: 'Website CMS' },
+  { key: 'fasilitas', label: 'Fasilitas', group: 'Website CMS' },
+  { key: 'halaman', label: 'Halaman Kustom', group: 'Website CMS' },
+  { key: 'navigasi', label: 'Navigasi', group: 'Website CMS' },
+  { key: 'teachers', label: 'Data Guru (CMS)', group: 'Website CMS' },
+  { key: 'features', label: 'Keunggulan', group: 'Website CMS' },
+  { key: 'programs', label: 'Program Peminatan', group: 'Website CMS' },
+  // Sistem
+  { key: 'pengaturan', label: 'Pengaturan Sistem', group: 'Sistem' },
 ];
 
 const ACTIONS = [
@@ -147,34 +159,44 @@ const PermissionModal = ({ user, isOpen, onClose, onSave, API_BASE_URL, token })
                   </tr>
                 </thead>
                 <tbody>
-                  {RESOURCES.map(r => {
+                  {RESOURCES.map((r, idx) => {
                     const allChecked = isAllSelected(r.key);
+                    const showGroupHeader = idx === 0 || RESOURCES[idx - 1].group !== r.group;
                     return (
-                      <tr key={r.key} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td className="py-3 pr-4 text-[13px] font-semibold text-slate-700">{r.label}</td>
-                        {ACTIONS.map(a => (
-                          <td key={a.key} className="py-3 px-2 text-center">
+                      <React.Fragment key={r.key}>
+                        {showGroupHeader && (
+                          <tr className="bg-slate-50/70">
+                            <td colSpan={ACTIONS.length + 2} className="py-2 px-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                              {r.group}
+                            </td>
+                          </tr>
+                        )}
+                        <tr className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                          <td className="py-3 pr-4 text-[13px] font-semibold text-slate-700">{r.label}</td>
+                          {ACTIONS.map(a => (
+                            <td key={a.key} className="py-3 px-2 text-center">
+                              <label className="inline-flex items-center justify-center cursor-pointer p-1 hover:bg-slate-100 rounded-lg transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={permissions[r.key]?.[a.key] || false}
+                                  onChange={() => handleToggle(r.key, a.key)}
+                                  className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
+                                />
+                              </label>
+                            </td>
+                          ))}
+                          <td className="py-3 pl-2 text-center">
                             <label className="inline-flex items-center justify-center cursor-pointer p-1 hover:bg-slate-100 rounded-lg transition-colors">
                               <input
                                 type="checkbox"
-                                checked={permissions[r.key]?.[a.key] || false}
-                                onChange={() => handleToggle(r.key, a.key)}
+                                checked={allChecked}
+                                onChange={(e) => handleSelectAll(r.key, e.target.checked)}
                                 className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
                               />
                             </label>
                           </td>
-                        ))}
-                        <td className="py-3 pl-2 text-center">
-                          <label className="inline-flex items-center justify-center cursor-pointer p-1 hover:bg-slate-100 rounded-lg transition-colors">
-                            <input
-                              type="checkbox"
-                              checked={allChecked}
-                              onChange={(e) => handleSelectAll(r.key, e.target.checked)}
-                              className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
-                            />
-                          </label>
-                        </td>
-                      </tr>
+                        </tr>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>

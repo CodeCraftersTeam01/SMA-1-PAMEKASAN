@@ -43,7 +43,13 @@ export default function Navbar({ onLoginClick, isScrolled, isLoginOpen }) {
                 <a className="nav-link fw-medium" href="/" style={{ color: '#1e293b', fontSize: '14px', opacity: 1, padding: '0.5rem' }}>Beranda</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link fw-medium" href="#fitur" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Fitur</a>
+                <a className="nav-link fw-medium" href="#sambutan" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Sambutan</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link fw-medium" href="#program" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Program</a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link fw-medium" href="#fasilitas" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Fasilitas</a>
               </li>
               <li className="nav-item">
                 <a className="nav-link fw-medium" href="#pengumuman" style={{ color: '#1e293b', fontSize: '14px', opacity: 0.7, padding: '0.5rem' }}>Informasi</a>

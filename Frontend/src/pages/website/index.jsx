@@ -7,6 +7,11 @@ import Footer from "./components/Footer";
 import LoginModal from "./components/LoginModal";
 
 import StatisticsSection from "./sections/StatisticsSection";
+import SambutanSection from "./sections/SambutanSection";
+import ProgramsSection from "./sections/ProgramsSection";
+import AchievementsSection from "./sections/AchievementsSection";
+import FacilitiesSection from "./sections/FacilitiesSection";
+import TeachersSection from "./sections/TeachersSection";
 
 import useLoginModal from "./hooks/useLoginModal";
 
@@ -122,7 +127,12 @@ export default function WebsiteHome() {
       <main>
         <Hero onLoginClick={openLogin} stats={dashboardStats} />
         <StatisticsSection stats={dashboardStats} />
+        <SambutanSection />
         <Features />
+        <ProgramsSection />
+        <AchievementsSection />
+        <FacilitiesSection />
+        <TeachersSection />
         <Announcement />
       </main>
 

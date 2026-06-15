@@ -12,11 +12,35 @@ use Illuminate\Support\Facades\Validator;
 class PendaftaranController extends Controller
 {
     // READ semua data
-    public function index()
+    public function index(Request $request)
     {
         $this->autoCheckAndUpdateTahunAjaran();
 
-        $data = Pendaftaran::all();
+        $query = Pendaftaran::query();
+
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('no_pendaftaran', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('asal_sekolah', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->query('status'));
+        }
+
+        $query->orderByDesc('id');
+
+        if ($request->filled('per_page') || $request->filled('page')) {
+            $perPage = (int) $request->query('per_page', 25);
+            $perPage = max(1, min($perPage, 200));
+            return response()->json($query->paginate($perPage));
+        }
+
+        $data = $query->get();
         if ($data->count() > 0) {
             return response()->json($data);
         }
@@ -468,6 +492,20 @@ class PendaftaranController extends Controller
      */
     private function autoCheckAndUpdateTahunAjaran()
     {
+        // Only run this maintenance check once per day instead of on every
+        // request. The cache flag avoids repeated write-checks that slow
+        // down the listing endpoints. Wrapped in try/catch so the endpoint
+        // still works even if the cache store is unavailable.
+        $cacheKey = 'ta_autocheck_' . date('Y-m-d');
+        try {
+            if (\Illuminate\Support\Facades\Cache::get($cacheKey)) {
+                return;
+            }
+            \Illuminate\Support\Facades\Cache::put($cacheKey, true, 86400);
+        } catch (\Throwable $e) {
+            // Cache not available — fall through and run the check.
+        }
+
         $currentYear = (int) date('Y');
         
         $activeTahunAjaran = TahunAjaran::where('is_active', true)->first();

@@ -25,6 +25,9 @@ $router->post('api/login', 'AuthController@login');
 
 $router->get('api/dashboard', ['middleware' => 'api.key', 'uses' => 'DashboardController@index']);
 
+// Serve uploaded files from the "public" disk via route (no storage:link needed)
+$router->get('storage/{path:.*}', 'StorageController@show');
+
 $router->post('api/public/alumni-tracking/verify', 'PublicTrackingController@verify');
 $router->post('api/public/alumni-tracking/submit', 'PublicTrackingController@submit');
 $router->get('api/public/alumni-tracking/status', 'PublicTrackingController@status');
@@ -56,10 +59,18 @@ $router->group(['prefix' => 'api/public', 'middleware' => 'api.key'], function (
     $router->get('achievements', 'LandingPageController@getAchievements');
     $router->get('testimonials', 'LandingPageController@getTestimonials');
     $router->get('news', 'LandingPageController@getNews');
+    $router->get('news/{id}', 'LandingPageController@getNewsDetail');
     $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
     $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
     $router->get('forum', 'LandingPageController@getForum');
     $router->get('teachers', 'LandingPageController@getTeachers');
+    $router->get('features', 'LandingPageController@getFeatures');
+    $router->get('programs', 'LandingPageController@getPrograms');
+    $router->get('landing-settings', 'LandingPageController@getSettings');
+
+    // Dynamic CMS Content
+    $router->get('navbars', 'PublicContentController@getNavbars');
+    $router->get('pages/{slug}', 'PublicContentController@getPage');
 });
 
 // API prefix group with Auth middleware
@@ -164,6 +175,41 @@ $router->group(['prefix' => 'api', 'middleware' => 'auth'], function () use ($ro
     $router->get('admin/facilities/{id}', 'AdminFacilityController@show');
     $router->put('admin/facilities/{id}', 'AdminFacilityController@update');
     $router->delete('admin/facilities/{id}', 'AdminFacilityController@destroy');
+
+    $router->get('admin/pages', 'AdminPageController@index');
+    $router->post('admin/pages', 'AdminPageController@store');
+    $router->get('admin/pages/{id}', 'AdminPageController@show');
+    $router->put('admin/pages/{id}', 'AdminPageController@update');
+    $router->delete('admin/pages/{id}', 'AdminPageController@destroy');
+
+    $router->get('admin/teachers', 'AdminTeacherController@index');
+    $router->post('admin/teachers', 'AdminTeacherController@store');
+    $router->get('admin/teachers/{id}', 'AdminTeacherController@show');
+    $router->post('admin/teachers/{id}', 'AdminTeacherController@update'); // Use POST with _method=PUT for file upload
+    $router->delete('admin/teachers/{id}', 'AdminTeacherController@destroy');
+
+    $router->get('admin/features', 'AdminFeatureController@index');
+    $router->post('admin/features', 'AdminFeatureController@store');
+    $router->get('admin/features/{id}', 'AdminFeatureController@show');
+    $router->put('admin/features/{id}', 'AdminFeatureController@update');
+    $router->delete('admin/features/{id}', 'AdminFeatureController@destroy');
+
+    $router->get('admin/programs', 'AdminProgramController@index');
+    $router->post('admin/programs', 'AdminProgramController@store');
+    $router->get('admin/programs/{id}', 'AdminProgramController@show');
+    $router->put('admin/programs/{id}', 'AdminProgramController@update');
+    $router->delete('admin/programs/{id}', 'AdminProgramController@destroy');
+
+    // Landing Page Settings (Single Record)
+    $router->get('admin/landing-page-settings', 'AdminLandingPageSettingController@index');
+    $router->post('admin/landing-page-settings', 'AdminLandingPageSettingController@update'); // Use POST to allow multipart/form-data upload
+    $router->put('admin/landing-page-settings', 'AdminLandingPageSettingController@update'); // fallback
+
+    $router->get('admin/navbars', 'AdminNavbarController@index');
+    $router->post('admin/navbars', 'AdminNavbarController@store');
+    $router->get('admin/navbars/{id}', 'AdminNavbarController@show');
+    $router->put('admin/navbars/{id}', 'AdminNavbarController@update');
+    $router->delete('admin/navbars/{id}', 'AdminNavbarController@destroy');
 });
 
 //hello 

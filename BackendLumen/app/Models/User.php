@@ -33,13 +33,22 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     ];
 
     protected static $defaultPermissions = [
+        'dashboard'   => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'pendaftaran' => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'siswa'       => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'kelas'       => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'tahun_ajaran'=> ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'laporan'     => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'alumni'      => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
         'alumni_tracking' => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
-        'kelas'       => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
+        'berita'      => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'prestasi'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'fasilitas'   => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'halaman'     => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'navigasi'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'teachers'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'features'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'programs'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
         'pengaturan'  => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
     ];
 

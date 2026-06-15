@@ -42,7 +42,7 @@ const Toast = ({ message, type, onClose }) => {
 const UserManagement = () => {
   const { token, user, isLoading } = useAuth();
   const navigate = useNavigate();
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   const [users, setUsers] = useState([]);
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
@@ -53,6 +53,7 @@ const UserManagement = () => {
 
   // Fetch all users
   const fetchUsers = async () => {
+    if (!token) return; // Mencegah fetch tanpa token yang memicu 401 & NetworkError
     setIsFetchingUsers(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/users`, {
@@ -186,10 +187,12 @@ const UserManagement = () => {
     }
   }, [isLoading, user, navigate]);
 
-  // Load users on mount
+  // Load users
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (token) {
+      fetchUsers();
+    }
+  }, [token]);
 
   return (
     <div className="space-y-6">

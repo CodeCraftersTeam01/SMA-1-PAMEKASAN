@@ -1,22 +1,49 @@
-const announcements = [
-  {
-    title: "Update Sistem: Modul Pendaftaran Calon Siswa Baru Telah Aktif",
-    date: "06 Mei 2026",
-    category: "Sistem",
-  },
-  {
-    title: "Pemeliharaan Database Rutin untuk Stabilitas Dashboard",
-    date: "04 Mei 2026",
-    category: "Maintenance",
-  },
-  {
-    title: "Sosialisasi Penggunaan Platform Digital bagi Tenaga Pendidik",
-    date: "01 Mei 2026",
-    category: "Kegiatan",
-  },
+import { useEffect, useState } from "react";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.smansa.m-tech.fun";
+const API_KEY = import.meta.env.VITE_API_KEY || "smansa-secure-key-2026";
+
+const fallbackNews = [
+  { title: "Update Sistem: Modul Pendaftaran Calon Siswa Baru Telah Aktif", published_at: "2026-05-06", category: "Sistem" },
+  { title: "Pemeliharaan Database Rutin untuk Stabilitas Dashboard", published_at: "2026-05-04", category: "Maintenance" },
+  { title: "Sosialisasi Penggunaan Platform Digital bagi Tenaga Pendidik", published_at: "2026-05-01", category: "Kegiatan" },
 ];
 
+const formatDate = (value) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+  return d.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
+};
+
 export default function Announcement() {
+  const [news, setNews] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchNews = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/public/news`, {
+          headers: { "x-api-key": API_KEY },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (active && Array.isArray(json?.data) && json.data.length) {
+            setNews(json.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching news:", error);
+      }
+    };
+    fetchNews();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const items = news.length ? news : fallbackNews;
+
   return (
     <section id="pengumuman" className="py-10 bg-soft">
       <div className="container py-5">
@@ -31,15 +58,15 @@ export default function Announcement() {
         </div>
 
         <div className="mt-5">
-          {announcements.map((item, index) => (
-            <div className="py-4 border-bottom border-light d-flex flex-column flex-md-row justify-content-between align-items-md-center reveal" key={index} style={{ transitionDelay: `${index * 100}ms` }}>
+          {items.map((item, index) => (
+            <div className="py-4 border-bottom border-light d-flex flex-column flex-md-row justify-content-between align-items-md-center reveal" key={item.id || index} style={{ transitionDelay: `${index * 100}ms` }}>
               <div className="d-flex align-items-center gap-4 mb-3 mb-md-0">
-                <span className="small text-muted font-bold text-uppercase tracking-widest d-none d-md-block" style={{ minWidth: '100px' }}>{item.category}</span>
+                <span className="small text-muted font-bold text-uppercase tracking-widest d-none d-md-block" style={{ minWidth: '100px' }}>{item.category || 'Info'}</span>
                 <h5 className="fw-bold mb-0 hover-text-primary cursor-pointer transition-all">{item.title}</h5>
               </div>
               <div className="text-muted small font-medium">
                 <i className="bi bi-calendar3 me-2"></i>
-                {item.date}
+                {formatDate(item.published_at || item.date)}
               </div>
             </div>
           ))}

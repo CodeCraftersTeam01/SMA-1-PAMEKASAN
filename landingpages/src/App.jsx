@@ -1,29 +1,127 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import Lenis from 'lenis';
 import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users, Building, ChevronRight, Play, BookOpen, Monitor, Award, Heart, LayoutGrid, Users2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import DarkVeil from './DarkVeil';
 import SideRays from './SideRays';
 import SplitText from './SplitText';
 import CountUp from './CountUp';
+import Navbar from './components/Navbar';
+import LoginModal from './components/LoginModal';
+
+const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
+const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
+const PrestasiDetail = React.lazy(() => import('./pages/PrestasiDetail'));
+
+// Shared minimal loading fallback for dynamic routes
+const MinimalLoader = () => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-24">
+    <div className="flex items-center gap-3">
+      {[0, 1, 2].map(i => (
+        <motion.div key={i} className="w-3 h-3 bg-blue-600 rounded-full"
+          animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
+      ))}
+    </div>
+  </div>
+);
+
+// Page transition wrapper
+const PageTransition = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.3, ease: 'easeOut' }}
+  >
+    {children}
+  </motion.div>
+);
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const API_KEY = 'smansa123';
 const API_BASE = 'http://localhost:8000/api/public';
 
+// Full-page loading screen component
+const LoadingScreen = () => (
+    <motion.div
+      key="loading"
+      initial={{ opacity: 1, y: "0%" }}
+      exit={{ opacity: 1, y: "-100%" }}
+      transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }} // smooth curtain-like slide up
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-smansa-navy origin-top"
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center gap-6"
+      >
+        <img src="/logo-sma.png" alt="Logo SMAN 1" className="w-20 h-20 object-contain" />
+        <div className="text-center">
+          <p className="text-white font-bold text-xl tracking-widest uppercase">SMAN 1 Pamekasan</p>
+          <p className="text-blue-200 text-xs mt-1 tracking-[0.3em]">School of Excellence</p>
+        </div>
+        <div className="flex items-center gap-2 mt-4">
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              className="w-2.5 h-2.5 bg-smansa-gold rounded-full"
+              animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+            />
+          ))}
+        </div>
+      </motion.div>
+    </motion.div>
+);
+
 export default function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      setTimeout(() => {
+        const el = document.querySelector(location.hash);
+        if (el) {
+          if (window.lenis) {
+            window.lenis.scrollTo(el);
+          } else {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 100);
+    } else {
+      if (window.lenis) {
+        window.lenis.scrollTo(0, { immediate: true });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    }
+  }, [location]);
+
   const [data, setData] = useState({
     news: [],
     calendar: [],
     forums: [],
     achievements: [],
     teachers: [],
-    facilities: []
+    facilities: [],
+    features: [],
+    programs: [],
+    settings: {}
   });
+  const [navItems, setNavItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [newsPage, setNewsPage] = useState(1);
+  const [showAllNews, setShowAllNews] = useState(false);
+  const [showTeacherHierarchy, setShowTeacherHierarchy] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -55,29 +153,32 @@ export default function App() {
         { left: "-150%" },
         {
           left: "150%",
-          ease: "none",
+          ease: "power1.inOut",
           scrollTrigger: {
             trigger: statsCardRef.current,
-            start: "top 60%", // Start when the card is 60% down the viewport (after it scales up a bit)
-            end: "center 30%",
-            scrub: 1,
+            start: "top 90%",   // Digeser lebih ke bawah sedikit
+            end: "bottom 30%",  // Midpoint sekarang berada di sekitar 60% layar (sedikit di bawah tengah)
+            scrub: 1.5,
           }
         }
       );
     }
   });
 
-  const heroImages = [
-    "/gerbang-sma.jpg",
-  ];
+  const STORAGE_BASE = API_BASE.replace('/api/public', '/storage');
+  
+  const heroImages = data.settings?.hero_image 
+    ? [`${STORAGE_BASE}/${data.settings.hero_image}`] 
+    : ["/gerbang-sma.jpg"];
+
+  const handleScroll = useCallback(() => {
+    setIsScrolled(window.scrollY > 50);
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [handleScroll]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -88,56 +189,88 @@ export default function App() {
 
   useEffect(() => {
     const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    window.lenis = lenis;
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
     requestAnimationFrame(raf);
+    return () => {
+      lenis.destroy();
+      delete window.lenis;
+    };
+  }, []);
 
-    const fetchData = async () => {
+  useEffect(() => {
+    const headers = { 'x-api-key': API_KEY, 'Accept': 'application/json' };
+
+    // 1️⃣ Fetch NAVBAR dulu → segera sembunyikan loading screen
+    fetch(`${API_BASE}/navbars`, { headers })
+      .then(r => r.ok ? r.json() : [])
+      .then(navbars => {
+        setNavItems(Array.isArray(navbars) ? navbars : []);
+        // Jeda sangat singkat (150ms) agar transisi DOM React selesai sebelum layar dihilangkan
+        setTimeout(() => setIsLoading(false), 150);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+      });
+
+    const fetchSettingsAndData = async () => {
       try {
-        const headers = { 'x-api-key': API_KEY, 'Accept': 'application/json' };
-        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes] = await Promise.all([
+        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes] = await Promise.all([
           fetch(`${API_BASE}/news`, { headers }),
           fetch(`${API_BASE}/academic-calendar`, { headers }),
           fetch(`${API_BASE}/forum`, { headers }),
           fetch(`${API_BASE}/achievements`, { headers }),
           fetch(`${API_BASE}/teachers`, { headers }),
-          fetch(`${API_BASE}/facilities`, { headers })
+          fetch(`${API_BASE}/facilities`, { headers }),
+          fetch(`${API_BASE}/features`, { headers }),
+          fetch(`${API_BASE}/programs`, { headers }),
+          fetch(`${API_BASE}/landing-settings`, { headers }),
         ]);
-        
-        const news = newsRes.ok ? await newsRes.json() : { data: [] };
-        const calendar = calRes.ok ? await calRes.json() : { data: [] };
-        const forums = forumRes.ok ? await forumRes.json() : { data: [] };
-        const achievements = achRes.ok ? await achRes.json() : { data: [] };
-        const teachers = teacherRes.ok ? await teacherRes.json() : { data: [] };
-        const facilities = facRes.ok ? await facRes.json() : { data: [] };
-        
+        const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
+        const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
+        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings] = await Promise.all([
+          newsRes.ok ? newsRes.json() : [],
+          calRes.ok ? calRes.json() : [],
+          forumRes.ok ? forumRes.json() : [],
+          achRes.ok ? achRes.json() : [],
+          teacherRes.ok ? teacherRes.json() : [],
+          facRes.ok ? facRes.json() : [],
+          featRes.ok ? featRes.json() : [],
+          progRes.ok ? progRes.json() : [],
+          settingsRes.ok ? settingsRes.json() : {},
+        ]);
         setData({
-          news: Array.isArray(news.data) ? news.data : (Array.isArray(news) ? news : []),
-          calendar: Array.isArray(calendar.data) ? calendar.data : (Array.isArray(calendar) ? calendar : []),
-          forums: Array.isArray(forums.data) ? forums.data : (Array.isArray(forums) ? forums : []),
-          achievements: Array.isArray(achievements.data) ? achievements.data : (Array.isArray(achievements) ? achievements : []),
-          teachers: Array.isArray(teachers.data) ? teachers.data : (Array.isArray(teachers) ? teachers : []),
-          facilities: Array.isArray(facilities.data) ? facilities.data : (Array.isArray(facilities) ? facilities : [])
+          news: toArr(news),
+          calendar: toArr(calendar),
+          forums: toArr(forums),
+          achievements: toArr(achievements),
+          teachers: toArr(teachers),
+          facilities: toArr(facilities),
+          features: toArr(features),
+          programs: toArr(programs),
+          settings: toObj(settings),
         });
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
-    fetchData();
+    fetchSettingsAndData();
+
   }, []);
 
-  const fadeUp = {
+  const fadeUp = useMemo(() => ({
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
-  };
-  const staggerContainer = {
+  }), []);
+  const staggerContainer = useMemo(() => ({
     hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.2 } }
-  };
+    visible: { opacity: 1, transition: { delayChildren: 0.8, staggerChildren: 0.2 } }
+  }), []);
 
-  const programs = {
+  const defaultPrograms = {
     'MIPA': {
       desc: 'Fokus pada Matematika dan Ilmu Pengetahuan Alam, mencetak siswa dengan nalar analitis dan riset yang kuat.',
       features: [
@@ -164,46 +297,82 @@ export default function App() {
     }
   };
 
+  const dynamicPrograms = {};
+  if (data.programs && data.programs.length > 0) {
+    data.programs.forEach(prog => {
+      dynamicPrograms[prog.title] = {
+        desc: prog.description,
+        features: (prog.features_json || []).map(feat => ({
+          icon: <i className={`bi ${feat.icon || 'bi-star'} text-2xl text-smansa-navy`}></i>,
+          title: feat.title,
+          desc: feat.desc
+        }))
+      };
+    });
+  }
+
+  const programs = Object.keys(dynamicPrograms).length > 0 ? dynamicPrograms : defaultPrograms;
   const programTabs = Object.keys(programs);
-  const categories = ['Semua', 'Kegiatan Sekolah', 'Prestasi', 'Pengumuman', 'Kemitraan & Kerja Sama'];
+
+  useEffect(() => {
+    if (programTabs.length > 0 && !programTabs.includes(activeTab)) {
+      setActiveTab(programTabs[0]);
+    }
+  }, [programTabs, activeTab]);
+
+  const categories = ['Semua', 'Berita Sekolah', 'Kegiatan Siswa', 'Pengumuman', 'Kemitraan & Kerja Sama'];
+
+  const filteredNews = activeCategory === 'Semua' 
+    ? data.news 
+    : data.news.filter(n => n.category === activeCategory);
+  
+  const NEWS_PER_PAGE = 4;
+  const totalNewsPages = Math.ceil(filteredNews.length / NEWS_PER_PAGE) || 1;
+  const currentNews = filteredNews.slice((newsPage - 1) * NEWS_PER_PAGE, newsPage * NEWS_PER_PAGE);
 
   return (
     <div className="min-h-screen bg-gray-50 selection:bg-smansa-navy selection:text-white font-sans text-gray-800">
+      <AnimatePresence>
+        {isLoading && <LoadingScreen />}
+      </AnimatePresence>
       
-      {/* Main Navbar (Floating Pill) */}
-      <div className={`fixed w-full z-50 transition-all duration-500 px-4 flex justify-center ${isScrolled ? 'top-4' : 'top-6'}`}>
-        <nav className={`w-full max-w-5xl rounded-full transition-all duration-500 border ${isScrolled ? 'bg-white/95 shadow-xl text-smansa-navy py-2 lg:py-2.5 border-gray-200 backdrop-blur-md' : 'bg-white/10 text-white py-2 lg:py-3 border-white/20 backdrop-blur-md shadow-2xl'}`}>
-          <div className="px-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src="/logo-sma.png" alt="Logo SMAN 1" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
-              <div className="flex flex-col">
-                <span className="font-sans font-bold text-xs md:text-sm leading-tight">SMAN 1 Pamekasan</span>
-                <span className={`text-[7px] md:text-[8px] tracking-[0.2em] font-bold uppercase ${isScrolled ? 'text-smansa-gold' : 'text-blue-200'}`}>School of Excellence</span>
-              </div>
-            </div>
-            
-            <div className="hidden lg:flex items-center gap-6 font-bold text-xs" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <a href="#sambutan" className="hover:text-blue-400 transition-colors">Profil</a>
-              <a href="#keunggulan" className="hover:text-blue-400 transition-colors">Program</a>
-              <a href="#prestasi" className="hover:text-blue-400 transition-colors">Prestasi</a>
-              <a href="#guru" className="hover:text-blue-400 transition-colors">Guru</a>
-              <a href="#agenda" className="hover:text-blue-400 transition-colors">Agenda</a>
-              <a href="#berita" className="hover:text-blue-400 transition-colors">Berita</a>
-              <div className="flex items-center gap-3 border-l pl-6 border-white/20">
-                <div className="flex bg-black/20 rounded-full p-0.5 border border-white/10">
-                  <span className="bg-smansa-navy text-white text-[9px] px-2.5 py-1 rounded-full font-bold">ID</span>
-                  <span className="text-gray-300 text-[9px] px-2.5 py-1 font-bold">EN</span>
-                </div>
-                <a href="http://localhost:5173/dashboard" className="bg-smansa-navy text-white px-5 py-2 rounded-full font-bold hover:bg-blue-800 transition-all duration-300 hover:scale-105 shadow-md">
-                  Portal Admin
-                </a>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </div>
+      <motion.div
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: !isLoading ? 0 : -100, opacity: !isLoading ? 1 : 0 }}
+        transition={{ duration: 0.8, delay: 0.8, ease: [0.76, 0, 0.24, 1] }}
+        className="relative z-[60]"
+      >
+        <Navbar isScrolled={isScrolled} navItems={navItems} onLoginClick={() => setShowLoginModal(true)} />
+      </motion.div>
 
-      <main>
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/prestasi" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <PrestasiDetail />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/p/:slug" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <DynamicPage />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/berita/:id" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <NewsDetail />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/" element={
+            <PageTransition>
+              <main>
         
         {/* HERO SECTION */}
         <section className="relative h-screen flex items-center justify-center overflow-visible bg-smansa-navy">
@@ -213,6 +382,7 @@ export default function App() {
                 key={idx}
                 src={img}
                 alt={`Slide ${idx}`}
+                fetchPriority="high"
                 className="absolute inset-0 w-full h-full object-cover object-center"
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: currentSlide === idx ? 1 : 0, scale: currentSlide === idx ? 1 : 1.05 }}
@@ -242,31 +412,24 @@ export default function App() {
           </div>
 
           <div className="relative z-10 w-full px-6 max-w-4xl mx-auto flex flex-col pt-20 lg:pt-0 text-center items-center">
-            <motion.div initial="hidden" animate="visible" variants={staggerContainer} className="max-w-3xl flex flex-col items-center">
+            <motion.div initial="hidden" animate={!isLoading ? "visible" : "hidden"} variants={staggerContainer} className="max-w-3xl flex flex-col items-center">
               <div className="mb-4 w-full flex justify-center">
-                <SplitText
-                  text="Mencetak Generasi Cerdas & Berwawasan Global"
+                <motion.h1 
+                  variants={fadeUp}
                   className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-[1.2] drop-shadow-md tracking-tight text-center"
                   style={{ fontFamily: "'Inter', sans-serif" }}
-                  delay={40}
-                  duration={1.2}
-                  ease="power3.out"
-                  splitType="words"
-                  from={{ opacity: 0, y: 30 }}
-                  to={{ opacity: 1, y: 0 }}
-                  threshold={0.1}
-                  textAlign="center"
-                  tag="h1"
-                />
+                >
+                  {data.settings?.hero_title || 'Mencetak Generasi Cerdas & Berwawasan Global'}
+                </motion.h1>
               </div>
               <motion.p variants={fadeUp} className="text-sm md:text-base lg:text-lg text-white/90 mb-8 leading-relaxed font-normal opacity-90 text-center max-w-xl drop-shadow">
-                Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.
+                {data.settings?.hero_subtitle || 'Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.'}
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-4">
-                <a href="http://localhost:5173" className="bg-smansa-gold text-white font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-sm">
+                <a href={data.settings?.ppdb_link || "http://localhost:5173"} className="bg-smansa-gold text-white font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-sm">
                   Daftar Sekarang <ArrowRight className="w-4 h-4" />
                 </a>
-                <a href="#video-profil" className="bg-transparent border border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white hover:text-smansa-navy transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
+                <a href={data.settings?.video_link || "#video-profil"} className="bg-transparent border border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white hover:text-smansa-navy transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
                   <Play className="w-4 h-4" fill="currentColor"/> Video Profil
                 </a>
               </motion.div>
@@ -274,7 +437,12 @@ export default function App() {
           </div>
 
           {/* Floating Stats Card (Overlapping Bottom) */}
-          <div className="absolute -bottom-12 left-0 right-0 z-20 px-4 flex justify-center">
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: !isLoading ? 1 : 0, y: !isLoading ? 0 : 50 }}
+            transition={{ duration: 0.8, delay: 1.2, ease: "easeOut" }}
+            className="absolute -bottom-12 left-0 right-0 z-20 px-4 flex justify-center"
+          >
             <div 
               ref={statsCardRef}
               className="bg-white rounded-[2rem] shadow-lg p-5 md:p-6 max-w-4xl w-full flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
@@ -299,7 +467,7 @@ export default function App() {
                 <p className="text-gray-500 text-sm font-medium">Alumni Sukses</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         </section>
 
         {/* SAMBUTAN KEPALA SEKOLAH */}
@@ -308,27 +476,26 @@ export default function App() {
             <div className="flex flex-col lg:flex-row items-center gap-16">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="w-full lg:w-5/12">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/5] bg-gray-200">
-                  <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop" alt="Kepala Sekolah" className="w-full h-full object-cover" />
+                  <img src={data.settings?.headmaster_photo ? `${STORAGE_BASE}/${data.settings.headmaster_photo}` : "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop"} alt="Kepala Sekolah" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/80 to-transparent"></div>
                   <div className="absolute bottom-6 left-6 text-white">
-                    <p className="font-bold text-xl">Drs. Moh. Ali, M.Pd</p>
-                    <p className="text-blue-200 text-sm">Kepala SMAN 1 Pamekasan</p>
+                    <p className="font-bold text-xl">{data.settings?.headmaster_name || 'Drs. Moh. Ali, M.Pd'}</p>
+                    <p className="text-blue-200 text-sm">{data.settings?.headmaster_title || 'Kepala SMAN 1 Pamekasan'}</p>
                   </div>
                 </div>
               </motion.div>
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="w-full lg:w-7/12">
+                <motion.div variants={fadeUp} className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-1 bg-smansa-gold"></div>
+                  <span className="text-smansa-navy font-bold tracking-wider uppercase">Sambutan</span>
+                </motion.div>
                 <motion.h2 variants={fadeUp} className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-6 tracking-tight leading-tight">
                   Sambutan Kepala Sekolah<br/><span className="text-smansa-gold">SMAN 1 Pamekasan</span>
                 </motion.h2>
-                <motion.div variants={fadeUp} className="text-gray-600 text-lg leading-relaxed space-y-6">
-                  <p>
-                    Segala puji bagi Allah SWT Tuhan Yang Maha Esa atas rahmat dan karunia-Nya. Selamat datang di portal resmi SMAN 1 Pamekasan.
-                  </p>
-                  <p>
-                    Di era digital yang serba cepat ini, kami berkomitmen tidak hanya mencetak siswa yang unggul secara akademik, namun juga tangguh karakternya, serta memiliki wawasan teknologi yang mumpuni untuk bersaing secara global. Mari bersama mewujudkan masa depan yang cemerlang!
-                  </p>
+                <motion.div variants={fadeUp} className="text-gray-600 text-lg leading-relaxed space-y-6 whitespace-pre-wrap">
+                  <p>{data.settings?.headmaster_message || 'Segala puji bagi Allah SWT Tuhan Yang Maha Esa atas rahmat dan karunia-Nya. Selamat datang di portal resmi SMAN 1 Pamekasan.\n\nDi era digital yang serba cepat ini, kami berkomitmen tidak hanya mencetak siswa yang unggul secara akademik, namun juga tangguh karakternya, serta memiliki wawasan teknologi yang mumpuni untuk bersaing secara global. Mari bersama mewujudkan masa depan yang cemerlang!'}</p>
                   <p className="font-bold text-smansa-navy mt-8 text-xl italic">
-                    — Drs. Moh. Ali, M.Pd
+                    — {data.settings?.headmaster_name || 'Drs. Moh. Ali, M.Pd'}
                   </p>
                 </motion.div>
               </motion.div>
@@ -345,14 +512,14 @@ export default function App() {
                 <p className="text-gray-600 text-lg">Sekolah unggulan dengan segudang prestasi dan fasilitas berstandar internasional.</p>
               </motion.div>
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-                <a href="http://localhost:5173" className="bg-smansa-navy text-white px-8 py-4 rounded-full text-base font-bold inline-flex items-center gap-2 hover:bg-blue-900 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+                <a href={data.settings?.ppdb_link || "http://localhost:5173"} className="bg-smansa-navy text-white px-8 py-4 rounded-full text-base font-bold inline-flex items-center gap-2 hover:bg-blue-900 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
                   Daftar PPDB <ArrowRight className="w-5 h-5"/>
                 </a>
               </motion.div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {data.facilities.length > 0 ? data.facilities.map((item, i) => (
+              {data.features.length > 0 ? data.features.map((item, i) => (
                 <motion.div 
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
@@ -362,9 +529,9 @@ export default function App() {
                   className="bg-white p-8 rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 group"
                 >
                   <div className="w-14 h-14 bg-blue-50 text-smansa-navy rounded-2xl flex items-center justify-center mb-6 group-hover:bg-smansa-navy group-hover:text-white transition-colors duration-300">
-                    <Building className="w-7 h-7" />
+                    <i className={`bi ${item.icon || 'bi-star-fill'} text-2xl`}></i>
                   </div>
-                  <h3 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">{item.name}</h3>
+                  <h3 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">{item.title}</h3>
                   <p className="text-gray-600 leading-relaxed">{item.description}</p>
                 </motion.div>
               )) : [
@@ -395,7 +562,7 @@ export default function App() {
         </section>
 
         {/* PROGRAM KEAHLIAN / PEMINATAN (Tabs Layout) */}
-        <section className="py-24 bg-gray-50 border-t border-gray-200">
+        <section id="program" className="py-24 bg-gray-50 border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
               <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight">Program Peminatan</h2>
@@ -482,7 +649,7 @@ export default function App() {
                   {categories.map(cat => (
                     <button
                       key={cat}
-                      onClick={() => setActiveCategory(cat)}
+                      onClick={() => { setActiveCategory(cat); setNewsPage(1); }}
                       className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold transition-all duration-300 ${
                         activeCategory === cat 
                           ? 'bg-smansa-navy text-white shadow-lg scale-[1.02]' 
@@ -497,16 +664,12 @@ export default function App() {
 
               {/* News Grid */}
               <div className="lg:w-3/4">
-                {data.news.length > 0 ? (
+                {filteredNews.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {data.news.slice(0, 4).map((item, i) => (
-                      <motion.a 
-                        href={`#news-${item.id}`}
+                    {currentNews.map((item, i) => (
+                      <Link 
+                        to={`/berita/${item.id}`}
                         key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1 }}
                         className="group bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 flex flex-col"
                       >
                         <div className="aspect-[16/10] overflow-hidden relative">
@@ -520,13 +683,13 @@ export default function App() {
                           </div>
                         </div>
                         <div className="p-8 flex-1 flex flex-col">
-                          <span className="text-smansa-gold font-bold text-xs uppercase tracking-wider mb-3">Kegiatan Sekolah</span>
+                          <span className="text-smansa-gold font-bold text-xs uppercase tracking-wider mb-3">{item.category || 'Berita Sekolah'}</span>
                           <h3 className="font-bold text-xl text-smansa-navy mb-4 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">
                             {item.title}
                           </h3>
-                          <p className="text-gray-500 line-clamp-2 mt-auto">{item.content}</p>
+                          <div className="text-gray-500 line-clamp-2 mt-auto text-sm" dangerouslySetInnerHTML={{ __html: item.content }} />
                         </div>
-                      </motion.a>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -535,17 +698,27 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Pagination Placeholder */}
-                <div className="mt-12 flex justify-center gap-2">
-                  {[1, 2, 3].map(num => (
-                    <button key={num} className={`w-10 h-10 rounded-full font-bold flex items-center justify-center transition-colors ${num === 1 ? 'bg-smansa-navy text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {num}
+                {/* Pagination */}
+                {totalNewsPages > 1 && (
+                  <div className="mt-12 flex justify-center gap-2">
+                    {Array.from({ length: totalNewsPages }, (_, i) => i + 1).map(num => (
+                      <button 
+                        key={num} 
+                        onClick={() => setNewsPage(num)}
+                        className={`w-10 h-10 rounded-full font-bold flex items-center justify-center transition-colors ${num === newsPage ? 'bg-smansa-navy text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                    <button 
+                      onClick={() => setNewsPage(prev => Math.min(prev + 1, totalNewsPages))}
+                      disabled={newsPage === totalNewsPages}
+                      className="w-10 h-10 rounded-full bg-smansa-navy text-white font-bold flex items-center justify-center shadow-md hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-5 h-5"/>
                     </button>
-                  ))}
-                  <button className="w-10 h-10 rounded-full bg-smansa-navy text-white font-bold flex items-center justify-center shadow-md hover:bg-blue-900 transition-colors">
-                    <ChevronRight className="w-5 h-5"/>
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -554,30 +727,58 @@ export default function App() {
         {/* PRESTASI SISWA */}
         <section id="prestasi" className="py-24 bg-gray-50 border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>Prestasi Siswa</h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">Daftar pencapaian gemilang siswa-siswi SMAN 1 Pamekasan di tingkat nasional maupun internasional.</p>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex flex-col md:flex-row justify-between items-end mb-16">
+              <div className="mb-6 md:mb-0">
+                <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>Prestasi Siswa</h2>
+                <p className="text-gray-600 text-lg max-w-2xl">Daftar pencapaian gemilang siswa-siswi SMAN 1 Pamekasan di tingkat nasional maupun internasional.</p>
+              </div>
+              <Link to="/prestasi" className="hidden md:inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                Lihat Semua Prestasi <ArrowRight className="w-5 h-5" />
+              </Link>
             </motion.div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {data.achievements.length > 0 ? data.achievements.map((item, index) => (
-                <div key={index} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
-                  <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center mb-6">
-                    <Trophy className="w-8 h-8" />
+              {data.achievements.slice(0, 3).map((item, index) => (
+                <div key={index} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center">
+                      <Trophy className="w-8 h-8" />
+                    </div>
+                    <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-smansa-navy mb-2">{item.title} ({item.year})</h3>
-                  <p className="text-gray-500 text-sm mb-4">{item.description}</p>
-                  <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
-                </div>
-              )) : [1, 2, 3].map((item) => (
-                <div key={item} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
-                  <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center mb-6">
-                    <Trophy className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-bold text-smansa-navy mb-2">Medali Emas OSN {2025 - item}</h3>
-                  <p className="text-gray-500 text-sm mb-4">Bidang Matematika & Astronomi tingkat Nasional.</p>
-                  <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">Tingkat Nasional</span>
+                  
+                  <h3 className="text-xl font-bold text-smansa-navy mb-4">{item.title} ({item.year})</h3>
+
+                  {item.siswas && item.siswas.length > 0 ? (
+                    <div className="flex flex-col gap-2 mb-4 self-start">
+                      {item.siswas.map((s, idx) => (
+                        <div key={idx} className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                          {s.nama_lengkap}
+                          {s.jenis_kelamin === 'L' && <span className="text-blue-500 font-black ml-1">(L)</span>}
+                          {s.jenis_kelamin === 'P' && <span className="text-pink-500 font-black ml-1">(P)</span>}
+                          {s.kelas && <span className="ml-1 text-xs font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : item.student_name ? (
+                    <div className="flex flex-col gap-2 mb-4 self-start">
+                      <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        {item.student_name}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <p className="text-gray-500 text-sm mb-6 flex-grow">{item.description}</p>
                 </div>
               ))}
+            </div>
+            
+            <div className="mt-10 text-center md:hidden">
+              <Link to="/prestasi" className="inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-6 py-3 rounded-full">
+                Lihat Semua Prestasi <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </section>
@@ -597,12 +798,12 @@ export default function App() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {data.teachers.length > 0 ? data.teachers.slice(0, 4).map((teacher, index) => (
                 <div key={index} className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-100 aspect-[3/4]">
-                  <img src={teacher.photo || `https://source.unsplash.com/random/400x500/?portrait,teacher,${index}`} className="absolute inset-0 w-full h-full object-cover" alt="Guru" />
+                  <img src={teacher.photo ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` : `https://source.unsplash.com/random/400x500/?portrait,teacher,${index}`} className="absolute inset-0 w-full h-full object-cover z-10" alt={teacher.name} />
                   <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover -z-10" alt="fallback" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300 z-20"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 z-30">
                     <h3 className="text-lg font-bold">{teacher.name}</h3>
-                    <p className="text-blue-200 text-xs">{teacher.role || 'Guru Mata Pelajaran'}</p>
+                    <p className="text-blue-200 text-xs">{teacher.subject || 'Guru Mata Pelajaran'}</p>
                   </div>
                 </div>
               )) : [1, 2, 3, 4].map((item) => (
@@ -677,6 +878,10 @@ export default function App() {
         </section>
 
       </main>
+            </PageTransition>
+          } />
+        </Routes>
+      </AnimatePresence>
 
       {/* FOOTER (4 Column Design) */}
       <footer className="bg-smansa-navy text-white pt-24 pb-12 border-t-4 border-smansa-gold">
@@ -697,15 +902,21 @@ export default function App() {
               <div className="space-y-3 pt-4 border-t border-white/10">
                 <div className="flex items-start gap-3 text-sm text-blue-100">
                   <Mail className="w-5 h-5 text-smansa-gold shrink-0"/>
-                  <span>informasi@sman1pamekasan.sch.id</span>
+                  <span>{data.settings?.contact_email || 'informasi@sman1pamekasan.sch.id'}</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm text-blue-100">
                   <Phone className="w-5 h-5 text-smansa-gold shrink-0"/>
-                  <span>(0324) 321049</span>
+                  <span>{data.settings?.contact_phone || '(0324) 321049'}</span>
                 </div>
                 <div className="flex items-start gap-3 text-sm text-blue-100">
                   <MapPin className="w-5 h-5 text-smansa-gold shrink-0"/>
-                  <span>Jl. Pramuka No.2, Barurambat Kota, Pamekasan, Jawa Timur</span>
+                  {data.settings?.contact_map_url ? (
+                    <a href={data.settings.contact_map_url} target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
+                      {data.settings?.contact_address || 'Jl. Pramuka No.2, Barurambat Kota, Pamekasan, Jawa Timur'}
+                    </a>
+                  ) : (
+                    <span>{data.settings?.contact_address || 'Jl. Pramuka No.2, Barurambat Kota, Pamekasan, Jawa Timur'}</span>
+                  )}
                 </div>
               </div>
             </div>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 const PRESET_ROLES = ['admin', 'petugas', 'tu', 'guru', 'kepsek'];
 
 const RESOURCES = [
+  { key: 'dashboard', label: 'Dashboard Utama' },
   { key: 'pendaftaran', label: 'Pendaftaran' },
   { key: 'siswa', label: 'Siswa' },
   { key: 'tahun_ajaran', label: 'Tahun Ajaran' },
@@ -10,6 +11,14 @@ const RESOURCES = [
   { key: 'alumni', label: 'Alumni' },
   { key: 'alumni_tracking', label: 'Penelusuran Alumni' },
   { key: 'kelas', label: 'Kelas' },
+  { key: 'berita', label: 'Berita Sekolah' },
+  { key: 'prestasi', label: 'Prestasi Siswa' },
+  { key: 'fasilitas', label: 'Fasilitas' },
+  { key: 'halaman', label: 'Halaman Kustom' },
+  { key: 'navigasi', label: 'Navigasi' },
+  { key: 'teachers', label: 'Data Guru (CMS)' },
+  { key: 'features', label: 'Keunggulan' },
+  { key: 'programs', label: 'Program Peminatan' },
   { key: 'pengaturan', label: 'Pengaturan' },
 ];
 
