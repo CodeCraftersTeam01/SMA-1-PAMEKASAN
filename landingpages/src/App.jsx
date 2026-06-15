@@ -4,14 +4,43 @@ import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import DarkVeil from './DarkVeil';
 import SideRays from './SideRays';
 import SplitText from './SplitText';
 import CountUp from './CountUp';
 import Navbar from './components/Navbar';
+import LoginModal from './components/LoginModal';
+
 const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
+const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
+const PrestasiDetail = React.lazy(() => import('./pages/PrestasiDetail'));
+
+// Shared minimal loading fallback for dynamic routes
+const MinimalLoader = () => (
+  <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-24">
+    <div className="flex items-center gap-3">
+      {[0, 1, 2].map(i => (
+        <motion.div key={i} className="w-3 h-3 bg-blue-600 rounded-full"
+          animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
+      ))}
+    </div>
+  </div>
+);
+
+// Page transition wrapper
+const PageTransition = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.3, ease: 'easeOut' }}
+  >
+    {children}
+  </motion.div>
+);
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -53,6 +82,29 @@ const LoadingScreen = () => (
 );
 
 export default function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      setTimeout(() => {
+        const el = document.querySelector(location.hash);
+        if (el) {
+          if (window.lenis) {
+            window.lenis.scrollTo(el);
+          } else {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 100);
+    } else {
+      if (window.lenis) {
+        window.lenis.scrollTo(0, { immediate: true });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+    }
+  }, [location]);
+
   const [data, setData] = useState({
     news: [],
     calendar: [],
@@ -66,6 +118,10 @@ export default function App() {
   });
   const [navItems, setNavItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [newsPage, setNewsPage] = useState(1);
+  const [showAllNews, setShowAllNews] = useState(false);
+  const [showTeacherHierarchy, setShowTeacherHierarchy] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -133,12 +189,19 @@ export default function App() {
 
   useEffect(() => {
     const lenis = new Lenis({ duration: 1.2, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+    window.lenis = lenis;
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
     }
     requestAnimationFrame(raf);
+    return () => {
+      lenis.destroy();
+      delete window.lenis;
+    };
+  }, []);
 
+  useEffect(() => {
     const headers = { 'x-api-key': API_KEY, 'Accept': 'application/json' };
 
     // 1️⃣ Fetch NAVBAR dulu → segera sembunyikan loading screen
@@ -257,7 +320,15 @@ export default function App() {
     }
   }, [programTabs, activeTab]);
 
-  const categories = ['Semua', 'Kegiatan Sekolah', 'Prestasi', 'Pengumuman', 'Kemitraan & Kerja Sama'];
+  const categories = ['Semua', 'Berita Sekolah', 'Kegiatan Siswa', 'Pengumuman', 'Kemitraan & Kerja Sama'];
+
+  const filteredNews = activeCategory === 'Semua' 
+    ? data.news 
+    : data.news.filter(n => n.category === activeCategory);
+  
+  const NEWS_PER_PAGE = 4;
+  const totalNewsPages = Math.ceil(filteredNews.length / NEWS_PER_PAGE) || 1;
+  const currentNews = filteredNews.slice((newsPage - 1) * NEWS_PER_PAGE, newsPage * NEWS_PER_PAGE);
 
   return (
     <div className="min-h-screen bg-gray-50 selection:bg-smansa-navy selection:text-white font-sans text-gray-800">
@@ -271,27 +342,37 @@ export default function App() {
         transition={{ duration: 0.8, delay: 0.8, ease: [0.76, 0, 0.24, 1] }}
         className="relative z-[60]"
       >
-        <Navbar isScrolled={isScrolled} navItems={navItems} />
+        <Navbar isScrolled={isScrolled} navItems={navItems} onLoginClick={() => setShowLoginModal(true)} />
       </motion.div>
 
-      <Routes>
-        <Route path="/p/:slug" element={
-          <React.Suspense fallback={
-            <div className="min-h-screen bg-smansa-navy flex items-center justify-center">
-              <div className="flex items-center gap-3">
-                {[0,1,2].map(i => (
-                  <motion.div key={i} className="w-3 h-3 bg-smansa-gold rounded-full"
-                    animate={{ scale: [1,1.5,1], opacity: [0.5,1,0.5] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }} />
-                ))}
-              </div>
-            </div>
-          }>
-            <DynamicPage />
-          </React.Suspense>
-        } />
-        <Route path="/" element={
-          <main>
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/prestasi" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <PrestasiDetail />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/p/:slug" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <DynamicPage />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/berita/:id" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <NewsDetail />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/" element={
+            <PageTransition>
+              <main>
         
         {/* HERO SECTION */}
         <section className="relative h-screen flex items-center justify-center overflow-visible bg-smansa-navy">
@@ -568,7 +649,7 @@ export default function App() {
                   {categories.map(cat => (
                     <button
                       key={cat}
-                      onClick={() => setActiveCategory(cat)}
+                      onClick={() => { setActiveCategory(cat); setNewsPage(1); }}
                       className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold transition-all duration-300 ${
                         activeCategory === cat 
                           ? 'bg-smansa-navy text-white shadow-lg scale-[1.02]' 
@@ -583,16 +664,12 @@ export default function App() {
 
               {/* News Grid */}
               <div className="lg:w-3/4">
-                {data.news.length > 0 ? (
+                {filteredNews.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {data.news.slice(0, 4).map((item, i) => (
-                      <motion.a 
-                        href={`#news-${item.id}`}
+                    {currentNews.map((item, i) => (
+                      <Link 
+                        to={`/berita/${item.id}`}
                         key={i}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: i * 0.1 }}
                         className="group bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 flex flex-col"
                       >
                         <div className="aspect-[16/10] overflow-hidden relative">
@@ -606,13 +683,13 @@ export default function App() {
                           </div>
                         </div>
                         <div className="p-8 flex-1 flex flex-col">
-                          <span className="text-smansa-gold font-bold text-xs uppercase tracking-wider mb-3">Kegiatan Sekolah</span>
+                          <span className="text-smansa-gold font-bold text-xs uppercase tracking-wider mb-3">{item.category || 'Berita Sekolah'}</span>
                           <h3 className="font-bold text-xl text-smansa-navy mb-4 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">
                             {item.title}
                           </h3>
-                          <p className="text-gray-500 line-clamp-2 mt-auto">{item.content}</p>
+                          <div className="text-gray-500 line-clamp-2 mt-auto text-sm" dangerouslySetInnerHTML={{ __html: item.content }} />
                         </div>
-                      </motion.a>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -621,17 +698,27 @@ export default function App() {
                   </div>
                 )}
 
-                {/* Pagination Placeholder */}
-                <div className="mt-12 flex justify-center gap-2">
-                  {[1, 2, 3].map(num => (
-                    <button key={num} className={`w-10 h-10 rounded-full font-bold flex items-center justify-center transition-colors ${num === 1 ? 'bg-smansa-navy text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                      {num}
+                {/* Pagination */}
+                {totalNewsPages > 1 && (
+                  <div className="mt-12 flex justify-center gap-2">
+                    {Array.from({ length: totalNewsPages }, (_, i) => i + 1).map(num => (
+                      <button 
+                        key={num} 
+                        onClick={() => setNewsPage(num)}
+                        className={`w-10 h-10 rounded-full font-bold flex items-center justify-center transition-colors ${num === newsPage ? 'bg-smansa-navy text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                    <button 
+                      onClick={() => setNewsPage(prev => Math.min(prev + 1, totalNewsPages))}
+                      disabled={newsPage === totalNewsPages}
+                      className="w-10 h-10 rounded-full bg-smansa-navy text-white font-bold flex items-center justify-center shadow-md hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-5 h-5"/>
                     </button>
-                  ))}
-                  <button className="w-10 h-10 rounded-full bg-smansa-navy text-white font-bold flex items-center justify-center shadow-md hover:bg-blue-900 transition-colors">
-                    <ChevronRight className="w-5 h-5"/>
-                  </button>
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -640,30 +727,58 @@ export default function App() {
         {/* PRESTASI SISWA */}
         <section id="prestasi" className="py-24 bg-gray-50 border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>Prestasi Siswa</h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">Daftar pencapaian gemilang siswa-siswi SMAN 1 Pamekasan di tingkat nasional maupun internasional.</p>
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex flex-col md:flex-row justify-between items-end mb-16">
+              <div className="mb-6 md:mb-0">
+                <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>Prestasi Siswa</h2>
+                <p className="text-gray-600 text-lg max-w-2xl">Daftar pencapaian gemilang siswa-siswi SMAN 1 Pamekasan di tingkat nasional maupun internasional.</p>
+              </div>
+              <Link to="/prestasi" className="hidden md:inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                Lihat Semua Prestasi <ArrowRight className="w-5 h-5" />
+              </Link>
             </motion.div>
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {data.achievements.length > 0 ? data.achievements.map((item, index) => (
-                <div key={index} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
-                  <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center mb-6">
-                    <Trophy className="w-8 h-8" />
+              {data.achievements.slice(0, 3).map((item, index) => (
+                <div key={index} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center">
+                      <Trophy className="w-8 h-8" />
+                    </div>
+                    <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-smansa-navy mb-2">{item.title} ({item.year})</h3>
-                  <p className="text-gray-500 text-sm mb-4">{item.description}</p>
-                  <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
-                </div>
-              )) : [1, 2, 3].map((item) => (
-                <div key={item} className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300">
-                  <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center mb-6">
-                    <Trophy className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-bold text-smansa-navy mb-2">Medali Emas OSN {2025 - item}</h3>
-                  <p className="text-gray-500 text-sm mb-4">Bidang Matematika & Astronomi tingkat Nasional.</p>
-                  <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">Tingkat Nasional</span>
+                  
+                  <h3 className="text-xl font-bold text-smansa-navy mb-4">{item.title} ({item.year})</h3>
+
+                  {item.siswas && item.siswas.length > 0 ? (
+                    <div className="flex flex-col gap-2 mb-4 self-start">
+                      {item.siswas.map((s, idx) => (
+                        <div key={idx} className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                          {s.nama_lengkap}
+                          {s.jenis_kelamin === 'L' && <span className="text-blue-500 font-black ml-1">(L)</span>}
+                          {s.jenis_kelamin === 'P' && <span className="text-pink-500 font-black ml-1">(P)</span>}
+                          {s.kelas && <span className="ml-1 text-xs font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  ) : item.student_name ? (
+                    <div className="flex flex-col gap-2 mb-4 self-start">
+                      <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        {item.student_name}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <p className="text-gray-500 text-sm mb-6 flex-grow">{item.description}</p>
                 </div>
               ))}
+            </div>
+            
+            <div className="mt-10 text-center md:hidden">
+              <Link to="/prestasi" className="inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-6 py-3 rounded-full">
+                Lihat Semua Prestasi <ArrowRight className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </section>
@@ -763,8 +878,10 @@ export default function App() {
         </section>
 
       </main>
-        } />
-      </Routes>
+            </PageTransition>
+          } />
+        </Routes>
+      </AnimatePresence>
 
       {/* FOOTER (4 Column Design) */}
       <footer className="bg-smansa-navy text-white pt-24 pb-12 border-t-4 border-smansa-gold">

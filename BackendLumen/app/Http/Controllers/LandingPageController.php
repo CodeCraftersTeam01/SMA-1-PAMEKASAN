@@ -31,8 +31,10 @@ class LandingPageController extends Controller
      */
     public function getAchievements()
     {
-        $achievements = Achievement::select('id', 'title', 'category', 'year', 'level', 'description')
+        $achievements = Achievement::with(['siswas:id,nama_lengkap,kelas,jenis_kelamin,tahun_masuk'])
+            ->select('id', 'title', 'student_name', 'category', 'year', 'level', 'description')
             ->orderBy('year', 'desc')->limit(12)->get();
+
         return $this->cached($achievements);
     }
 
@@ -52,9 +54,16 @@ class LandingPageController extends Controller
     public function getNews()
     {
         $news = News::whereNotNull('published_at')
-            ->select('id', 'title', 'category', 'image_url', 'published_at')
+            ->select('id', 'title', 'content', 'category', 'image_url', 'published_at')
             ->orderBy('published_at', 'desc')
             ->limit(6)->get();
+        return $this->cached($news);
+    }
+
+    public function getNewsDetail($id)
+    {
+        $news = News::find($id);
+        if (!$news) return response()->json(['success' => false, 'message' => 'Not found'], 404);
         return $this->cached($news);
     }
 

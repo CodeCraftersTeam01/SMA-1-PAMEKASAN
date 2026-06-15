@@ -75,7 +75,7 @@ const DashboardLayout = () => {
   const navCategories = [
     {
       key: 'utama',
-      label: 'Utama',
+      label: 'Menu Utama',
       dotClass: 'bg-slate-300',
       activeClass: 'bg-slate-800 text-white shadow-[0_3px_10px_rgba(30,41,59,0.2)]',
       hoverClass: 'hover:bg-slate-50 hover:text-slate-800',
@@ -96,7 +96,7 @@ const DashboardLayout = () => {
     },
     {
       key: 'akademik',
-      label: 'Data Akademik',
+      label: 'Data Sekolah',
       dotClass: 'bg-slate-300',
       activeClass: 'bg-slate-800 text-white shadow-[0_3px_10px_rgba(30,41,59,0.2)]',
       hoverClass: 'hover:bg-slate-50 hover:text-slate-800',
@@ -121,7 +121,7 @@ const DashboardLayout = () => {
         },
         {
           path: '/set-kelas',
-          label: 'Set Kelas',
+          label: 'Pembagian Kelas',
           icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
           permission: { resource: 'kelas', action: 'update' },
         },
@@ -148,7 +148,7 @@ const DashboardLayout = () => {
         },
         {
           path: '/admin/alumni-tracking',
-          label: 'Penelusuran',
+          label: 'Penelusuran Alumni',
           icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z',
           permission: { resource: 'alumni_tracking', action: 'view' },
         },
@@ -156,18 +156,18 @@ const DashboardLayout = () => {
     },
     {
       key: 'website',
-      label: 'Website CMS',
+      label: 'Tampilan Website',
       dotClass: 'bg-slate-300',
       activeClass: 'bg-slate-800 text-white shadow-[0_3px_10px_rgba(30,41,59,0.2)]',
       hoverClass: 'hover:bg-slate-50 hover:text-slate-800',
       items: [
         { path: '/admin/website/news', label: 'Berita Sekolah', icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z', permission: { resource: 'berita', action: 'view' } },
         { path: '/admin/website/prestasi', label: 'Prestasi Siswa', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', permission: { resource: 'prestasi', action: 'view' } },
-        { path: '/admin/website/fasilitas', label: 'Fasilitas', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', permission: { resource: 'fasilitas', action: 'view' } },
-        { path: '/admin/website/pages', label: 'Halaman Kustom', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', permission: { resource: 'halaman', action: 'view' } },
+        { path: '/admin/website/fasilitas', label: 'Fasilitas Sekolah', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6', permission: { resource: 'fasilitas', action: 'view' } },
+        { path: '/admin/website/pages', label: 'Halaman Tambahan', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', permission: { resource: 'halaman', action: 'view' } },
         {
           path: '/admin/website/navbar',
-          label: 'Navigasi',
+          label: 'Menu Navigasi',
           icon: 'M4 6h16M4 12h16M4 18h16',
           permission: { resource: 'navigasi', action: 'view' },
         },
@@ -179,19 +179,19 @@ const DashboardLayout = () => {
         },
         {
           path: '/admin/website/features',
-          label: 'Keunggulan (Mengapa Kami)',
+          label: 'Keunggulan Sekolah',
           icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z',
           permission: { resource: 'features', action: 'view' },
         },
         {
           path: '/admin/website/programs',
-          label: 'Program Peminatan',
+          label: 'Program Jurusan',
           icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
           permission: { resource: 'programs', action: 'view' },
         },
         {
           path: '/admin/website/settings',
-          label: 'Pengaturan Halaman',
+          label: 'Sambutan & Kontak',
           icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
           permission: { resource: 'landing_settings', action: 'view' },
         },
@@ -200,9 +200,9 @@ const DashboardLayout = () => {
   ];
 
   const settingMenuItems = [
-    { path: '/pengaturan-nis', label: 'Konfigurasi NIS', icon: 'M7 20l4-16m2 16l4-16M6 9h14M4 15h14', permission: { resource: 'pengaturan', action: 'view' } },
-    { path: '/pengaturan-tracking', label: 'Konfigurasi Tracking', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', permission: { resource: 'pengaturan', action: 'view' } },
-    { path: '/user-management', label: 'Manajemen Pengguna', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z', permission: null, adminOnly: true },
+    { path: '/pengaturan-nis', label: 'Pengaturan NIS', icon: 'M7 20l4-16m2 16l4-16M6 9h14M4 15h14', permission: { resource: 'pengaturan', action: 'view' } },
+    { path: '/pengaturan-tracking', label: 'Pengaturan Penelusuran', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', permission: { resource: 'pengaturan', action: 'view' } },
+    { path: '/user-management', label: 'Pengguna & Akses', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z', permission: null, adminOnly: true },
   ];
 
 
@@ -213,7 +213,7 @@ const DashboardLayout = () => {
     if (saved) {
       try { return JSON.parse(saved); } catch {}
     }
-    return { utama: true, akademik: true, alumni: true };
+    return { utama: true, akademik: true, alumni: true, website: false };
   });
 
   const toggleCategory = (key) => {
@@ -292,7 +292,7 @@ const DashboardLayout = () => {
                   <div
                     className={`space-y-0.5 transition-all duration-300 ease-in-out overflow-hidden ${
                       (!isSidebarCollapsed ? isOpen : true)
-                        ? 'max-h-[300px] opacity-100'
+                        ? 'max-h-[500px] opacity-100'
                         : 'max-h-0 opacity-0 pointer-events-none'
                     }`}
                   >
@@ -464,8 +464,8 @@ const DashboardLayout = () => {
               </svg>
             </button>
             <div>
-              <h1 className="text-[13px] font-bold text-[#1e293b] leading-tight">Dashboard Overview</h1>
-              <p className="text-[9px] text-[#94a3b8] hidden sm:block">Akses dan kelola semua modul dari sini.</p>
+              <h1 className="text-[13px] font-bold text-[#1e293b] leading-tight">Selamat Datang</h1>
+              <p className="text-[9px] text-[#94a3b8] hidden sm:block">Pilih menu di samping untuk mulai mengelola.</p>
             </div>
           </div>
 

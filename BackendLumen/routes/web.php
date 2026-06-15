@@ -25,6 +25,9 @@ $router->post('api/login', 'AuthController@login');
 
 $router->get('api/dashboard', ['middleware' => 'api.key', 'uses' => 'DashboardController@index']);
 
+// Serve uploaded files from the "public" disk via route (no storage:link needed)
+$router->get('storage/{path:.*}', 'StorageController@show');
+
 $router->post('api/public/alumni-tracking/verify', 'PublicTrackingController@verify');
 $router->post('api/public/alumni-tracking/submit', 'PublicTrackingController@submit');
 $router->get('api/public/alumni-tracking/status', 'PublicTrackingController@status');
@@ -56,6 +59,7 @@ $router->group(['prefix' => 'api/public', 'middleware' => 'api.key'], function (
     $router->get('achievements', 'LandingPageController@getAchievements');
     $router->get('testimonials', 'LandingPageController@getTestimonials');
     $router->get('news', 'LandingPageController@getNews');
+    $router->get('news/{id}', 'LandingPageController@getNewsDetail');
     $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
     $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
     $router->get('forum', 'LandingPageController@getForum');

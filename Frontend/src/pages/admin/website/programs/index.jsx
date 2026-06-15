@@ -160,8 +160,8 @@ export default function AdminPrograms() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl my-8">
+        <div className="fixed inset-0 z-50 flex p-4 bg-black/50 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl m-auto">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white rounded-t-xl z-10">
               <h2 className="text-xl font-bold">{formData.id ? 'Edit Program' : 'Tambah Program'}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400">✕</button>

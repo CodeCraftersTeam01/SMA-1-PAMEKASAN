@@ -1,4 +1,11 @@
+import useLandingSettings from '../hooks/useLandingSettings';
+
 export default function Footer() {
+  const { settings } = useLandingSettings();
+  const email = settings?.contact_email;
+  const phone = settings?.contact_phone;
+  const address = settings?.contact_address;
+
   return (
     <footer id="kontak" className="py-10 bg-white border-top border-light">
       <div className="container">
@@ -51,9 +58,9 @@ export default function Footer() {
               <div className="col-md-4">
                 <h6 className="fw-800 text-dark mb-4 text-uppercase tracking-widest" style={{ fontSize: '12px' }}>Hubungi Kami</h6>
                 <ul className="list-unstyled space-y-2">
-                  <li className="text-muted small">Jl. Kabupaten No. 1, Pamekasan, Jawa Timur</li>
-                  <li className="text-muted small">info@smansa.sch.id</li>
-                  <li className="text-muted small">+62 324-000-000</li>
+                  <li className="text-muted small">{address || 'Jl. Kabupaten No. 1, Pamekasan, Jawa Timur'}</li>
+                  <li className="text-muted small">{email || 'info@smansa.sch.id'}</li>
+                  <li className="text-muted small">{phone || '+62 324-000-000'}</li>
                 </ul>
               </div>
             </div>

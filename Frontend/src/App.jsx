@@ -5,7 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
 // Public pages — kept reasonably light, still split from the dashboard bundle
-const WebsiteHome = lazy(() => import('./pages/website'));
+const LoginPage = lazy(() => import('./pages/auth/login'));
 const PublicTracking = lazy(() => import('./pages/website/PublicTracking'));
 
 // Dashboard + admin pages — loaded on demand to keep the initial bundle small
@@ -64,7 +64,7 @@ const AnimatedRoutes = () => {
       <Suspense fallback={<RouteFallback />}>
         <Routes location={location} key={location.pathname}>
           {/* Public Website - login via modal */}
-          <Route path="/" element={<Page slide={false}><WebsiteHome /></Page>} />
+          <Route path="/" element={<Page slide={false}><LoginPage /></Page>} />
 
           {/* Admin Login Portal - Redirect to homepage modal */}
           <Route path="/login" element={<Navigate to="/" replace />} />
