@@ -83,6 +83,7 @@ $app->routeMiddleware([
     'role' => App\Http\Middleware\RoleMiddleware::class,
     'permission' => App\Http\Middleware\PermissionMiddleware::class,
     'api.key' => App\Http\Middleware\VerifyApiKey::class,
+    'throttle' => App\Http\Middleware\ThrottleRequests::class,
 ]);
 
 /*

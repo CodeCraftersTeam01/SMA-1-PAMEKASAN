@@ -15,7 +15,10 @@ class PermissionMiddleware
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        if (!$user->hasPermission($resource, $action)) {
+        // Fail closed: only account types that implement permission checks
+        // (i.e. admin/staff User model) may pass. Student accounts or any
+        // model without hasPermission() are denied access to admin resources.
+        if (!method_exists($user, 'hasPermission') || !$user->hasPermission($resource, $action)) {
             return response()->json([
                 'message' => 'Forbidden. Anda tidak memiliki izin untuk melakukan aksi ini.'
             ], 403);

@@ -61,7 +61,7 @@ class AiImportController extends Controller
     public function analyze(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file'         => 'required|file',
+            'file'         => 'required|file|max:10240|mimes:csv,txt,xlsx,xls',
             'target_table' => 'required|string|alpha_dash',
         ]);
 
@@ -381,7 +381,7 @@ class AiImportController extends Controller
     public function execute(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'file'         => 'required|file',
+            'file'         => 'required|file|max:10240|mimes:csv,txt,xlsx,xls',
             'target_table' => 'required|string|alpha_dash',
             'mapping'      => 'required|string',
             'header_row'   => 'required|integer|min:0',

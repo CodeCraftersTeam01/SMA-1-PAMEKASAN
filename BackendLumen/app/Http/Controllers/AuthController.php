@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\LoginThrottle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -56,6 +58,18 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Throttle per email + IP to stop brute-force / credential stuffing.
+        $throttle = new LoginThrottle($request->input('email') . '|' . $request->ip());
+
+        if ($throttle->isLocked()) {
+            $wait = $throttle->secondsUntilUnlock();
+            return response()->json([
+                'message'     => "Terlalu banyak percobaan login. Silakan coba lagi dalam {$wait} detik.",
+                'locked'      => true,
+                'retry_after' => $wait,
+            ], 429)->withHeaders(['Retry-After' => $wait]);
+        }
+
         // Remember me: ingat = 7 hari, tidak ingat = 2 jam
         $remember = (bool) $request->input('remember', false);
         JWTAuth::factory()->setTTL($remember ? 10080 : 120);
@@ -63,10 +77,24 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (! $token = Auth::attempt($credentials)) {
+            $lockedFor = $throttle->recordFailure();
+
+            if ($lockedFor > 0) {
+                return response()->json([
+                    'message'     => "Terlalu banyak percobaan login. Akun dikunci sementara selama {$lockedFor} detik.",
+                    'locked'      => true,
+                    'retry_after' => $lockedFor,
+                ], 429)->withHeaders(['Retry-After' => $lockedFor]);
+            }
+
             return response()->json([
-                'message' => 'Email atau Password yang Anda masukkan salah.',
+                'message'        => 'Email atau Password yang Anda masukkan salah.',
+                'attempts_left'  => $throttle->attemptsLeft(),
             ], 401);
         }
+
+        // Success: clear all throttle counters for this identifier.
+        $throttle->clear();
 
         return response()->json([
             'message' => 'Login successful',
