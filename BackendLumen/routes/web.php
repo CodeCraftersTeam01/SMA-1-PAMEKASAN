@@ -57,6 +57,8 @@ $router->get('api/test-mail', function() {
 $router->group(['prefix' => 'api/public', 'middleware' => 'api.key'], function () use ($router) {
     $router->get('facilities', 'LandingPageController@getFacilities');
     $router->get('achievements', 'LandingPageController@getAchievements');
+    $router->post('achievements/submit', 'LandingPageController@storeAchievement');
+    $router->get('siswa/lookup', 'LandingPageController@lookupSiswa');
     $router->get('testimonials', 'LandingPageController@getTestimonials');
     $router->get('news', 'LandingPageController@getNews');
     $router->get('news/{id}', 'LandingPageController@getNewsDetail');
