@@ -125,6 +125,11 @@ class LandingPageController extends Controller
     public function getSettings()
     {
         $settings = \App\Models\LandingPageSetting::first();
+        if ($settings) {
+            $settings->total_kelas = \App\Models\Kelas::count();
+            $settings->total_siswa = \App\Models\Siswa::where('is_active', 1)->count();
+            $settings->total_alumni = \App\Models\Alumni::count();
+        }
         return $this->cached($settings, 600);
     }
 
@@ -145,11 +150,11 @@ class LandingPageController extends Controller
         ]);
 
         $data = $request->only([
-            'student_name', 'title', 'category', 'year', 'level', 'description', 'siswa_id'
+            'student_name', 'title', 'category', 'year', 'level', 'description'
         ]);
 
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('achievements', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'achievements');
             $data['image_url'] = $path;
         }
 

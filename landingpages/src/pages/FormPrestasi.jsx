@@ -264,7 +264,7 @@ export default function FormPrestasi() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className={labelClass}>Nama Siswa <span className="text-red-500">*</span></label>
-                  <input type="text" name="student_name" value={form.student_name} onChange={(e) => setForm({ ...form, student_name: e.target.value })} placeholder="Nama akan terisi otomatis" className={inputClass} required />
+                  <input type="text" name="student_name" value={form.student_name} onChange={(e) => setForm({ ...form, student_name: e.target.value })} placeholder="Nama akan terisi otomatis" className={`${inputClass} bg-gray-100 cursor-not-allowed`} required disabled />
                 </div>
                 <div>
                   <label className={labelClass}>Tahun Prestasi <span className="text-red-500">*</span></label>

@@ -84,6 +84,7 @@ const LoadingScreen = () => (
 
 export default function App() {
   const location = useLocation();
+  const isFormRoute = location.pathname === '/prestasi/form';
 
   useEffect(() => {
     if (location.hash) {
@@ -168,9 +169,9 @@ export default function App() {
 
   const STORAGE_BASE = API_BASE.replace('/api/public', '/storage');
   
-  const heroImages = data.settings?.hero_image 
-    ? [`${STORAGE_BASE}/${data.settings.hero_image}`] 
-    : ["/gerbang-sma.jpg"];
+  const heroImages = data.settings?.hero_images && data.settings.hero_images.length > 0
+    ? data.settings.hero_images.map(img => `${STORAGE_BASE}/${img}`)
+    : (data.settings?.hero_image ? [`${STORAGE_BASE}/${data.settings.hero_image}`] : ["/gerbang-sma.jpg"]);
 
   const handleScroll = useCallback(() => {
     setIsScrolled(window.scrollY > 50);
@@ -228,7 +229,7 @@ export default function App() {
           fetch(`${API_BASE}/facilities`, { headers }),
           fetch(`${API_BASE}/features`, { headers }),
           fetch(`${API_BASE}/programs`, { headers }),
-          fetch(`${API_BASE}/landing-settings`, { headers }),
+          fetch(`${API_BASE}/landing-settings?t=${new Date().getTime()}`, { headers }),
         ]);
         const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
@@ -337,6 +338,7 @@ export default function App() {
         {isLoading && <LoadingScreen />}
       </AnimatePresence>
       
+      {!isFormRoute && (
       <motion.div
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: !isLoading ? 0 : -100, opacity: !isLoading ? 1 : 0 }}
@@ -345,6 +347,7 @@ export default function App() {
       >
         <Navbar isScrolled={isScrolled} navItems={navItems} onLoginClick={() => setShowLoginModal(true)} />
       </motion.div>
+      )}
 
       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
@@ -463,16 +466,16 @@ export default function App() {
               ></div>
               
               <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={3} duration={1500} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Program Peminatan</p>
+                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={data.settings?.total_kelas || 0} duration={1500} /></h3>
+                <p className="text-gray-500 text-sm font-medium">Kelas</p>
               </div>
               <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={1200} suffix="+" duration={2000} /></h3>
+                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={data.settings?.total_siswa || 0} duration={2000} /></h3>
                 <p className="text-gray-500 text-sm font-medium">Siswa Aktif</p>
               </div>
               <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={10000} suffix="+" duration={2500} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Alumni Sukses</p>
+                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={data.settings?.total_alumni || 0} duration={2500} /></h3>
+                <p className="text-gray-500 text-sm font-medium">Alumni</p>
               </div>
             </div>
           </motion.div>
@@ -747,44 +750,58 @@ export default function App() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {data.achievements.slice(0, 3).map((item, index) => (
-                <div key={index} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden">
-                  {item.image_url && (
-                    <div className="aspect-[16/10] overflow-hidden bg-gray-100">
-                      <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                    </div>
+                <div key={index} className="group relative bg-gray-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 h-[400px] flex flex-col justify-end border border-gray-100">
+                  {/* Background Image */}
+                  {item.image_url ? (
+                    <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
+                  ) : (
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-600 to-indigo-800 group-hover:scale-110 transition-transform duration-700 opacity-90"></div>
                   )}
-                  <div className="p-8 flex flex-col flex-1">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center shrink-0">
-                        <Trophy className="w-8 h-8" />
-                      </div>
-                      <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
+                  
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                  {/* Content */}
+                  <div className="relative p-6 flex flex-col justify-end h-full text-white z-10">
+                    {/* Always visible (Title, Level, Icon) */}
+                    <div className="flex justify-between items-end mb-2">
+                       <div className="flex-1 pr-4">
+                         <h3 className="text-2xl font-bold mb-1 drop-shadow-md line-clamp-2">{item.title} ({item.year})</h3>
+                       </div>
+                       <div className="flex flex-col items-end gap-3 shrink-0">
+                         <div className="w-12 h-12 bg-yellow-400/20 backdrop-blur-md text-yellow-400 rounded-full flex items-center justify-center border border-yellow-400/30">
+                            <Trophy className="w-6 h-6" />
+                         </div>
+                         <span className="text-xs font-bold bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/20">{item.level}</span>
+                       </div>
                     </div>
-                    
-                    <h3 className="text-xl font-bold text-smansa-navy mb-4">{item.title} ({item.year})</h3>
 
-                    {item.siswas && item.siswas.length > 0 ? (
-                      <div className="flex flex-col gap-2 mb-4 self-start">
-                        {item.siswas.map((s, idx) => (
-                          <div key={idx} className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                            {s.nama_lengkap}
-                            {s.jenis_kelamin === 'L' && <span className="text-blue-500 font-black ml-1">(L)</span>}
-                            {s.jenis_kelamin === 'P' && <span className="text-pink-500 font-black ml-1">(P)</span>}
-                            {s.kelas && <span className="ml-1 text-xs font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                    {/* Expanded Details on Hover */}
+                    <div className="max-h-0 opacity-0 group-hover:max-h-[300px] group-hover:opacity-100 group-hover:mt-4 transition-all duration-500 overflow-hidden flex flex-col gap-3">
+                        {/* Student Name */}
+                        {item.siswas && item.siswas.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {item.siswas.map((s, idx) => (
+                              <div key={idx} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                {s.nama_lengkap}
+                                {s.jenis_kelamin === 'L' && <span className="text-blue-300 font-black ml-1">(L)</span>}
+                                {s.jenis_kelamin === 'P' && <span className="text-pink-300 font-black ml-1">(P)</span>}
+                                {s.kelas && <span className="ml-1 text-xs font-semibold bg-white/20 text-white px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    ) : item.student_name ? (
-                      <div className="flex flex-col gap-2 mb-4 self-start">
-                        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                          {item.student_name}
-                        </div>
-                      </div>
-                    ) : null}
+                        ) : item.student_name ? (
+                          <div className="flex flex-wrap gap-2">
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              {item.student_name}
+                            </div>
+                          </div>
+                        ) : null}
 
-                    <p className="text-gray-500 text-sm mt-auto">{item.description}</p>
+                        <p className="text-gray-200 text-sm line-clamp-3 leading-relaxed drop-shadow-sm">{item.description}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -899,6 +916,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* FOOTER (4 Column Design) */}
+      {!isFormRoute && (
       <footer className="bg-smansa-navy text-white pt-24 pb-12 border-t-4 border-smansa-gold">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
@@ -1002,6 +1020,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }

@@ -26,7 +26,7 @@ $router->get('/', function () use ($router) {
 // $router->post('api/register', ['middleware' => 'throttle:10,60', 'uses' => 'AuthController@register']);
 $router->post('api/login', ['middleware' => 'throttle:20,60', 'uses' => 'AuthController@login']);
 
-$router->get('api/dashboard', ['middleware' => 'api.key', 'uses' => 'DashboardController@index']);
+
 
 // Serve uploaded files from the "public" disk via route (no storage:link needed)
 $router->get('storage/{path:.*}', 'StorageController@show');
@@ -82,6 +82,9 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
 $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']], function () use ($router) {
     $router->post('logout', 'AuthController@logout');
     $router->get('user', 'AuthController@user');
+    
+    // Routes untuk Dashboard
+    $router->get('dashboard', 'DashboardController@index');
 
     // Routes untuk Profile
     $router->post('profile', 'ProfileController@updateProfile');

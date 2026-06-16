@@ -105,42 +105,61 @@ export default function PrestasiDetail() {
         ) : filteredAchievements.length > 0 ? (
           <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
             {filteredAchievements.map((item) => (
-              <div key={item.id} className="break-inside-avoid bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-                {item.image_url && (
-                  <div className="aspect-[16/10] overflow-hidden bg-gray-100">
-                    <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+              <div key={item.id} className="break-inside-avoid group relative bg-gray-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col border border-gray-100 mb-8">
+                  {/* Background Image (dictates natural height) */}
+                  {item.image_url ? (
+                    <div className="w-full h-full overflow-hidden">
+                      <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="block w-full h-auto object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
+                    </div>
+                  ) : (
+                    <div className="w-full aspect-[4/3] bg-gradient-to-br from-blue-600 to-indigo-800 group-hover:scale-110 transition-transform duration-700 opacity-90"></div>
+                  )}
+                  
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+                  {/* Content Overlay */}
+                  <div className="absolute inset-0 p-6 flex flex-col justify-end text-white z-10">
+                    {/* Always visible (Title, Level, Icon) */}
+                    <div className="flex justify-between items-end mb-2">
+                       <div className="flex-1 pr-4">
+                         <h3 className="text-2xl font-bold mb-1 drop-shadow-md line-clamp-2">{item.title} ({item.year})</h3>
+                       </div>
+                       <div className="flex flex-col items-end gap-3 shrink-0">
+                         <div className="w-12 h-12 bg-yellow-400/20 backdrop-blur-md text-yellow-400 rounded-full flex items-center justify-center border border-yellow-400/30">
+                            <Trophy className="w-6 h-6" />
+                         </div>
+                         <span className="text-xs font-bold bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/20">{item.level}</span>
+                       </div>
+                    </div>
+
+                    {/* Expanded Details on Hover */}
+                    <div className="max-h-0 opacity-0 group-hover:max-h-[300px] group-hover:opacity-100 group-hover:mt-4 transition-all duration-500 overflow-hidden flex flex-col gap-3">
+                        {/* Student Name */}
+                        {item.siswas && item.siswas.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {item.siswas.map((s, idx) => (
+                              <div key={idx} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                {s.nama_lengkap}
+                                {s.jenis_kelamin === 'L' && <span className="text-blue-300 font-black ml-1">(L)</span>}
+                                {s.jenis_kelamin === 'P' && <span className="text-pink-300 font-black ml-1">(P)</span>}
+                                {s.kelas && <span className="ml-1 text-xs font-semibold bg-white/20 text-white px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                              </div>
+                            ))}
+                          </div>
+                        ) : item.student_name ? (
+                          <div className="flex flex-wrap gap-2">
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              {item.student_name}
+                            </div>
+                          </div>
+                        ) : null}
+
+                        <p className="text-gray-200 text-sm line-clamp-4 leading-relaxed drop-shadow-sm">{item.description}</p>
+                    </div>
                   </div>
-                )}
-                <div className="p-8">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center shrink-0">
-                      <Trophy className="w-8 h-8" />
-                    </div>
-                    <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-smansa-navy mb-2">{item.title} ({item.year})</h3>
-                  {item.siswas && item.siswas.length > 0 ? (
-                    <div className="flex flex-col gap-2 mb-4 self-start">
-                      {item.siswas.map((s, idx) => (
-                        <div key={idx} className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                          {s.nama_lengkap}
-                          {s.jenis_kelamin === 'L' && <span className="text-blue-500 font-black ml-1">(L)</span>}
-                          {s.jenis_kelamin === 'P' && <span className="text-pink-500 font-black ml-1">(P)</span>}
-                          {s.kelas && <span className="ml-1 text-xs font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  ) : item.student_name ? (
-                    <div className="flex flex-col gap-2 mb-4 self-start">
-                      <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                        {item.student_name}
-                      </div>
-                    </div>
-                  ) : null}
-                  <p className="text-gray-500 text-sm mb-4">{item.description}</p>
-                </div>
               </div>
             ))}
           </div>

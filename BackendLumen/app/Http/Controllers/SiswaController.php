@@ -94,6 +94,11 @@ class SiswaController extends Controller
             $data['tahun_ajaran_id'] = $activeTa ? $activeTa->id : null;
         }
 
+        if (empty($data['nis'])) {
+            $nisGenerator = new NisGeneratorService();
+            $data['nis'] = $nisGenerator->generateNis($data['tahun_masuk']);
+        }
+
         $siswa = Siswa::create($data);
         return response()->json(['message' => 'Data siswa berhasil ditambahkan', 'data' => $siswa], 201);
     }

@@ -51,6 +51,8 @@ const Toast = ({ message, type, onClose }) => {
 const Siswa = () => {
   const { can } = useAuth();
   const [siswaList, setSiswaList] = useState([]);
+  const [kelasList, setKelasList] = useState([]);
+  const [tahunAjaranList, setTahunAjaranList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState(null);
@@ -118,8 +120,44 @@ const Siswa = () => {
     }
   };
 
+  const fetchKelas = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/kelas`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setKelasList(Array.isArray(data) ? data : (data.data || []));
+      }
+    } catch (error) {
+      console.error("Gagal memuat kelas", error);
+    }
+  };
+
+  const fetchTahunAjaran = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/tahun-ajaran`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTahunAjaranList(Array.isArray(data) ? data : (data.data || []));
+      }
+    } catch (error) {
+      console.error("Gagal memuat tahun ajaran", error);
+    }
+  };
+
   useEffect(() => {
     fetchSiswa();
+    fetchKelas();
+    fetchTahunAjaran();
   }, []);
 
   useEffect(() => { setCurrentPage(1); }, [searchQuery, filterTahunMasuk, filterTahunAjaran]);
@@ -150,7 +188,7 @@ const Siswa = () => {
       alamat: '', nomor_hp: '', email: '',
       penerima_kps: false, nomor_kps: '',
       penerima_kip: false, nomor_kip: '',
-      is_active: true,
+      is_active: true, tahun_ajaran_id: '',
       kelas_10: '', kelas_11: '', kelas_12: '',
     });
     setIsFormModalOpen(true);
@@ -183,10 +221,23 @@ const Siswa = () => {
         'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
         'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
         'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
-        'is_active', 'kelas_10', 'kelas_11', 'kelas_12',
+        'is_active', 'kelas_10', 'kelas_11', 'kelas_12', 'tahun_ajaran_id'
       ];
       fields.forEach(f => { if (formSiswa[f] !== undefined) payload[f] = formSiswa[f]; });
       payload.is_active = payload.is_active === true || payload.is_active === 1;
+
+      // Hitung otomatis kelas saat ini berdasarkan tahun_ajaran_id jika ada
+      if (payload.tahun_ajaran_id && tahunAjaranList.length > 0) {
+        const activeTA = tahunAjaranList.find(t => t.is_active === 1 || t.is_active === true);
+        const selectedTA = tahunAjaranList.find(t => t.id === Number(payload.tahun_ajaran_id));
+        if (activeTA && selectedTA) {
+          const getStartYear = (str) => parseInt(str?.substring(0, 4) || "0", 10);
+          const diff = getStartYear(activeTA.tahun) - getStartYear(selectedTA.tahun);
+          if (diff === 0) payload.kelas = payload.kelas_10 || '';
+          else if (diff === 1) payload.kelas = payload.kelas_11 || '';
+          else if (diff >= 2) payload.kelas = payload.kelas_12 || '';
+        }
+      }
 
       const isEditing = !!formSiswa.id;
       const url = isEditing
@@ -1243,34 +1294,72 @@ const Siswa = () => {
                 {/* NIS */}
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">NIS</label>
-                  <input type="text" value={formSiswa.nis || ''} onChange={e => setFormSiswa(prev => ({ ...prev, nis: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                  <input type="text" placeholder="Kosongkan agar di-generate otomatis" value={formSiswa.nis || ''} onChange={e => setFormSiswa(prev => ({ ...prev, nis: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                  <p className="text-xs text-slate-400 mt-1">Kosongkan jika ingin digenerate oleh sistem sesuai dengan format Management NIS.</p>
                 </div>
 
-                {/* Kelas */}
+                {/* Tahun Ajaran */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas Saat Ini</label>
-                  <select value={formSiswa.kelas || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
-                    <option value="">— Pilih —</option>
-                    <option value="X">X</option>
-                    <option value="XI">XI</option>
-                    <option value="XII">XII</option>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Tahun Ajaran</label>
+                  <select value={formSiswa.tahun_ajaran_id || ''} onChange={e => setFormSiswa(prev => ({ ...prev, tahun_ajaran_id: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
+                    <option value="">— Pilih Tahun Ajaran —</option>
+                    {tahunAjaranList.map(ta => (
+                      <option key={ta.id} value={ta.id}>{ta.tahun} {ta.is_active ? '(Aktif)' : ''}</option>
+                    ))}
                   </select>
                 </div>
 
-                {/* History Kelas */}
+                {/* History Kelas (Dinamis berdasarkan Tahun Ajaran) */}
                 <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas 10</label>
-                    <input type="text" placeholder="Contoh: X-1" value={formSiswa.kelas_10 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_10: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas 11</label>
-                    <input type="text" placeholder="Contoh: XI-MIPA 1" value={formSiswa.kelas_11 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_11: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas 12</label>
-                    <input type="text" placeholder="Contoh: XII-MIPA 1" value={formSiswa.kelas_12 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_12: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
-                  </div>
+                  {(() => {
+                    const activeTA = tahunAjaranList.find(t => t.is_active === 1 || t.is_active === true);
+                    const selectedTA = tahunAjaranList.find(t => t.id === Number(formSiswa.tahun_ajaran_id));
+                    let diff = -1;
+                    if (activeTA && selectedTA) {
+                      const getStartYear = (str) => parseInt(str?.substring(0, 4) || "0", 10);
+                      diff = getStartYear(activeTA.tahun) - getStartYear(selectedTA.tahun);
+                    }
+
+                    return (
+                      <>
+                        {diff >= 0 && (
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-1">Pilih Kelas 10</label>
+                            <select value={formSiswa.kelas_10 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_10: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
+                              <option value="">— Pilih Kelas 10 —</option>
+                              {kelasList.filter(k => String(k.tingkat) === '10' || String(k.nama_kelas).startsWith('X.') || String(k.nama_kelas).startsWith('X-')).map(k => (
+                                <option key={k.id} value={k.nama_kelas}>{k.nama_kelas}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                        {diff >= 1 && (
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-1">Pilih Kelas 11</label>
+                            <select value={formSiswa.kelas_11 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_11: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
+                              <option value="">— Pilih Kelas 11 —</option>
+                              {kelasList.filter(k => String(k.tingkat) === '11' || String(k.nama_kelas).startsWith('XI.') || String(k.nama_kelas).startsWith('XI-')).map(k => (
+                                <option key={k.id} value={k.nama_kelas}>{k.nama_kelas}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+
+                        {diff >= 2 && (
+                          <div>
+                            <label className="block text-sm font-semibold text-slate-700 mb-1">Pilih Kelas 12</label>
+                            <select value={formSiswa.kelas_12 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_12: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
+                              <option value="">— Pilih Kelas 12 —</option>
+                              {kelasList.filter(k => String(k.tingkat) === '12' || String(k.nama_kelas).startsWith('XII.') || String(k.nama_kelas).startsWith('XII-')).map(k => (
+                                <option key={k.id} value={k.nama_kelas}>{k.nama_kelas}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
 
 

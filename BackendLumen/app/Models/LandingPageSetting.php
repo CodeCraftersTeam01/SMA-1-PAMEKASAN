@@ -10,6 +10,7 @@ class LandingPageSetting extends Model
         'hero_title',
         'hero_subtitle',
         'hero_image',
+        'hero_images',
         'video_link',
         'ppdb_link',
         'headmaster_name',
@@ -20,5 +21,9 @@ class LandingPageSetting extends Model
         'contact_phone',
         'contact_address',
         'contact_map_url'
+    ];
+
+    protected $casts = [
+        'hero_images' => 'array'
     ];
 }

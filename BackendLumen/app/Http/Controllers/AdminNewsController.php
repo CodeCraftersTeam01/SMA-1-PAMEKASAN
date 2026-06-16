@@ -18,8 +18,14 @@ class AdminNewsController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required',
             'category' => 'nullable|string',
-            'image_url' => 'nullable|string',
+            'image' => 'nullable|image|max:5120',
         ]);
+
+        $imageUrl = null;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('news', 'public');
+            $imageUrl = url('storage/' . $path);
+        }
 
         $news = News::create([
             'title' => $request->input('title'),
@@ -27,7 +33,7 @@ class AdminNewsController extends Controller
             'content' => $request->input('content'),
             'excerpt' => \Illuminate\Support\Str::limit(strip_tags($request->input('content')), 150),
             'category' => $request->input('category', 'Berita Sekolah'),
-            'image_url' => $request->input('image_url'),
+            'image_url' => $imageUrl,
             'author' => auth()->user()->name ?? 'Admin',
             'published_at' => \Carbon\Carbon::now(),
         ]);
@@ -45,16 +51,24 @@ class AdminNewsController extends Controller
         $this->validate($request, [
             'title' => 'required|string|max:255',
             'content' => 'required',
+            'image' => 'nullable|image|max:5120',
         ]);
 
         $news = News::findOrFail($id);
+
+        $imageUrl = $news->image_url;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('news', 'public');
+            $imageUrl = url('storage/' . $path);
+        }
+
         $news->update([
             'title' => $request->input('title'),
             'slug' => \Illuminate\Support\Str::slug($request->input('title')),
             'content' => $request->input('content'),
             'excerpt' => \Illuminate\Support\Str::limit(strip_tags($request->input('content')), 150),
             'category' => $request->input('category', $news->category),
-            'image_url' => $request->input('image_url', $news->image_url),
+            'image_url' => $imageUrl,
         ]);
 
         return response()->json($news);

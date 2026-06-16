@@ -25,7 +25,7 @@ class AdminTeacherController extends Controller
         $data = $request->except('photo');
         
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('teachers', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('photo'), 'teachers');
             $data['photo'] = $path;
         }
 
@@ -55,7 +55,7 @@ class AdminTeacherController extends Controller
             if ($teacher->photo && Storage::disk('public')->exists($teacher->photo)) {
                 Storage::disk('public')->delete($teacher->photo);
             }
-            $path = $request->file('photo')->store('teachers', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('photo'), 'teachers');
             $data['photo'] = $path;
         }
 

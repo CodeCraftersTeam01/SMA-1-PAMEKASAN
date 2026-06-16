@@ -130,10 +130,6 @@ export default function Navbar({ isScrolled, navItems = [], onLoginClick }) {
             })}
 
             <div className="flex items-center gap-3 border-l pl-6 border-white/20">
-              <div className="flex bg-black/20 rounded-full p-0.5 border border-white/10">
-                <span className="bg-smansa-navy text-white text-[9px] px-2.5 py-1 rounded-full font-bold">ID</span>
-                <span className="text-gray-300 text-[9px] px-2.5 py-1 font-bold">EN</span>
-              </div>
               <button onClick={onLoginClick} className="bg-smansa-navy text-white px-5 py-2 rounded-full font-bold hover:bg-blue-800 transition-all duration-300 hover:scale-105 shadow-md cursor-pointer">
                 Portal Admin
               </button>
