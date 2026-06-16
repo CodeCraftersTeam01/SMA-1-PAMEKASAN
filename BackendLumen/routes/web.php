@@ -34,6 +34,7 @@ $router->get('storage/{path:.*}', 'StorageController@show');
 $router->post('api/public/alumni-tracking/verify', ['middleware' => 'throttle:20,60', 'uses' => 'PublicTrackingController@verify']);
 $router->post('api/public/alumni-tracking/submit', ['middleware' => 'throttle:20,60', 'uses' => 'PublicTrackingController@submit']);
 $router->get('api/public/alumni-tracking/status', ['middleware' => 'throttle:60,60', 'uses' => 'PublicTrackingController@status']);
+$router->get('api/public/alumni-tracking/captcha', ['middleware' => 'throttle:60,60', 'uses' => 'PublicTrackingController@captcha']);
 
 $router->get('api/test-mail', ['middleware' => ['throttle:3,60', 'api.key'], function() {
     $to = request('to', 'wardilanang46@gmail.com');

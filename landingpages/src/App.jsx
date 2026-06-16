@@ -4,7 +4,7 @@ import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import DarkVeil from './DarkVeil';
 import SideRays from './SideRays';
@@ -17,6 +17,7 @@ const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
 const PrestasiDetail = React.lazy(() => import('./pages/PrestasiDetail'));
 const FormPrestasi = React.lazy(() => import('./pages/FormPrestasi'));
+const TrackingAlumni = React.lazy(() => import('./pages/TrackingAlumni'));
 
 // Shared minimal loading fallback for dynamic routes
 const MinimalLoader = () => (
@@ -378,6 +379,13 @@ export default function App() {
             <React.Suspense fallback={<MinimalLoader />}>
               <PageTransition>
                 <NewsDetail />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/tracking-alumni" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <TrackingAlumni />
               </PageTransition>
             </React.Suspense>
           } />
@@ -912,6 +920,8 @@ export default function App() {
       </main>
             </PageTransition>
           } />
+          {/* Catch-all route for 404 / invalid URLs like double slashes */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
 
@@ -967,6 +977,7 @@ export default function App() {
               <h4 className="font-bold text-xl mb-6 tracking-tight">Aplikasi Siswa</h4>
               <ul className="space-y-3 text-blue-100/80">
                 <li><a href="http://localhost:5173/dashboard" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Sistem Akademik (Admin)</a></li>
+                <li><Link to="/tracking-alumni" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Tracking Alumni</Link></li>
                 <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">E-Learning</a></li>
               </ul>
             </div>

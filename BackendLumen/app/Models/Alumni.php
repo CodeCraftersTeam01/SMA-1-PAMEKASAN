@@ -20,4 +20,12 @@ class Alumni extends Model
         'email',
         'alamat_domisili',
     ];
+
+    /**
+     * Relasi ke RencanaKarir
+     */
+    public function rencanaKarir()
+    {
+        return $this->hasOne(RencanaKarir::class, 'alumni_id');
+    }
 }

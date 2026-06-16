@@ -10,6 +10,7 @@ class RencanaKarir extends Model
 
     protected $fillable = [
         'siswa_id',
+        'alumni_id',
         'kategori_pilihan',
         'univ_pilihan_1',
         'jurusan_pilihan_1',
@@ -31,5 +32,13 @@ class RencanaKarir extends Model
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'siswa_id');
+    }
+
+    /**
+     * Relasi ke Alumni
+     */
+    public function alumni()
+    {
+        return $this->belongsTo(Alumni::class, 'alumni_id');
     }
 }
