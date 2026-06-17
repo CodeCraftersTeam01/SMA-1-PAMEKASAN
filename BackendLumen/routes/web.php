@@ -77,6 +77,7 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     // Dynamic CMS Content
     $router->get('navbars', 'PublicContentController@getNavbars');
     $router->get('pages/{slug}', 'PublicContentController@getPage');
+    $router->get('visitors', 'PublicContentController@getVisitors');
 });
 
 // API prefix group with Auth middleware

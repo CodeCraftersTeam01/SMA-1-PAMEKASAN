@@ -117,7 +117,8 @@ export default function App() {
     facilities: [],
     features: [],
     programs: [],
-    settings: {}
+    settings: {},
+    visitors: { today: 0, month: 0, year: 0 }
   });
   const [navItems, setNavItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -221,7 +222,7 @@ export default function App() {
 
     const fetchSettingsAndData = async () => {
       try {
-        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes] = await Promise.all([
+        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes] = await Promise.all([
           fetch(`${API_BASE}/news`, { headers }),
           fetch(`${API_BASE}/academic-calendar`, { headers }),
           fetch(`${API_BASE}/forum`, { headers }),
@@ -231,10 +232,11 @@ export default function App() {
           fetch(`${API_BASE}/features`, { headers }),
           fetch(`${API_BASE}/programs`, { headers }),
           fetch(`${API_BASE}/landing-settings?t=${new Date().getTime()}`, { headers }),
+          fetch(`${API_BASE}/visitors`, { headers }),
         ]);
         const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
-        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings] = await Promise.all([
+        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings, visitors] = await Promise.all([
           newsRes.ok ? newsRes.json() : [],
           calRes.ok ? calRes.json() : [],
           forumRes.ok ? forumRes.json() : [],
@@ -244,6 +246,7 @@ export default function App() {
           featRes.ok ? featRes.json() : [],
           progRes.ok ? progRes.json() : [],
           settingsRes.ok ? settingsRes.json() : {},
+          visitorsRes.ok ? visitorsRes.json() : { today: 0, month: 0, year: 0 },
         ]);
         setData({
           news: toArr(news),
@@ -255,6 +258,7 @@ export default function App() {
           features: toArr(features),
           programs: toArr(programs),
           settings: toObj(settings),
+          visitors: toObj(visitors),
         });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -464,7 +468,7 @@ export default function App() {
           >
             <div 
               ref={statsCardRef}
-              className="bg-white rounded-[2rem] shadow-lg p-5 md:p-6 max-w-4xl w-full flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
+              className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-[2rem] shadow-lg p-3 md:p-6 w-[95%] md:w-full max-w-4xl mx-auto flex flex-row justify-around divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
             >
               {/* Shiny Overlay */}
               <div 
@@ -473,17 +477,17 @@ export default function App() {
                 style={{ filter: 'blur(2px)' }}
               ></div>
               
-              <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={data.settings?.total_kelas || 0} duration={1500} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Kelas</p>
+              <div className="flex-1 text-center px-1 py-2 md:py-0 relative z-10 flex flex-col justify-center">
+                <h3 className="text-xl sm:text-2xl lg:text-4xl font-bold text-smansa-navy mb-0.5 tracking-tighter"><CountUp end={data.settings?.total_kelas || 0} duration={1500} /></h3>
+                <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium">Kelas</p>
               </div>
-              <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={data.settings?.total_siswa || 0} duration={2000} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Siswa Aktif</p>
+              <div className="flex-1 text-center px-1 py-2 md:py-0 relative z-10 flex flex-col justify-center">
+                <h3 className="text-xl sm:text-2xl lg:text-4xl font-bold text-smansa-navy mb-0.5 tracking-tighter"><CountUp end={data.settings?.total_siswa || 0} duration={2000} /></h3>
+                <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium">Siswa Aktif</p>
               </div>
-              <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={data.settings?.total_alumni || 0} duration={2500} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Alumni</p>
+              <div className="flex-1 text-center px-1 py-2 md:py-0 relative z-10 flex flex-col justify-center">
+                <h3 className="text-xl sm:text-2xl lg:text-4xl font-bold text-smansa-navy mb-0.5 tracking-tighter"><CountUp end={data.settings?.total_alumni || 0} duration={2500} /></h3>
+                <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium">Alumni</p>
               </div>
             </div>
           </motion.div>
@@ -1000,15 +1004,15 @@ export default function App() {
               <div className="bg-white/5 rounded-2xl p-6 border border-white/10 mb-8 backdrop-blur-sm">
                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
                   <span className="text-blue-100/80 text-sm">Hari ini</span>
-                  <span className="font-bold text-smansa-gold text-lg">124</span>
+                  <span className="font-bold text-smansa-gold text-lg">{data.visitors?.today?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
                   <span className="text-blue-100/80 text-sm">Bulan ini</span>
-                  <span className="font-bold text-smansa-gold text-lg">3,450</span>
+                  <span className="font-bold text-smansa-gold text-lg">{data.visitors?.month?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-blue-100/80 text-sm">Tahun ini</span>
-                  <span className="font-bold text-smansa-gold text-lg">45,102</span>
+                  <span className="font-bold text-smansa-gold text-lg">{data.visitors?.year?.toLocaleString() || 0}</span>
                 </div>
               </div>
             </div>
