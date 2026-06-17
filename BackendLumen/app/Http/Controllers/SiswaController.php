@@ -85,13 +85,28 @@ class SiswaController extends Controller
         $data = $request->only($allowedFields);
         $data['is_active'] = filter_var($data['is_active'] ?? true, FILTER_VALIDATE_BOOLEAN);
 
-        if (empty($data['tahun_masuk'])) {
-            $data['tahun_masuk'] = (int) date('Y');
-        }
-
         if (empty($data['tahun_ajaran_id'])) {
             $activeTa = \App\Models\TahunAjaran::where('is_active', 1)->first();
             $data['tahun_ajaran_id'] = $activeTa ? $activeTa->id : null;
+        }
+
+        if (empty($data['tahun_masuk'])) {
+            $baseYear = (int) date('Y');
+            if (!empty($data['tahun_ajaran_id'])) {
+                $ta = \App\Models\TahunAjaran::find($data['tahun_ajaran_id']);
+                if ($ta) {
+                    $baseYear = (int) substr($ta->tahun, 0, 4);
+                }
+            }
+
+            $kelasUpper = strtoupper(trim($data['kelas'] ?? ''));
+            $tahunMasuk = $baseYear;
+            if (str_starts_with($kelasUpper, 'XII') || str_starts_with($kelasUpper, '12')) {
+                $tahunMasuk = $baseYear - 2;
+            } elseif (str_starts_with($kelasUpper, 'XI') || str_starts_with($kelasUpper, '11')) {
+                $tahunMasuk = $baseYear - 1;
+            }
+            $data['tahun_masuk'] = $tahunMasuk;
         }
 
         if (empty($data['nis'])) {
@@ -100,6 +115,8 @@ class SiswaController extends Controller
         }
 
         $siswa = Siswa::create($data);
+        \App\Services\GraduationService::checkByIds([$siswa->id]);
+
         return response()->json(['message' => 'Data siswa berhasil ditambahkan', 'data' => $siswa], 201);
     }
 
@@ -115,10 +132,12 @@ class SiswaController extends Controller
             'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
             'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
-            'is_active', 'tahun_lulus',
+            'is_active', 'tahun_lulus', 'tahun_ajaran_id',
             'kelas_10', 'kelas_11', 'kelas_12',
         ];
-        $siswa->update($request->only($allowedFields));
+        $data = $request->only($allowedFields);
+        $siswa->update($data);
+        \App\Services\GraduationService::checkByIds([$siswa->id]);
 
         return response()->json(['message' => 'Data siswa berhasil diperbarui', 'data' => $siswa]);
     }
@@ -183,6 +202,8 @@ class SiswaController extends Controller
         }
 
         $count = Siswa::whereIn('id', $request->ids)->update($updateData);
+        \App\Services\GraduationService::checkByIds($request->ids);
+
         return response()->json(['message' => "{$count} data siswa berhasil diperbarui"]);
     }
 
@@ -219,6 +240,8 @@ class SiswaController extends Controller
             Siswa::where('id', $update['id'])->update($updateData);
             $count++;
         }
+
+        \App\Services\GraduationService::checkByIds(array_column($request->updates, 'id'));
 
         return response()->json(['message' => "{$count} data siswa berhasil diperbarui"]);
     }

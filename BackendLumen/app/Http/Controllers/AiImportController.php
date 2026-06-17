@@ -698,6 +698,10 @@ class AiImportController extends Controller
                     ]);
                 }
 
+                if ($targetTable === 'siswas') {
+                    \App\Services\GraduationService::checkAll();
+                }
+
                 $sendMsg([
                     'type'          => 'complete',
                     'success_count' => $successCount,

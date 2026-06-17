@@ -118,7 +118,8 @@ export default function App() {
     features: [],
     programs: [],
     settings: {},
-    visitors: { today: 0, month: 0, year: 0 }
+    visitors: { today: 0, month: 0, year: 0 },
+    quote: null
   });
   const [navItems, setNavItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -222,7 +223,7 @@ export default function App() {
 
     const fetchSettingsAndData = async () => {
       try {
-        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes] = await Promise.all([
+        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes, quoteRes] = await Promise.all([
           fetch(`${API_BASE}/news`, { headers }),
           fetch(`${API_BASE}/academic-calendar`, { headers }),
           fetch(`${API_BASE}/forum`, { headers }),
@@ -233,10 +234,11 @@ export default function App() {
           fetch(`${API_BASE}/programs`, { headers }),
           fetch(`${API_BASE}/landing-settings?t=${new Date().getTime()}`, { headers }),
           fetch(`${API_BASE}/visitors`, { headers }),
+          fetch(`${API_BASE}/random-quote`, { headers }),
         ]);
         const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
-        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings, visitors] = await Promise.all([
+        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings, visitors, quote] = await Promise.all([
           newsRes.ok ? newsRes.json() : [],
           calRes.ok ? calRes.json() : [],
           forumRes.ok ? forumRes.json() : [],
@@ -247,6 +249,7 @@ export default function App() {
           progRes.ok ? progRes.json() : [],
           settingsRes.ok ? settingsRes.json() : {},
           visitorsRes.ok ? visitorsRes.json() : { today: 0, month: 0, year: 0 },
+          quoteRes.ok ? quoteRes.json() : null,
         ]);
         setData({
           news: toArr(news),
@@ -259,6 +262,7 @@ export default function App() {
           programs: toArr(programs),
           settings: toObj(settings),
           visitors: toObj(visitors),
+          quote: toObj(quote)
         });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -864,6 +868,34 @@ export default function App() {
             </div>
           </div>
         </section>
+
+        {/* KATA KATA GURU */}
+        {data.quote && data.quote.quote && (
+          <section className="py-16 bg-white relative overflow-hidden">
+            <div className="absolute inset-0 bg-smansa-navy/[0.02] pointer-events-none" />
+            <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="bg-white rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 relative"
+              >
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-smansa-gold rounded-full flex items-center justify-center text-white shadow-lg">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
+                </div>
+                <p className="text-xl md:text-2xl lg:text-3xl font-medium text-slate-700 italic leading-relaxed mt-4">
+                  "{data.quote.quote}"
+                </p>
+                <div className="mt-6 flex flex-col items-center justify-center gap-2">
+                  <div className="w-10 h-1 bg-smansa-gold rounded-full"></div>
+                  <span className="font-bold text-smansa-navy uppercase tracking-widest text-sm mt-2">{data.quote.teacher_name}</span>
+                  <span className="text-xs text-slate-400 font-medium">Pengajar SMAN 1 Pamekasan</span>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        )}
 
         {/* AGENDA SEKOLAH */}
         <section id="agenda" className="py-24 bg-smansa-navy text-white relative overflow-hidden">

@@ -78,6 +78,7 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     $router->get('navbars', 'PublicContentController@getNavbars');
     $router->get('pages/{slug}', 'PublicContentController@getPage');
     $router->get('visitors', 'PublicContentController@getVisitors');
+    $router->get('random-quote', 'TeacherQuoteController@getRandomQuote');
 });
 
 // API prefix group with Auth middleware
@@ -220,6 +221,11 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->get('admin/navbars/{id}', ['middleware' => 'permission:navigasi,view', 'uses' => 'AdminNavbarController@show']);
     $router->put('admin/navbars/{id}', ['middleware' => 'permission:navigasi,edit', 'uses' => 'AdminNavbarController@update']);
     $router->delete('admin/navbars/{id}', ['middleware' => 'permission:navigasi,delete', 'uses' => 'AdminNavbarController@destroy']);
+
+    $router->get('teacher-quotes', 'TeacherQuoteController@index');
+    $router->post('teacher-quotes', 'TeacherQuoteController@store');
+    $router->put('teacher-quotes/{id}', 'TeacherQuoteController@update');
+    $router->delete('teacher-quotes/{id}', 'TeacherQuoteController@destroy');
 });
 
 //hello 

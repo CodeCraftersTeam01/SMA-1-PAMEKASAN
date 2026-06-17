@@ -189,7 +189,7 @@ const Siswa = () => {
       penerima_kps: false, nomor_kps: '',
       penerima_kip: false, nomor_kip: '',
       is_active: true, tahun_ajaran_id: '',
-      kelas_10: '', kelas_11: '', kelas_12: '',
+      kelas_10: '', kelas_11: '', kelas_12: '', tahun_lulus: ''
     });
     setIsFormModalOpen(true);
   };
@@ -221,7 +221,7 @@ const Siswa = () => {
         'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
         'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
         'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
-        'is_active', 'kelas_10', 'kelas_11', 'kelas_12', 'tahun_ajaran_id'
+        'is_active', 'kelas_10', 'kelas_11', 'kelas_12', 'tahun_ajaran_id', 'tahun_lulus'
       ];
       fields.forEach(f => { if (formSiswa[f] !== undefined) payload[f] = formSiswa[f]; });
       payload.is_active = payload.is_active === true || payload.is_active === 1;
@@ -689,6 +689,7 @@ const Siswa = () => {
                   <th className="pb-3">JK</th>
                   <th className="pb-3">NISN</th>
                   <th className="pb-3">Tahun Masuk</th>
+                  <th className="pb-3">Tahun Lulus</th>
                   <th className="pb-3">Tahun Ajaran</th>
                   <th className="pb-3">Status</th>
                   <th className="pb-3 text-right pr-2">Aksi</th>
@@ -727,6 +728,7 @@ const Siswa = () => {
                       <span className="font-mono text-xs">{item.nisn || '-'}</span>
                     </td>
                     <td className="py-4 text-slate-500">{item.tahun_masuk}</td>
+                    <td className="py-4 text-slate-500">{item.tahun_lulus || '-'}</td>
                     <td className="py-4">
                       {item.tahun_ajaran ? (
                         <span className="px-2 py-1 rounded-md text-[10px] font-bold border bg-indigo-50 text-indigo-600 border-indigo-100">
