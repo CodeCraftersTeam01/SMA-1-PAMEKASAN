@@ -59,6 +59,9 @@ $router->get('api/test-mail', ['middleware' => ['throttle:3,60', 'api.key'], fun
 // PUBLIC Routes untuk Landing Page (Tanpa Auth)
 // =====================================================
 $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'api.key']], function () use ($router) {
+    // New aggregated endpoint for maximum performance (solves 8s LCP on single-thread php built-in server)
+    $router->get('landing-data', 'LandingPageController@getLandingData');
+
     $router->get('facilities', 'LandingPageController@getFacilities');
     $router->get('achievements', 'LandingPageController@getAchievements');
     $router->post('achievements/submit', 'LandingPageController@storeAchievement');
@@ -66,9 +69,7 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     $router->get('testimonials', 'LandingPageController@getTestimonials');
     $router->get('news', 'LandingPageController@getNews');
     $router->get('news/{id}', 'LandingPageController@getNewsDetail');
-    $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
-    $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
-    $router->get('forum', 'LandingPageController@getForum');
+
     $router->get('teachers', 'LandingPageController@getTeachers');
     $router->get('features', 'LandingPageController@getFeatures');
     $router->get('programs', 'LandingPageController@getPrograms');
