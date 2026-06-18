@@ -58,6 +58,12 @@ export default function AdminNavbar() {
       ? `${import.meta.env.VITE_API_BASE_URL}/api/admin/navbars/${formData.id}`
       : `${import.meta.env.VITE_API_BASE_URL}/api/admin/navbars`;
       
+    const payload = {
+      ...formData,
+      parent_id: formData.parent_id === '' ? null : formData.parent_id,
+      url: formData.url === '' ? null : formData.url,
+    };
+
     try {
       const response = await fetch(apiUrl, {
         method: isEditing ? 'PUT' : 'POST',
@@ -66,16 +72,19 @@ export default function AdminNavbar() {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       if (response.ok) {
         setIsModalOpen(false);
         fetchNavbars();
       } else {
-        alert("Gagal menyimpan navigasi.");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Save error:", errorData);
+        alert(`Gagal menyimpan navigasi. ${errorData.message || ''}`);
       }
     } catch (error) {
       console.error(error);
+      alert("Terjadi kesalahan jaringan.");
     }
   };
 
@@ -249,14 +258,14 @@ export default function AdminNavbar() {
                 </div>
                 
                 {urlType === 'page' ? (
-                  <select value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required>
-                    <option value="">-- Pilih Halaman --</option>
+                  <select value={formData.url || ''} onChange={e => setFormData({...formData, url: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">-- Pilih Halaman (Kosongkan jika hanya Parent) --</option>
                     {pages.map(page => (
                       <option key={page.id} value={`/p/${page.slug}`}>{page.title}</option>
                     ))}
                   </select>
                 ) : (
-                  <input type="text" value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://... atau /pendaftaran" className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required />
+                  <input type="text" value={formData.url || ''} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://... atau /pendaftaran (Kosongkan jika hanya Parent)" className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" />
                 )}
               </div>
               

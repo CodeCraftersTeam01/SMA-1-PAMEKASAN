@@ -18,11 +18,6 @@ return new class extends Migration
             $table->year('tahun_lulus');
             $table->string('jurusan')->nullable(); // MIPA/IPS/Bahasa
             
-            // Tracking Status
-            $table->enum('status_saat_ini', ['kuliah', 'kerja', 'wirausaha', 'mencari_kerja', 'lainnya'])->default('mencari_kerja');
-            $table->string('nama_instansi')->nullable(); // Nama Kampus / Perusahaan
-            $table->string('posisi_jurusan')->nullable(); // Nama Jurusan Kuliah / Posisi Pekerjaan
-            
             // Kontak
             $table->string('no_telepon')->nullable();
             $table->string('email')->nullable()->unique();

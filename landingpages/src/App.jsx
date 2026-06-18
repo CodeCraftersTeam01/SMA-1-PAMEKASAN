@@ -225,47 +225,26 @@ export default function App() {
 
     const fetchSettingsAndData = async () => {
       try {
-        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes, quoteRes] = await Promise.all([
-          fetch(`${API_BASE}/news`, { headers }),
-          fetch(`${API_BASE}/academic-calendar`, { headers }),
-          fetch(`${API_BASE}/forum`, { headers }),
-          fetch(`${API_BASE}/achievements`, { headers }),
-          fetch(`${API_BASE}/teachers`, { headers }),
-          fetch(`${API_BASE}/facilities`, { headers }),
-          fetch(`${API_BASE}/features`, { headers }),
-          fetch(`${API_BASE}/programs`, { headers }),
-          fetch(`${API_BASE}/landing-settings?t=${new Date().getTime()}`, { headers }),
-          fetch(`${API_BASE}/visitors`, { headers }),
-          fetch(`${API_BASE}/random-quote`, { headers }),
-        ]);
-        const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-        const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
-        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings, visitors, quote] = await Promise.all([
-          newsRes.ok ? newsRes.json() : [],
-          calRes.ok ? calRes.json() : [],
-          forumRes.ok ? forumRes.json() : [],
-          achRes.ok ? achRes.json() : [],
-          teacherRes.ok ? teacherRes.json() : [],
-          facRes.ok ? facRes.json() : [],
-          featRes.ok ? featRes.json() : [],
-          progRes.ok ? progRes.json() : [],
-          settingsRes.ok ? settingsRes.json() : {},
-          visitorsRes.ok ? visitorsRes.json() : { today: 0, month: 0, year: 0 },
-          quoteRes.ok ? quoteRes.json() : null,
-        ]);
-        setData({
-          news: toArr(news),
-          calendar: toArr(calendar),
-          forums: toArr(forums),
-          achievements: toArr(achievements),
-          teachers: toArr(teachers),
-          facilities: toArr(facilities),
-          features: toArr(features),
-          programs: toArr(programs),
-          settings: toObj(settings),
-          visitors: toObj(visitors),
-          quote: toObj(quote)
-        });
+        const res = await fetch(`${API_BASE}/landing-data`, { headers });
+        if (res.ok) {
+          const json = await res.json();
+          const d = json.data || {};
+          
+          const toArr = (val) => Array.isArray(val) ? val : [];
+          const toObj = (val) => typeof val === 'object' && val !== null && !Array.isArray(val) ? val : {};
+
+          setData({
+            news: toArr(d.news),
+            achievements: toArr(d.achievements),
+            teachers: toArr(d.teachers),
+            facilities: toArr(d.facilities),
+            features: toArr(d.features),
+            programs: toArr(d.programs),
+            settings: toObj(d.settings),
+            visitors: toObj(d.visitors),
+            quote: toObj(d.quote)
+          });
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -914,27 +893,7 @@ export default function App() {
               <p className="text-blue-100 text-lg">Jadwal kegiatan akademik dan non-akademik SMAN 1 Pamekasan.</p>
             </motion.div>
             <div className="max-w-4xl mx-auto space-y-4">
-              {data.calendar.length > 0 ? data.calendar.map((agenda, i) => {
-                const dateObj = new Date(agenda.event_date);
-                const day = dateObj.getDate();
-                const monthStr = dateObj.toLocaleString('id-ID', { month: 'short' });
-                return (
-                <div key={i} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-white/20 transition-all duration-300">
-                  <div className="flex items-center gap-6">
-                    <div className="bg-smansa-gold text-white text-center rounded-xl p-3 w-20 flex-shrink-0">
-                      <span className="block text-2xl font-bold">{day}</span>
-                      <span className="block text-xs uppercase">{monthStr}</span>
-                    </div>
-                    <div>
-                      <span className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1 block">{agenda.type || 'Akademik'}</span>
-                      <h3 className="text-xl font-bold">{agenda.title}</h3>
-                    </div>
-                  </div>
-                  <button className="px-6 py-2 rounded-full border border-white/30 text-sm font-bold hover:bg-white hover:text-smansa-navy transition-colors">
-                    Detail
-                  </button>
-                </div>
-              )}) : [
+              {[
                 { date: '15 Jul', title: 'Hari Pertama Masuk Sekolah', type: 'Akademik' },
                 { date: '20 Aug', title: 'Perayaan HUT RI ke-81', type: 'Non-Akademik' },
                 { date: '05 Sep', title: 'Ujian Tengah Semester (UTS)', type: 'Akademik' }
