@@ -125,11 +125,14 @@ class LandingPageController extends Controller
     public function getSettings()
     {
         $settings = \App\Models\LandingPageSetting::first();
-        if ($settings) {
-            $settings->total_kelas = \App\Models\Kelas::count();
-            $settings->total_siswa = \App\Models\Siswa::where('is_active', 1)->count();
-            $settings->total_alumni = \App\Models\Alumni::count();
+        if (!$settings) {
+            $settings = new \App\Models\LandingPageSetting();
         }
+        
+        $settings->total_kelas = \App\Models\Kelas::count();
+        $settings->total_siswa = \App\Models\Siswa::where('is_active', 1)->count();
+        $settings->total_alumni = \App\Models\Alumni::count();
+
         return $this->cached($settings, 600);
     }
 

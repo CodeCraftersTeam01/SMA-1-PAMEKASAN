@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from "../../../context/AuthContext";
 
 export default function LoginModal({ open, onClose }) {
@@ -8,8 +9,6 @@ export default function LoginModal({ open, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
-
-  if (!open) return null;
 
   const handleLoginGuru = async (e) => {
     e.preventDefault();
@@ -49,151 +48,97 @@ export default function LoginModal({ open, onClose }) {
   };
 
   return (
-    <>
-      <style>{`
-        .hover-card-premium {
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-        .hover-card-premium:hover {
-          transform: translateY(-4px) !important;
-          background-color: #ffffff !important;
-          border-color: #cbd5e1 !important;
-          box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08), 0 10px 15px -6px rgba(0, 0, 0, 0.03) !important;
-        }
-      `}</style>
-
-      {/* Backdrop with Maximum Glassmorphism Blur */}
-      <div
-        style={{ 
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 1040, 
-          backgroundColor: 'rgba(15, 23, 42, 0.25)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          transition: 'all 0.3s ease-in-out'
-        }}
-        onClick={onClose}
-      ></div>
-
-      {/* Modal Container */}
-      <div
-        className="modal fade show d-block"
-        tabIndex="-1"
-        role="dialog"
-        style={{ zIndex: 1050 }}
-      >
-        <div 
-          className="modal-dialog modal-dialog-centered" 
-          style={{ 
-            maxWidth: '400px',
-            transition: 'max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}
-        >
-          <div className="modal-content border-0 rounded-5 shadow-2xl overflow-hidden bg-white">
-            
-            {/* Minimalist Close Button */}
-            <button
-              type="button"
-              className="btn-close shadow-none position-absolute"
-              style={{ top: '2rem', right: '2rem', opacity: 0.3, zIndex: 10 }}
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[1040]"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-3xl shadow-2xl z-[1050] p-8 overflow-hidden"
+          >
+            <button 
               onClick={onClose}
               disabled={loading}
-            ></button>
-
-            {/* SCREEN: Login Guru */}
-            <div className="p-5">
-              <div className="mb-4.5 mt-2">
-                <h3 className="fw-900 text-dark mb-1" style={{ letterSpacing: '-0.04em', fontSize: '24px' }}>
-                  Login Admin
-                </h3>
-                <p className="text-muted small fw-500 mb-0">
-                  Masukkan email dan password untuk mengakses dashboard admin.
-                </p>
-              </div>
-
-              {error && (
-                <div className="alert alert-danger py-3 border-0 rounded-4 small mb-4.5 animate-fade-in-up" style={{ backgroundColor: '#fef2f2', color: '#991b1b' }}>
-                  <i className="bi bi-exclamation-circle-fill me-2"></i>
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleLoginGuru} className="space-y-4">
-                <div className="mb-4">
-                  <label className="form-label small fw-800 text-dark text-uppercase tracking-widest mb-2" style={{ fontSize: '10px' }}>
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control bg-soft border-light py-3 px-3 rounded-4 shadow-none fw-500"
-                    placeholder="name@school.id"
-                    style={{ fontSize: '14px', border: '1px solid #f1f5f9' }}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={loading}
-                    required
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="form-label small fw-800 text-dark text-uppercase tracking-widest mb-2" style={{ fontSize: '10px' }}>
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control bg-soft border-light py-3 px-3 rounded-4 shadow-none fw-500"
-                    placeholder="••••••••"
-                    style={{ fontSize: '14px', border: '1px solid #f1f5f9' }}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={loading}
-                    required
-                  />
-                </div>
-
-                <div className="d-flex justify-content-between align-items-center mb-4.5">
-                  <div className="form-check">
-                    <input
-                      className="form-check-input shadow-none cursor-pointer"
-                      type="checkbox"
-                      id="rememberMe"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                    />
-                    <label
-                      className="form-check-label small text-muted fw-500 cursor-pointer"
-                      htmlFor="rememberMe"
-                      style={{ fontSize: '12px' }}
-                    >
-                      Ingat saya
-                    </label>
-                  </div>
-                </div>
-
-                {/* Action Button - Elegant & Bold */}
-                <button
-                  type="submit"
-                  className="btn btn-primary w-100 py-3.5 rounded-4 d-flex align-items-center justify-content-center gap-3 transition-all mb-3"
-                  disabled={loading}
-                  style={{ backgroundColor: '#1e293b', border: 'none', transition: 'all 0.2s ease' }}
-                >
-                  {loading ? (
-                    <span className="spinner-border spinner-border-sm" role="status"></span>
-                  ) : (
-                    <span className="fw-800 text-uppercase tracking-widest" style={{ fontSize: '12px' }}>Akses Dashboard</span>
-                  )}
-                </button>
-              </form>
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-full transition-colors"
+            >
+              &times;
+            </button>
+            <div className="text-center mb-8">
+              <img src="/logo-sma.png" alt="Logo" className="w-16 h-16 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-slate-800 mb-1">Login Admin</h2>
+              <p className="text-gray-500 text-sm">Masukkan email dan password untuk mengakses dashboard</p>
             </div>
 
-          </div>
-        </div>
-      </div>
-    </>
+            {error && (
+              <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm rounded-xl text-center font-medium border border-red-100">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLoginGuru} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+                  placeholder="name@school.id"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  disabled={loading}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm tracking-widest"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center mt-2 ml-1">
+                <input
+                  id="rememberMe"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={e => setRememberMe(e.target.checked)}
+                  disabled={loading}
+                  className="w-4 h-4 text-slate-800 bg-gray-100 border-gray-300 rounded focus:ring-slate-500 cursor-pointer"
+                />
+                <label htmlFor="rememberMe" className="ml-2 text-xs font-medium text-gray-600 cursor-pointer">
+                  Ingat saya
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg mt-4 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+              >
+                {loading ? (
+                   <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" role="status"></span>
+                ) : (
+                  'Akses Dashboard'
+                )}
+              </button>
+            </form>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }
 
