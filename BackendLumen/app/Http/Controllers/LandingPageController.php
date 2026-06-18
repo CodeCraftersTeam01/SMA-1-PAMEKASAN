@@ -70,32 +70,7 @@ class LandingPageController extends Controller
         return $this->cached($news);
     }
 
-    public function getAcademicCalendar()
-    {
-        $calendars = \Illuminate\Support\Facades\DB::table('academic_calendars')
-            ->select('id', 'title', 'event_date', 'type')
-            ->orderBy('event_date', 'asc')
-            ->limit(5)->get();
-        return $this->cached($calendars);
-    }
 
-    public function getVirtualClassroom()
-    {
-        $classes = \Illuminate\Support\Facades\DB::table('virtual_classrooms')
-            ->select('id', 'title', 'subject', 'teacher', 'thumbnail')
-            ->orderBy('created_at', 'desc')
-            ->limit(6)->get();
-        return $this->cached($classes);
-    }
-
-    public function getForum()
-    {
-        $forums = \Illuminate\Support\Facades\DB::table('discussion_forums')
-            ->select('id', 'title', 'category', 'replies', 'last_active')
-            ->orderBy('last_active', 'desc')
-            ->limit(5)->get();
-        return $this->cached($forums);
-    }
 
     public function getTeachers()
     {

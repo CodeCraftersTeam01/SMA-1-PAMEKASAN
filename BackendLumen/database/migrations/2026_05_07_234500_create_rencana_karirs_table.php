@@ -13,11 +13,28 @@ return new class extends Migration
     {
         Schema::create('rencana_karirs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('siswa_id')->constrained('siswas')->onDelete('cascade');
+            $table->foreignId('siswa_id')->nullable()->constrained('siswas')->onDelete('cascade');
+            $table->foreignId('alumni_id')->nullable()->constrained('alumnis')->onDelete('set null');
+            $table->string('kategori_pilihan')->nullable(); // 'kuliah', 'kerja', 'bisnis'
             $table->string('univ_pilihan_1')->nullable();
             $table->string('jurusan_pilihan_1')->nullable();
             $table->string('univ_pilihan_2')->nullable();
             $table->string('jurusan_pilihan_2')->nullable();
+            
+            // Kuliah additional fields
+            $table->string('jalur_seleksi')->nullable(); // 'SNBP', 'SNBT', 'Mandiri', 'Lainnya'
+            $table->string('status_seleksi')->nullable(); // 'Rencana', 'Diterima'
+
+            // Kerja fields
+            $table->string('nama_perusahaan')->nullable();
+            $table->string('posisi_pekerjaan')->nullable();
+            $table->string('estimasi_gaji')->nullable();
+
+            // Bisnis fields
+            $table->string('bidang_bisnis')->nullable();
+            $table->string('nama_bisnis')->nullable();
+            $table->string('modal_awal')->nullable();
+
             $table->timestamps();
         });
     }

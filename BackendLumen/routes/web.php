@@ -66,9 +66,7 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     $router->get('testimonials', 'LandingPageController@getTestimonials');
     $router->get('news', 'LandingPageController@getNews');
     $router->get('news/{id}', 'LandingPageController@getNewsDetail');
-    $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
-    $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
-    $router->get('forum', 'LandingPageController@getForum');
+
     $router->get('teachers', 'LandingPageController@getTeachers');
     $router->get('features', 'LandingPageController@getFeatures');
     $router->get('programs', 'LandingPageController@getPrograms');

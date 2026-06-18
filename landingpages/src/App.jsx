@@ -223,10 +223,8 @@ export default function App() {
 
     const fetchSettingsAndData = async () => {
       try {
-        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes, quoteRes] = await Promise.all([
+        const [newsRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes, quoteRes] = await Promise.all([
           fetch(`${API_BASE}/news`, { headers }),
-          fetch(`${API_BASE}/academic-calendar`, { headers }),
-          fetch(`${API_BASE}/forum`, { headers }),
           fetch(`${API_BASE}/achievements`, { headers }),
           fetch(`${API_BASE}/teachers`, { headers }),
           fetch(`${API_BASE}/facilities`, { headers }),
@@ -238,10 +236,8 @@ export default function App() {
         ]);
         const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
-        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings, visitors, quote] = await Promise.all([
+        const [news, achievements, teachers, facilities, features, programs, settings, visitors, quote] = await Promise.all([
           newsRes.ok ? newsRes.json() : [],
-          calRes.ok ? calRes.json() : [],
-          forumRes.ok ? forumRes.json() : [],
           achRes.ok ? achRes.json() : [],
           teacherRes.ok ? teacherRes.json() : [],
           facRes.ok ? facRes.json() : [],
@@ -253,8 +249,6 @@ export default function App() {
         ]);
         setData({
           news: toArr(news),
-          calendar: toArr(calendar),
-          forums: toArr(forums),
           achievements: toArr(achievements),
           teachers: toArr(teachers),
           facilities: toArr(facilities),

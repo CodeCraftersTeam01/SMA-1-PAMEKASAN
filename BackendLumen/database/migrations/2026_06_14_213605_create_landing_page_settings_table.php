@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('hero_title')->nullable();
             $table->text('hero_subtitle')->nullable();
             $table->string('hero_image')->nullable();
+            $table->json('hero_images')->nullable();
             $table->string('video_link')->nullable();
             $table->string('ppdb_link')->nullable();
             
