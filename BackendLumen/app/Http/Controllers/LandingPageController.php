@@ -34,9 +34,9 @@ class LandingPageController extends Controller
 
         // Visitors
         $visitors = [
-            'today' => \App\Models\WebsiteVisitor::whereDate('visited_at', date('Y-m-d'))->count(),
-            'month' => \App\Models\WebsiteVisitor::whereYear('visited_at', date('Y'))->whereMonth('visited_at', date('m'))->count(),
-            'year'  => \App\Models\WebsiteVisitor::whereYear('visited_at', date('Y'))->count(),
+            'today' => \App\Models\WebsiteVisitor::whereDate('visited_date', date('Y-m-d'))->count(),
+            'month' => \App\Models\WebsiteVisitor::whereYear('visited_date', date('Y'))->whereMonth('visited_date', date('m'))->count(),
+            'year'  => \App\Models\WebsiteVisitor::whereYear('visited_date', date('Y'))->count(),
         ];
 
         // Random Quote
