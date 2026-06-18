@@ -47,6 +47,10 @@ class TahunAjaranController extends Controller
             'is_active' => $request->has('is_active') ? $request->is_active : false
         ]);
 
+        if ($data->is_active) {
+            $this->triggerKelulusan($data);
+        }
+
         return response()->json([
             'message' => 'Tahun ajaran berhasil dibuat',
             'data' => $data
@@ -108,6 +112,10 @@ class TahunAjaranController extends Controller
 
         $data->update($request->only(['tahun', 'is_active']));
 
+        if ($data->is_active) {
+            $this->triggerKelulusan($data);
+        }
+
         return response()->json([
             'message' => 'Data berhasil diupdate',
             'data' => $data
@@ -130,5 +138,13 @@ class TahunAjaranController extends Controller
         return response()->json([
             'message' => 'Data berhasil dihapus'
         ]);
+    }
+
+    /**
+     * Trigger kelulusan otomatis jika tahun ajaran aktif berubah.
+     */
+    private function triggerKelulusan(TahunAjaran $ta)
+    {
+        \App\Services\GraduationService::checkAll();
     }
 }

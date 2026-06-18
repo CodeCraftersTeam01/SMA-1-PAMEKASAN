@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import SplitText from '../SplitText';
 
 export default function Navbar({ isScrolled, navItems = [], onLoginClick }) {
   const [hoveredItemId, setHoveredItemId] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileExpandedItem, setMobileExpandedItem] = useState(null);
   const location = useLocation();
   const isHomePage = location.pathname === '/';
   
@@ -12,7 +15,7 @@ export default function Navbar({ isScrolled, navItems = [], onLoginClick }) {
 
   return (
     <div className={`fixed w-full z-50 transition-all duration-500 px-4 flex justify-center ${applyScrolledStyle ? 'top-4' : 'top-6'}`}>
-      <nav className={`relative w-full max-w-5xl rounded-full transition-all duration-500 border ${applyScrolledStyle ? 'bg-white/95 shadow-xl text-smansa-navy py-2 lg:py-2.5 border-gray-200 backdrop-blur-md' : 'bg-white/10 text-white py-2 lg:py-3 border-white/20 backdrop-blur-md shadow-2xl'}`}>
+      <nav className={`relative w-full max-w-5xl transition-all duration-500 border rounded-2xl lg:rounded-full ${applyScrolledStyle ? 'bg-white/95 shadow-xl text-smansa-navy py-2 lg:py-2.5 border-gray-200 backdrop-blur-md' : 'bg-white/10 text-white py-2 lg:py-3 border-white/20 backdrop-blur-md shadow-2xl'}`}>
         <div className="px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img src="/logo-sma.png" alt="Logo SMAN 1" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
@@ -130,16 +133,93 @@ export default function Navbar({ isScrolled, navItems = [], onLoginClick }) {
             })}
 
             <div className="flex items-center gap-3 border-l pl-6 border-white/20">
-              <div className="flex bg-black/20 rounded-full p-0.5 border border-white/10">
-                <span className="bg-smansa-navy text-white text-[9px] px-2.5 py-1 rounded-full font-bold">ID</span>
-                <span className="text-gray-300 text-[9px] px-2.5 py-1 font-bold">EN</span>
-              </div>
               <button onClick={onLoginClick} className="bg-smansa-navy text-white px-5 py-2 rounded-full font-bold hover:bg-blue-800 transition-all duration-300 hover:scale-105 shadow-md cursor-pointer">
                 Portal Admin
               </button>
             </div>
           </div>
+          
+          {/* Mobile Menu Toggle Button */}
+          <button 
+            className="lg:hidden p-2 text-current outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+              animate={{ opacity: 1, height: 'auto', overflow: 'visible' }}
+              exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className={`lg:hidden flex flex-col gap-4 ${applyScrolledStyle ? 'text-smansa-navy' : 'text-white'}`}
+            >
+              <div className={`border-t pt-4 pb-4 px-6 flex flex-col gap-4 ${applyScrolledStyle ? 'border-gray-200' : 'border-white/20'}`}>
+                {navItems.map(item => {
+                  const hasChildren = item.children && item.children.length > 0;
+                  return (
+                    <div key={item.id} className="flex flex-col">
+                      <div className="flex justify-between items-center cursor-pointer font-bold text-sm" onClick={() => {
+                        if (hasChildren) {
+                          setMobileExpandedItem(mobileExpandedItem === item.id ? null : item.id);
+                        } else if (item.url) {
+                          setIsMobileMenuOpen(false);
+                        }
+                      }}>
+                        {item.url ? (
+                          item.url.startsWith('/') 
+                            ? <Link to={item.url} onClick={() => setIsMobileMenuOpen(false)}>{item.label}</Link> 
+                            : <a href={item.url} target={item.url.startsWith('#') ? '_self' : '_blank'} rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)}>{item.label}</a>
+                        ) : (
+                          <span>{item.label}</span>
+                        )}
+                        {hasChildren && (
+                          <svg className={`w-4 h-4 transition-transform duration-300 ${mobileExpandedItem === item.id ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                        )}
+                      </div>
+                      <AnimatePresence>
+                        {hasChildren && mobileExpandedItem === item.id && (
+                          <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex flex-col gap-3 pl-4 border-l border-current/20 overflow-hidden"
+                          >
+                            <div className="mt-3 flex flex-col gap-3">
+                              {item.children.map(child => (
+                                <div key={child.id} className="text-sm">
+                                  {child.url && child.url.startsWith('/') 
+                                    ? <Link to={child.url} onClick={() => setIsMobileMenuOpen(false)}>{child.label}</Link> 
+                                    : <a href={child.url} target={child.url.startsWith('#') ? '_self' : '_blank'} rel="noopener noreferrer" onClick={() => setIsMobileMenuOpen(false)}>{child.label}</a>}
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )
+                })}
+                <button onClick={() => { setIsMobileMenuOpen(false); onLoginClick(); }} className="mt-4 bg-smansa-navy text-white px-5 py-2.5 rounded-full font-bold shadow-md w-full active:scale-95 transition-transform duration-200">
+                  Portal Admin
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </div>
   );

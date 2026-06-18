@@ -21,6 +21,24 @@ class AiImportController extends Controller
             'no_pendaftaran' => 'Nomor pendaftaran unik, biasanya auto-generate, abaikan jika tidak ada di Excel',
             'nisn'           => 'Nomor Induk Siswa Nasional (10 digit), kolom utama identitas siswa',
             'nama_lengkap'   => 'Nama lengkap siswa, bisa berupa "Nama", "Nama Siswa", "Nama Peserta Didik"',
+            'nama_ayah'      => 'Nama ayah kandung',
+            'pekerjaan_ayah' => 'Pekerjaan ayah',
+            'pendidikan_ayah'=> 'Jenjang pendidikan ayah',
+            'penghasilan_ayah'=> 'Penghasilan bulanan ayah',
+            'no_hp_ayah'     => 'Nomor telepon/HP ayah',
+            'alamat_ayah'    => 'Alamat tempat tinggal ayah',
+            'nama_ibu'       => 'Nama ibu kandung',
+            'pekerjaan_ibu'  => 'Pekerjaan ibu',
+            'pendidikan_ibu' => 'Jenjang pendidikan ibu',
+            'penghasilan_ibu'=> 'Penghasilan bulanan ibu',
+            'no_hp_ibu'      => 'Nomor telepon/HP ibu',
+            'alamat_ibu'     => 'Alamat tempat tinggal ibu',
+            'nama_wali'      => 'Nama wali murid (jika ada)',
+            'pekerjaan_wali' => 'Pekerjaan wali',
+            'pendidikan_wali'=> 'Jenjang pendidikan wali',
+            'penghasilan_wali'=> 'Penghasilan bulanan wali',
+            'no_hp_wali'     => 'Nomor telepon/HP wali',
+            'alamat_wali'    => 'Alamat tempat tinggal wali',
             'jenis_kelamin'  => 'Jenis kelamin: L (Laki-laki) atau P (Perempuan), bisa juga ditulis "Laki-laki" atau "Perempuan"',
             'tempat_lahir'   => 'Tempat lahir siswa, bisa berupa "Tempat Lahir", "Ttl", "Tempat Lahir Siswa"',
             'tanggal_lahir'  => 'Tanggal lahir siswa format YYYY-MM-DD, bisa berupa "Tanggal Lahir", "Tgl Lahir", "Ttl" atau "Birth Date"',
@@ -285,6 +303,21 @@ class AiImportController extends Controller
                     } elseif ($targetTable === 'pendaftarans') {
                         if (!$isParentCol && preg_match('/nama|peserta didik/i', trim(explode('-', $h)[1] ?? $h)) && !preg_match('/ayah|ibu|wali|rekening|bank|kip|kps|pihak|kks/i', $lowerH)) {
                             $mappedTo = 'nama_lengkap';
+                        } elseif (preg_match('/ayah/i', $lowerH)) {
+                            if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ayah';
+                            elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ayah';
+                            elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ayah';
+                            elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ayah';
+                        } elseif (preg_match('/ibu/i', $lowerH)) {
+                            if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ibu';
+                            elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ibu';
+                            elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ibu';
+                            elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ibu';
+                        } elseif (preg_match('/wali/i', $lowerH)) {
+                            if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_wali';
+                            elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_wali';
+                            elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_wali';
+                            elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_wali';
                         } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
                             $mappedTo = 'nisn';
                         } elseif (!$isParentCol && preg_match('/nik/i', $lowerH)) {
@@ -696,6 +729,10 @@ class AiImportController extends Controller
                         'success' => $successCount,
                         'fail'    => $failCount
                     ]);
+                }
+
+                if ($targetTable === 'siswas') {
+                    \App\Services\GraduationService::checkAll();
                 }
 
                 $sendMsg([

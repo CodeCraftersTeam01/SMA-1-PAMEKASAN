@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { motion } from 'framer-motion';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -63,140 +64,99 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-white to-slate-100 p-4 font-sans text-slate-800">
-      <div className="max-w-[1000px] w-full grid md:grid-cols-2 gap-8 items-center scale-90 md:scale-95 origin-center">
-        
-        {/* Kolom Kiri: Branding */}
-        <div className="hidden md:flex flex-col h-full py-8 pr-8">
-          <div className="mb-8">
-            <img 
-              src="/logo-sma.png" 
-              alt="Logo SMAN 1 Pamekasan" 
-              className="w-[100px] h-auto object-contain"
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 bg-[url('/hero-bg.jpg')] bg-cover bg-center relative p-4">
+      {/* Overlay to darken background like the modal's backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 overflow-hidden z-10"
+      >
+        <div className="text-center mb-8">
+          <img src="/logo-sma.png" alt="Logo" className="w-16 h-16 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-slate-800 mb-1">Login Admin</h2>
+          <p className="text-gray-500 text-sm">Masukkan email dan password untuk mengakses dashboard</p>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-3 bg-red-50 text-red-600 text-sm rounded-xl text-center font-medium border border-red-100">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5 ml-1">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              disabled={isLoading || lockSeconds > 0}
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm"
+              placeholder="admin@smansa.sch.id"
+              required
             />
           </div>
+          <div>
+            <div className="flex justify-between items-center mb-1.5 ml-1 mr-1">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Kata Sandi</label>
+            </div>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                disabled={isLoading || lockSeconds > 0}
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm tracking-widest pr-10"
+                placeholder="••••••••"
+                required
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {showPassword ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                  )}
+                </svg>
+              </button>
+            </div>
+          </div>
           
-          <div className="space-y-4 flex-grow">
-            <h1 className="text-[2.75rem] font-bold text-[#1e293b] leading-[1.15] tracking-tight">
-              SMAN 1 <br /> Pamekasan
-            </h1>
-            <p className="text-[#64748b] text-[13.5px] max-w-[340px] leading-relaxed">
-              Sistem Informasi Sekolah SMAN 1 Pamekasan.
-              Selamat datang di platform digital terintegrasi.
-            </p>
+          <div className="flex items-center mt-2 ml-1">
+            <input
+              id="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={e => setRememberMe(e.target.checked)}
+              disabled={isLoading || lockSeconds > 0}
+              className="w-4 h-4 text-slate-800 bg-gray-100 border-gray-300 rounded focus:ring-slate-500 cursor-pointer"
+            />
+            <label htmlFor="rememberMe" className="ml-2 text-xs font-medium text-gray-600 cursor-pointer">
+              Ingat saya
+            </label>
           </div>
 
-          <div className="flex items-center gap-4 mt-16">
-            <div className="w-8 h-px bg-slate-300"></div>
-            <span className="text-[9px] tracking-[0.2em] text-slate-400 uppercase font-bold">
-              Copyright by PENS Sumenep
-            </span>
-          </div>
-        </div>
-
-        {/* Kolom Kanan: Login Card */}
-        <div className="relative w-full max-w-[380px] mx-auto md:ml-auto bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 p-8 pb-12">
-            
-            <div className="text-center mb-8 mt-1">
-              <h2 className="text-[30px] font-bold text-[#1e293b]">Selamat datang kembali</h2>
-              <p className="text-[12px] text-[#94a3b8] mt-2">
-                Silahkan masukkan email dan password Anda untuk mengakses akun
-              </p>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-[11px] rounded-lg text-center font-medium">
-                {error}
-              </div>
+          <button
+            type="submit"
+            disabled={isLoading || lockSeconds > 0}
+            className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl transition-all shadow-md hover:shadow-lg mt-4 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+          >
+            {lockSeconds > 0 ? (
+              `Coba lagi dalam ${lockSeconds}s`
+            ) : isLoading ? (
+              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" role="status"></span>
+            ) : (
+              'Akses Dashboard'
             )}
-
-            <form onSubmit={handleLogin} className="space-y-3.5">
-              {/* Input Email */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider block ml-1">
-                  Akun email
-                </label>
-                <input 
-                  type="email" 
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-3.5 py-3 rounded-lg bg-[#f8fafc] border border-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-[12px] text-slate-600 placeholder:text-slate-300"
-                />
-              </div>
-
-              {/* Input Password */}
-              <div className="space-y-1 pt-0.5">
-                <div className="flex justify-between items-center ml-1">
-                  <label className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">
-                    Kata sandi
-                  </label>
-                  <a href="#" className="text-[10px] text-[#94a3b8] hover:text-blue-500 transition-colors">
-                    Lupa Kata Sandi?
-                  </a>
-                </div>
-                <div className="relative">
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="w-full px-3.5 py-3 rounded-lg bg-[#f8fafc] border border-slate-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all text-[12px] text-slate-600 placeholder:text-slate-300 tracking-widest"
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      {showPassword ? (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      ) : (
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                      )}
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {/* Keep me logged in */}
-              <div className="flex items-center gap-2 ml-1 pt-1 mb-1.5">
-                <input 
-                  type="checkbox" 
-                  id="remember" 
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-slate-200 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 bg-[#f8fafc] cursor-pointer"
-                />
-                <label htmlFor="remember" className="text-[10px] text-[#94a3b8] cursor-pointer">
-                  Ingat saya
-                </label>
-              </div>
-
-              {/* Submit Button */}
-              <div className="pt-2">
-                <button 
-                  type="submit"
-                  disabled={isLoading || lockSeconds > 0}
-                  className={`w-full bg-[#4685ff] hover:bg-[#3b75e6] text-white text-[11px] font-bold py-3.5 rounded-[6px] transition-all border border-[#2d68e1] uppercase tracking-[0.1em] ${(isLoading || lockSeconds > 0) ? 'opacity-70 cursor-not-allowed shadow-none translate-y-[3px]' : 'shadow-[0_3px_0_0_#2d68e1] active:translate-y-[3px] active:shadow-none'}`}
-                >
-                  {lockSeconds > 0
-                    ? `Coba lagi dalam ${lockSeconds}s`
-                    : (isLoading ? 'Memproses...' : 'Masuk')}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-12 text-center">
-              <p className="text-[10px] text-[#cbd5e1]">
-                © 2026 SMAN 1 Pamekasan | <a href="#">PENS PSDKU SUMENEP</a>
-              </p>
-            </div>
-        </div>
-
-      </div>
+          </button>
+        </form>
+      </motion.div>
     </div>
   );
 };

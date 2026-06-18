@@ -27,20 +27,47 @@ class AdminLandingPageSettingController extends Controller
             $setting = new LandingPageSetting();
         }
 
-        $data = $request->except(['hero_image', 'headmaster_photo']);
+        $data = $request->except(['hero_image', 'headmaster_photo', 'existing_hero_images', 'new_hero_images']);
 
         if ($request->hasFile('hero_image')) {
             if ($setting->hero_image) {
                 Storage::disk('public')->delete($setting->hero_image);
             }
-            $data['hero_image'] = $request->file('hero_image')->store('settings', 'public');
+            $data['hero_image'] = \App\Helpers\ImageHelper::compressAndStore($request->file('hero_image'), 'settings');
         }
+
+        // Handle multiple hero images
+        $existingImages = $request->input('existing_hero_images', []);
+        if (is_string($existingImages)) {
+            $existingImages = json_decode($existingImages, true) ?? [];
+        }
+        
+        $heroImages = $existingImages;
+
+        if ($request->hasFile('new_hero_images')) {
+            $newFiles = $request->file('new_hero_images');
+            if (!is_array($newFiles)) {
+                $newFiles = [$newFiles];
+            }
+            foreach ($newFiles as $file) {
+                $heroImages[] = \App\Helpers\ImageHelper::compressAndStore($file, 'settings');
+            }
+        }
+
+        // Cleanup removed images
+        $oldImages = $setting->hero_images ?? [];
+        foreach ($oldImages as $oldImage) {
+            if (!in_array($oldImage, $existingImages)) {
+                Storage::disk('public')->delete($oldImage);
+            }
+        }
+        $data['hero_images'] = $heroImages;
 
         if ($request->hasFile('headmaster_photo')) {
             if ($setting->headmaster_photo) {
                 Storage::disk('public')->delete($setting->headmaster_photo);
             }
-            $data['headmaster_photo'] = $request->file('headmaster_photo')->store('settings', 'public');
+            $data['headmaster_photo'] = \App\Helpers\ImageHelper::compressAndStore($request->file('headmaster_photo'), 'settings');
         }
 
         $setting->fill($data);

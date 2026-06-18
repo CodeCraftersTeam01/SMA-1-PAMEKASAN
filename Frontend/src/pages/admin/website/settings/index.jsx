@@ -4,7 +4,8 @@ export default function AdminSettings() {
   const [formData, setFormData] = useState({
     hero_title: '',
     hero_subtitle: '',
-    hero_image: null,
+    existing_hero_images: [],
+    new_hero_images: [],
     video_link: '',
     ppdb_link: '',
     headmaster_name: '',
@@ -18,7 +19,7 @@ export default function AdminSettings() {
   });
 
   const [preview, setPreview] = useState({
-    hero_image: null,
+    new_hero_images: [],
     headmaster_photo: null
   });
 
@@ -38,6 +39,8 @@ export default function AdminSettings() {
           setFormData({
             hero_title: data.hero_title || '',
             hero_subtitle: data.hero_subtitle || '',
+            existing_hero_images: Array.isArray(data.hero_images) ? data.hero_images : (data.hero_image ? [data.hero_image] : []),
+            new_hero_images: [],
             video_link: data.video_link || '',
             ppdb_link: data.ppdb_link || '',
             headmaster_name: data.headmaster_name || '',
@@ -49,7 +52,7 @@ export default function AdminSettings() {
             contact_map_url: data.contact_map_url || ''
           });
           setPreview({
-            hero_image: data.hero_image ? `${import.meta.env.VITE_API_BASE_URL}/storage/${data.hero_image}` : null,
+            new_hero_images: [],
             headmaster_photo: data.headmaster_photo ? `${import.meta.env.VITE_API_BASE_URL}/storage/${data.headmaster_photo}` : null
           });
         }
@@ -66,7 +69,14 @@ export default function AdminSettings() {
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
     if (type === 'file') {
-      if (files[0]) {
+      if (name === 'new_hero_images') {
+        if (files.length > 0) {
+          const newFilesArray = Array.from(files);
+          setFormData(prev => ({ ...prev, new_hero_images: [...prev.new_hero_images, ...newFilesArray] }));
+          const newPreviewsArray = newFilesArray.map(file => URL.createObjectURL(file));
+          setPreview(prev => ({ ...prev, new_hero_images: [...prev.new_hero_images, ...newPreviewsArray] }));
+        }
+      } else if (files[0]) {
         setFormData({ ...formData, [name]: files[0] });
         setPreview({ ...preview, [name]: URL.createObjectURL(files[0]) });
       }
@@ -75,14 +85,36 @@ export default function AdminSettings() {
     }
   };
 
+  const removeExistingHeroImage = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      existing_hero_images: prev.existing_hero_images.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  const removeNewHeroImage = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      new_hero_images: prev.new_hero_images.filter((_, index) => index !== indexToRemove)
+    }));
+    setPreview(prev => ({
+      ...prev,
+      new_hero_images: prev.new_hero_images.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const data = new FormData();
       Object.keys(formData).forEach(key => {
-        if (formData[key] !== null && formData[key] !== undefined) {
-          data.append(key, formData[key]);
+        if (key === 'existing_hero_images') {
+           formData[key].forEach(img => data.append('existing_hero_images[]', img));
+        } else if (key === 'new_hero_images') {
+           formData[key].forEach(file => data.append('new_hero_images[]', file));
+        } else if (formData[key] !== null && formData[key] !== undefined) {
+           data.append(key, formData[key]);
         }
       });
 
@@ -140,10 +172,32 @@ export default function AdminSettings() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-600 mb-1">Gambar Latar (Hero Background)</label>
-                <input type="file" name="hero_image" onChange={handleChange} className="w-full px-4 py-2 border border-slate-300 rounded-lg" />
-                {preview.hero_image && <img src={preview.hero_image} alt="Preview Hero" className="mt-2 h-32 object-cover rounded-xl" />}
-                <p className="text-xs text-slate-400 mt-1">Kosongkan jika tidak ingin mengubah gambar.</p>
+                <label className="block text-sm font-semibold text-slate-600 mb-1">Gambar Latar (Hero Slideshow)</label>
+                <input type="file" name="new_hero_images" multiple onChange={handleChange} className="w-full px-4 py-2 border border-slate-300 rounded-lg" accept="image/*" />
+                <p className="text-xs text-slate-400 mt-1">Anda dapat memilih lebih dari satu gambar untuk membuat slideshow.</p>
+                
+                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* Existing Images */}
+                  {formData.existing_hero_images.map((imgUrl, idx) => (
+                    <div key={`existing-${idx}`} className="relative group rounded-xl overflow-hidden border border-slate-200">
+                      <img src={`${import.meta.env.VITE_API_BASE_URL}/storage/${imgUrl}`} alt="Existing Hero" className="h-24 w-full object-cover" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <button type="button" onClick={() => removeExistingHeroImage(idx)} className="bg-red-500 text-white text-xs px-2 py-1 rounded">Hapus</button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* New Images */}
+                  {preview.new_hero_images.map((previewUrl, idx) => (
+                    <div key={`new-${idx}`} className="relative group rounded-xl overflow-hidden border border-blue-400 border-dashed">
+                      <img src={previewUrl} alt="New Hero" className="h-24 w-full object-cover" />
+                      <div className="absolute top-1 left-1 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">BARU</div>
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <button type="button" onClick={() => removeNewHeroImage(idx)} className="bg-red-500 text-white text-xs px-2 py-1 rounded">Hapus</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -168,7 +222,7 @@ export default function AdminSettings() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-600 mb-1">Foto Kepala Sekolah</label>
-                <input type="file" name="headmaster_photo" onChange={handleChange} className="w-full px-4 py-2 border border-slate-300 rounded-lg" />
+                <input type="file" name="headmaster_photo" onChange={handleChange} className="w-full px-4 py-2 border border-slate-300 rounded-lg" accept="image/*" />
                 {preview.headmaster_photo && <img src={preview.headmaster_photo} alt="Preview Kepsek" className="mt-2 h-32 object-cover rounded-xl" />}
               </div>
             </div>

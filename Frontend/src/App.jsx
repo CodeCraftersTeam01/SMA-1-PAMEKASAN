@@ -32,6 +32,7 @@ const AdminTeachers = lazy(() => import('./pages/admin/website/teachers'));
 const AdminFeatures = lazy(() => import('./pages/admin/website/features'));
 const AdminPrograms = lazy(() => import('./pages/admin/website/programs'));
 const AdminSettings = lazy(() => import('./pages/admin/website/settings'));
+const AdminQuotes = lazy(() => import('./pages/quotes'));
 
 // Shared fallback while a lazy chunk is loading
 const RouteFallback = () => (
@@ -97,6 +98,7 @@ const AnimatedRoutes = () => {
               <Route path="/admin/website/features" element={<Page><AdminFeatures /></Page>} />
               <Route path="/admin/website/programs" element={<Page><AdminPrograms /></Page>} />
               <Route path="/admin/website/settings" element={<Page><AdminSettings /></Page>} />
+              <Route path="/admin/website/quotes" element={<Page><AdminQuotes /></Page>} />
             </Route>
 
             {/* Admin Only */}
