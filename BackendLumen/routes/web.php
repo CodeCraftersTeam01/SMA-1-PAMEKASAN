@@ -70,6 +70,7 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     $router->get('news', 'LandingPageController@getNews');
     $router->get('news/{id}', 'LandingPageController@getNewsDetail');
     $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
+    $router->get('announcements', 'LandingPageController@getAnnouncements');
     $router->get('announcements/marquee', 'LandingPageController@getMarquee');
     $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
     $router->get('forum', 'LandingPageController@getForum');
@@ -241,6 +242,24 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->post('teacher-quotes', 'TeacherQuoteController@store');
     $router->put('teacher-quotes/{id}', 'TeacherQuoteController@update');
     $router->delete('teacher-quotes/{id}', 'TeacherQuoteController@destroy');
+
+    // ---------------------------------------------------
+    // AGENDA (Academic Calendars)
+    // ---------------------------------------------------
+    $router->get('admin/agendas', 'AcademicCalendarController@index');
+    $router->post('admin/agendas', 'AcademicCalendarController@store');
+    $router->get('admin/agendas/{id}', 'AcademicCalendarController@show');
+    $router->put('admin/agendas/{id}', 'AcademicCalendarController@update');
+    $router->delete('admin/agendas/{id}', 'AcademicCalendarController@destroy');
+
+    // ---------------------------------------------------
+    // PENGUMUMAN (Announcements)
+    // ---------------------------------------------------
+    $router->get('admin/announcements', 'AnnouncementController@index');
+    $router->post('admin/announcements', 'AnnouncementController@store');
+    $router->get('admin/announcements/{id}', 'AnnouncementController@show');
+    $router->put('admin/announcements/{id}', 'AnnouncementController@update');
+    $router->delete('admin/announcements/{id}', 'AnnouncementController@destroy');
 });
 
 //hello 

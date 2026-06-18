@@ -18,11 +18,18 @@ class AdminFacilityController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'icon' => 'nullable|string',
-            'image_url' => 'nullable|string',
+            'image_url' => 'nullable|image|max:2048',
             'order' => 'nullable|integer',
         ]);
 
-        $facility = Facility::create($request->all());
+        $data = $request->except('image_url');
+        
+        if ($request->hasFile('image_url')) {
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image_url'), 'facilities');
+            $data['image_url'] = $path;
+        }
+
+        $facility = Facility::create($data);
         return response()->json($facility, 201);
     }
 
@@ -33,19 +40,37 @@ class AdminFacilityController extends Controller
 
     public function update(Request $request, $id)
     {
+        $facility = Facility::findOrFail($id);
+
         $this->validate($request, [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'icon' => 'nullable|string',
+            'image_url' => 'nullable|image|max:2048',
+            'order' => 'nullable|integer',
         ]);
 
-        $facility = Facility::findOrFail($id);
-        $facility->update($request->all());
+        $data = $request->except('image_url');
+
+        if ($request->hasFile('image_url')) {
+            if ($facility->image_url && \Illuminate\Support\Facades\Storage::disk('public')->exists($facility->image_url)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($facility->image_url);
+            }
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image_url'), 'facilities');
+            $data['image_url'] = $path;
+        }
+
+        $facility->update($data);
         return response()->json($facility);
     }
 
     public function destroy($id)
     {
-        Facility::findOrFail($id)->delete();
+        $facility = Facility::findOrFail($id);
+        if ($facility->image_url && \Illuminate\Support\Facades\Storage::disk('public')->exists($facility->image_url)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($facility->image_url);
+        }
+        $facility->delete();
         return response()->json(['message' => 'Deleted successfully']);
     }
 }

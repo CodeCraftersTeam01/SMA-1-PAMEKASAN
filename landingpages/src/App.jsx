@@ -112,7 +112,7 @@ export default function App() {
 
   const [data, setData] = useState({
     news: [],
-    calendar: [],
+    agendas: [],
     forums: [],
     achievements: [],
     teachers: [],
@@ -242,7 +242,8 @@ export default function App() {
             programs: toArr(d.programs),
             settings: toObj(d.settings),
             visitors: toObj(d.visitors),
-            quote: toObj(d.quote)
+            quote: toObj(d.quote),
+            agendas: toArr(d.agendas)
           });
         }
       } catch (error) {
@@ -328,6 +329,31 @@ export default function App() {
         {isLoading && <LoadingScreen />}
       </AnimatePresence>
       
+      {/* Scroll To Top Button */}
+      <AnimatePresence>
+        {isScrolled && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.3 }}
+            onClick={() => {
+              if (window.lenis) {
+                window.lenis.scrollTo(0, { immediate: false, duration: 1.5 });
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }}
+            className="fixed bottom-24 right-6 lg:right-10 z-[70] w-12 h-12 bg-smansa-navy text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-blue-800 hover:scale-110 transition-all border border-white/20"
+            aria-label="Scroll to top"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
+      
       {!isFormRoute && (
       <motion.div
         initial={{ y: -100, opacity: 0 }}
@@ -380,7 +406,6 @@ export default function App() {
           } />
           <Route path="/" element={
             <PageTransition>
-              <AnnouncementMarquee />
               <main>
         
         {/* HERO SECTION */}
@@ -444,6 +469,8 @@ export default function App() {
               </motion.div>
             </motion.div>
           </div>
+
+          <AnnouncementMarquee isScrolled={isScrolled} />
 
           {/* Floating Stats Card (Overlapping Bottom) */}
           <motion.div 
@@ -733,6 +760,52 @@ export default function App() {
           </div>
         </section>
 
+        {/* FASILITAS SEKOLAH */}
+        {data.facilities && data.facilities.length > 0 && (
+          <section id="fasilitas" className="py-24 bg-white border-t border-gray-100">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8">
+              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>Fasilitas Sekolah</h2>
+                <p className="text-gray-600 text-lg max-w-2xl mx-auto">Sarana dan prasarana modern untuk mendukung kegiatan belajar mengajar yang optimal.</p>
+              </motion.div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {data.facilities.map((item, index) => (
+                  <motion.div 
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1, duration: 0.5 }}
+                    className="group bg-gray-50 rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col"
+                  >
+                    <div className="aspect-[16/10] overflow-hidden relative">
+                      {item.image_url ? (
+                        <img 
+                          src={`${STORAGE_BASE}/${item.image_url}`} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-blue-100 flex items-center justify-center">
+                          <svg className="w-12 h-12 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    <div className="p-6 flex-1 flex flex-col">
+                      <h3 className="text-xl font-bold text-smansa-navy mb-2">{item.name}</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed flex-1 line-clamp-3">
+                        {item.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* PRESTASI SISWA */}
         <section id="prestasi" className="py-24 bg-gray-50 border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -893,27 +966,31 @@ export default function App() {
               <p className="text-blue-100 text-lg">Jadwal kegiatan akademik dan non-akademik SMAN 1 Pamekasan.</p>
             </motion.div>
             <div className="max-w-4xl mx-auto space-y-4">
-              {[
-                { date: '15 Jul', title: 'Hari Pertama Masuk Sekolah', type: 'Akademik' },
-                { date: '20 Aug', title: 'Perayaan HUT RI ke-81', type: 'Non-Akademik' },
-                { date: '05 Sep', title: 'Ujian Tengah Semester (UTS)', type: 'Akademik' }
-              ].map((agenda, i) => (
-                <div key={i} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-white/20 transition-all duration-300">
-                  <div className="flex items-center gap-6">
-                    <div className="bg-smansa-gold text-white text-center rounded-xl p-3 w-20 flex-shrink-0">
-                      <span className="block text-2xl font-bold">{agenda.date.split(' ')[0]}</span>
-                      <span className="block text-xs uppercase">{agenda.date.split(' ')[1]}</span>
-                    </div>
-                    <div>
-                      <span className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1 block">{agenda.type}</span>
-                      <h3 className="text-xl font-bold">{agenda.title}</h3>
+              {(data.agendas && data.agendas.length > 0 ? data.agendas : [
+                { event_date: '2026-07-15', title: 'Hari Pertama Masuk Sekolah', type: 'Akademik' },
+                { event_date: '2026-08-20', title: 'Perayaan HUT RI ke-81', type: 'Non-Akademik' },
+                { event_date: '2026-09-05', title: 'Ujian Tengah Semester (UTS)', type: 'Akademik' }
+              ]).map((agenda, i) => {
+                const dateObj = new Date(agenda.event_date);
+                const day = isNaN(dateObj) ? '--' : dateObj.getDate().toString().padStart(2, '0');
+                const month = isNaN(dateObj) ? '---' : dateObj.toLocaleString('id-ID', { month: 'short' });
+
+                return (
+                  <div key={i} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-white/20 transition-all duration-300 group">
+                    <div className="flex items-center gap-6 w-full">
+                      <div className="bg-smansa-gold text-white text-center rounded-xl p-3 w-20 flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
+                        <span className="block text-2xl font-bold">{day}</span>
+                        <span className="block text-xs uppercase">{month}</span>
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-blue-200 text-xs font-bold uppercase tracking-wider mb-1 block">{agenda.type || 'Agenda'}</span>
+                        <h3 className="text-xl font-bold mb-1">{agenda.title}</h3>
+                        {agenda.description && <p className="text-sm text-blue-100 line-clamp-2">{agenda.description}</p>}
+                      </div>
                     </div>
                   </div>
-                  <button className="px-6 py-2 rounded-full border border-white/30 text-sm font-bold hover:bg-white hover:text-smansa-navy transition-colors">
-                    Detail
-                  </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

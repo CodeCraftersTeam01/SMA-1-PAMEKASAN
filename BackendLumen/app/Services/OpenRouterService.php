@@ -258,4 +258,38 @@ PROMPT;
 
         return ['header_row' => $headerRow, 'mapping' => $mapping];
     }
+
+    /**
+     * Generate a short and to-the-point announcement for a new Agenda using AI.
+     */
+    public function generateAgendaAnnouncement(string $title, string $description, string $date): string
+    {
+        if (empty($this->apiKey)) {
+            $descText = $description ? " Agenda ini mencakup: {$description}." : "";
+            return "Pemberitahuan kepada seluruh warga SMAN 1 Pamekasan, bahwa akan diadakan kegiatan {$title} yang dijadwalkan pada tanggal {$date}.{$descText} Mohon perhatian dan partisipasinya. Terima kasih.";
+        }
+
+        $prompt = <<<PROMPT
+Kamu adalah sistem humas SMAN 1 Pamekasan.
+Ada agenda baru:
+- Judul: {$title}
+- Tanggal: {$date}
+- Deskripsi: {$description}
+
+Buatkan 1 kalimat pemberitahuan singkat yang sangat simpel, langsung pada intinya (to the point), dan komunikatif untuk teks berjalan (marquee).
+PENTING:
+- JANGAN buat judul atau headline.
+- JANGAN mengulang Judul di awal.
+- Langsung sampaikan informasinya (contoh: "Harap diperhatikan bahwa kegiatan...").
+- JANGAN gunakan markdown.
+PROMPT;
+
+        try {
+            $response = $this->callApi($prompt);
+            return trim($response);
+        } catch (\Throwable $e) {
+            $descText = $description ? " Agenda ini mencakup: {$description}." : "";
+            return "Pemberitahuan kepada seluruh warga SMAN 1 Pamekasan, bahwa akan diadakan kegiatan {$title} yang dijadwalkan pada tanggal {$date}.{$descText} Mohon perhatian dan partisipasinya. Terima kasih.";
+        }
+    }
 }

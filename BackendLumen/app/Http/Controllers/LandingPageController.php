@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 
 class LandingPageController extends Controller
 {
-    private function cached($data, int $seconds = 300)
+    private function cached($data, int $seconds = 60)
     {
         return response()->json(['success' => true, 'data' => $data])
             ->header('Cache-Control', "public, max-age={$seconds}, stale-while-revalidate=60")
@@ -63,6 +63,13 @@ class LandingPageController extends Controller
         $programs = \App\Models\Program::select('id', 'title', 'description', 'features_json')
             ->orderBy('order', 'asc')->get();
 
+        $agendas = \Illuminate\Support\Facades\DB::table('academic_calendars')
+            ->select('id', 'title', 'type', 'event_date', 'description')
+            ->where('event_date', '>=', \Carbon\Carbon::today()->toDateString())
+            ->orderBy('event_date', 'asc')
+            ->limit(6)
+            ->get();
+
         $data = [
             'settings'     => $settings,
             'visitors'     => $visitors,
@@ -73,9 +80,10 @@ class LandingPageController extends Controller
             'facilities'   => $facilities,
             'features'     => $features,
             'programs'     => $programs,
+            'agendas'      => $agendas,
         ];
 
-        return $this->cached($data, 300);
+        return $this->cached($data, 60);
     }
 
     /**
@@ -119,14 +127,14 @@ class LandingPageController extends Controller
             ->select('id', 'title', 'content', 'category', 'image_url', 'published_at')
             ->orderBy('published_at', 'desc')
             ->limit(6)->get();
-        return $this->cached($news);
+        return $this->cached($news, 60);
     }
 
     public function getNewsDetail($id)
     {
         $news = News::find($id);
         if (!$news) return response()->json(['success' => false, 'message' => 'Not found'], 404);
-        return $this->cached($news);
+        return $this->cached($news, 60);
     }
 
 
@@ -135,14 +143,25 @@ class LandingPageController extends Controller
      */
     public function getMarquee()
     {
-        $marquee = \Illuminate\Support\Facades\DB::table('academic_calendars')
-            ->select('id', 'title', 'event_date')
-            ->where('event_date', '>=', \Carbon\Carbon::today()->toDateString())
-            ->orderBy('event_date', 'asc')
+        $marquee = \App\Models\Announcement::where('is_active', true)
+            ->select('id', 'title', 'content', 'created_at as event_date')
+            ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get();
 
-        return $this->cached($marquee);
+        return $this->cached($marquee, 60);
+    }
+
+    public function getAcademicCalendar()
+    {
+        $agendas = \Illuminate\Support\Facades\DB::table('academic_calendars')
+            ->select('id', 'title', 'type', 'event_date', 'description')
+            ->where('event_date', '>=', \Carbon\Carbon::today()->toDateString())
+            ->orderBy('event_date', 'asc')
+            ->limit(6)
+            ->get();
+
+        return $this->cached($agendas, 60);
     }
 
     public function getVirtualClassroom()
@@ -152,6 +171,14 @@ class LandingPageController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(6)->get();
         return $this->cached($classes);
+    }
+
+    public function getAnnouncements()
+    {
+        $announcements = \App\Models\Announcement::where('is_active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(6)->get();
+        return $this->cached($announcements);
     }
 
     public function getForum()

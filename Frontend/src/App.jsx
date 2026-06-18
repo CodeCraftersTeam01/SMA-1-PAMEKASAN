@@ -33,6 +33,8 @@ const AdminFeatures = lazy(() => import('./pages/admin/website/features'));
 const AdminPrograms = lazy(() => import('./pages/admin/website/programs'));
 const AdminSettings = lazy(() => import('./pages/admin/website/settings'));
 const AdminExtracurricular = lazy(() => import('./pages/admin/website/ekstrakurikuler'));
+const AdminAgenda = lazy(() => import('./pages/admin/website/agenda'));
+const AdminPengumuman = lazy(() => import('./pages/admin/website/pengumuman'));
 const AdminQuotes = lazy(() => import('./pages/quotes'));
 
 // Shared fallback while a lazy chunk is loading
@@ -100,6 +102,8 @@ const AnimatedRoutes = () => {
               <Route path="/admin/website/programs" element={<Page><AdminPrograms /></Page>} />
               <Route path="/admin/website/settings" element={<Page><AdminSettings /></Page>} />
               <Route path="/admin/website/ekstrakurikuler" element={<Page><AdminExtracurricular /></Page>} />
+              <Route path="/admin/website/agenda" element={<Page><AdminAgenda /></Page>} />
+              <Route path="/admin/website/pengumuman" element={<Page><AdminPengumuman /></Page>} />
               <Route path="/admin/website/quotes" element={<Page><AdminQuotes /></Page>} />
             </Route>
 

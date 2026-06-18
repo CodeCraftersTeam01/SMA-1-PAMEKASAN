@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.smansa.m-tech.fun";
 const API_KEY = import.meta.env.VITE_API_KEY || "smansa-secure-key-2026";
 
+const fallbackFacilities = [
+  { name: "Laboratorium Komputer", description: "Fasilitas lab komputer modern dengan akses internet cepat untuk menunjang pembelajaran.", image_url: "" },
+  { name: "Perpustakaan", description: "Koleksi buku lengkap dengan ruang baca yang nyaman dan ber-AC.", image_url: "" },
+  { name: "Lapangan Olahraga", description: "Lapangan multifungsi untuk basket, futsal, dan voli.", image_url: "" }
+];
+
 export default function FacilitiesSection() {
   const [facilities, setFacilities] = useState([]);
 
@@ -15,7 +21,9 @@ export default function FacilitiesSection() {
         });
         if (res.ok) {
           const json = await res.json();
-          if (active && Array.isArray(json?.data)) setFacilities(json.data);
+          if (active && Array.isArray(json?.data) && json.data.length > 0) {
+            setFacilities(json.data);
+          }
         }
       } catch (error) {
         console.error("Error fetching facilities:", error);
@@ -27,7 +35,7 @@ export default function FacilitiesSection() {
     };
   }, []);
 
-  if (!facilities.length) return null;
+  const items = facilities.length ? facilities : fallbackFacilities;
 
   const imageUrl = (img) => {
     if (!img) return "/assets/images/logo-smansa.png";
@@ -46,7 +54,7 @@ export default function FacilitiesSection() {
         </div>
 
         <div className="row g-4 mt-2">
-          {facilities.map((f, i) => (
+          {items.map((f, i) => (
             <div className="col-md-6 col-lg-4" key={f.id || i}>
               <div className="card h-100 border-0 shadow-sm reveal overflow-hidden" style={{ transitionDelay: `${i * 80}ms` }}>
                 <img

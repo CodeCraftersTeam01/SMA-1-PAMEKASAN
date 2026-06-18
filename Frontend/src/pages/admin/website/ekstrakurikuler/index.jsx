@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Toast from '../../../../components/Toast';
 
 export default function AdminExtracurricular() {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [toast, setToast] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     name: '',
@@ -14,6 +15,8 @@ export default function AdminExtracurricular() {
     image_path: '',
     imageFile: null,
   });
+
+  const showToast = (message, type = 'info') => setToast({ message, type });
 
   const fetchItems = async () => {
     setIsLoading(true);
@@ -32,7 +35,7 @@ export default function AdminExtracurricular() {
       setItems(response.data);
     } catch (error) {
       console.error('Failed to fetch extracurriculars:', error);
-      setErrorMessage(error.response?.data?.message || 'Gagal memuat data ekstrakurikuler.');
+      showToast(error.response?.data?.message || 'Gagal memuat data ekstrakurikuler.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +53,6 @@ export default function AdminExtracurricular() {
       image_path: '',
       imageFile: null,
     });
-    setErrorMessage('');
     setIsModalOpen(true);
   };
 
@@ -62,7 +64,6 @@ export default function AdminExtracurricular() {
       image_path: item.image_path || '',
       imageFile: null,
     });
-    setErrorMessage('');
     setIsModalOpen(true);
   };
 
@@ -80,10 +81,11 @@ export default function AdminExtracurricular() {
           'Accept': 'application/json',
         }
       });
+      showToast('Ekstrakurikuler berhasil dihapus.', 'success');
       fetchItems();
     } catch (error) {
       console.error('Failed to delete extracurricular:', error);
-      alert(error.response?.data?.message || 'Gagal menghapus data.');
+      showToast(error.response?.data?.message || 'Gagal menghapus data.', 'error');
     }
   };
 
@@ -98,8 +100,8 @@ export default function AdminExtracurricular() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSaving) return;
     setIsSaving(true);
-    setErrorMessage('');
 
     const rawApiUrl = import.meta.env.VITE_API_BASE_URL || '';
     const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
@@ -135,12 +137,13 @@ export default function AdminExtracurricular() {
       });
 
       if (response.status === 200 || response.status === 201) {
+        showToast(`Ekstrakurikuler berhasil ${isEditing ? 'diperbarui' : 'ditambahkan'}.`, 'success');
         setIsModalOpen(false);
         fetchItems();
       }
     } catch (error) {
       console.error('Failed to save extracurricular:', error);
-      setErrorMessage(error.response?.data?.message || 'Gagal menyimpan data.');
+      showToast(error.response?.data?.message || 'Gagal menyimpan data.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -172,17 +175,13 @@ export default function AdminExtracurricular() {
         </div>
       </div>
 
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       {/* Main Container */}
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-100">
         <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
           <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Ekstrakurikuler</h3>
         </div>
-
-        {errorMessage && !isModalOpen && (
-          <div className="mb-4 p-3.5 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
-            {errorMessage}
-          </div>
-        )}
 
         <div className="overflow-x-auto">
           {isLoading ? (
@@ -273,25 +272,20 @@ export default function AdminExtracurricular() {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex p-4 bg-black/55 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md m-auto border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white rounded-t-2xl z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up border border-slate-100">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-xl font-bold text-[#1e293b]">
                 {formData.id ? 'Edit Ekstrakurikuler' : 'Tambah Ekstrakurikuler'}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {errorMessage && (
-                <div className="p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-xl border border-red-100">
-                  {errorMessage}
-                </div>
-              )}
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-slate-700">Nama Kegiatan</label>
@@ -332,7 +326,7 @@ export default function AdminExtracurricular() {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -344,7 +338,7 @@ export default function AdminExtracurricular() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSaving ? (
                     <>
@@ -352,7 +346,7 @@ export default function AdminExtracurricular() {
                       Menyimpan...
                     </>
                   ) : (
-                    'Simpan'
+                    'Simpan Ekstrakurikuler'
                   )}
                 </button>
               </div>
