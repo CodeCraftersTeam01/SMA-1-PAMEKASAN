@@ -26,6 +26,20 @@ const Toast = ({ message, type, onClose }) => {
 const AI_STEPS = { UPLOAD: 1, ANALYZING: 2, MAPPING: 3, PREVIEW: 4, IMPORTING: 5, RESULT: 6 };
 const STEP_LABELS = ['Upload', 'Analisis AI', 'Mapping', 'Preview', 'Import'];
 
+// ─── Options Constants ────────────────────────────────────────────────────────
+const PENDIDIKAN_OPTIONS = [
+  'Tidak Sekolah', 'SD / Sederajat', 'SMP / Sederajat', 'SMA / Sederajat',
+  'D1 / D2 / D3', 'D4 / S1', 'S2', 'S3'
+];
+const PENGHASILAN_OPTIONS = [
+  'Kurang dari Rp 1.000.000',
+  'Rp 1.000.000 - Rp 2.000.000',
+  'Rp 2.000.001 - Rp 3.000.000',
+  'Rp 3.000.001 - Rp 5.000.000',
+  'Rp 5.000.001 - Rp 10.000.000',
+  'Lebih dari Rp 10.000.000'
+];
+
 // ─── Detail Field (read-only) ──────────────────────────────────────────────────
 const DetailField = ({ label, value, highlight }) => (
   <div>
@@ -49,6 +63,29 @@ const Pendaftar = () => {
   const [currentCandidate, setCurrentCandidate]     = useState(null);
   const [viewCandidate, setViewCandidate]           = useState(null);
   const [isViewModalOpen, setIsViewModalOpen]       = useState(false);
+
+  // Parent form logic
+  const [parentType, setParentType] = useState('none');
+  useEffect(() => {
+    if (currentCandidate) {
+      if (currentCandidate.nama_ayah || currentCandidate.nama_ibu) setParentType('ayah_ibu');
+      else if (currentCandidate.nama_wali) setParentType('wali');
+      else setParentType('none');
+    } else {
+      setParentType('none');
+    }
+  }, [currentCandidate]);
+
+  const checkParentMode = (e) => {
+    const form = e.target.closest('form') || e.target.closest('.bulk-edit-row');
+    if (!form) return;
+    const isAyahIbu = ['nama_ayah','pekerjaan_ayah','no_hp_ayah','alamat_ayah','pendidikan_ayah','penghasilan_ayah','nama_ibu','pekerjaan_ibu','no_hp_ibu','alamat_ibu','pendidikan_ibu','penghasilan_ibu'].some(name => form.querySelector(`[name="${name}"]`)?.value);
+    const isWali = ['nama_wali','pekerjaan_wali','no_hp_wali','alamat_wali','pendidikan_wali','penghasilan_wali'].some(name => form.querySelector(`[name="${name}"]`)?.value);
+    
+    if (isAyahIbu) setParentType('ayah_ibu');
+    else if (isWali) setParentType('wali');
+    else setParentType('none');
+  };
 
   // AI wizard
   const [isAiWizardOpen, setIsAiWizardOpen] = useState(false);
@@ -182,10 +219,10 @@ const Pendaftar = () => {
   // ── Template download ──────────────────────────────────────────────────────
   const handleDownloadTemplate = () => {
     const ws = XLSX.utils.aoa_to_sheet([
-      ['nisn', 'nama_lengkap', 'asal_sekolah', 'alamat', 'jalur'],
-      ['1234567890', 'Nama Siswa Contoh', 'SMPN 1 Pamekasan', 'Jl. Contoh No. 1 Pamekasan', 'zonasi'],
+      ['nisn', 'nama_lengkap', 'nama_ayah', 'pekerjaan_ayah', 'pendidikan_ayah', 'penghasilan_ayah', 'no_hp_ayah', 'alamat_ayah', 'nama_ibu', 'pekerjaan_ibu', 'pendidikan_ibu', 'penghasilan_ibu', 'no_hp_ibu', 'alamat_ibu', 'nama_wali', 'pekerjaan_wali', 'pendidikan_wali', 'penghasilan_wali', 'no_hp_wali', 'alamat_wali', 'asal_sekolah', 'alamat', 'jalur'],
+      ['1234567890', 'Nama Siswa Contoh', 'Ayah', 'Pekerjaan', 'D4 / S1', 'Rp 3.000.001 - Rp 5.000.000', '081', 'Alamat Ayah', 'Ibu', 'Pekerjaan', 'SMA / Sederajat', 'Rp 1.000.000 - Rp 2.000.000', '082', 'Alamat Ibu', '', '', '', '', '', '', 'SMPN 1 Pamekasan', 'Jl. Contoh No. 1 Pamekasan', 'zonasi'],
     ]);
-    ws['!cols'] = [{ wch: 15 }, { wch: 30 }, { wch: 25 }, { wch: 40 }, { wch: 20 }];
+    ws['!cols'] = [{ wch: 15 }, { wch: 30 }, { wch: 25 }, { wch: 25 }, { wch: 40 }, { wch: 20 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Template Pendaftar');
     XLSX.writeFile(wb, 'template_pendaftar.xlsx');
@@ -393,6 +430,9 @@ const Pendaftar = () => {
           const data = {};
           const fields = [
             'no_pendaftaran', 'nisn', 'nama_lengkap', 'jenis_kelamin',
+            'nama_ayah', 'pekerjaan_ayah', 'pendidikan_ayah', 'penghasilan_ayah', 'no_hp_ayah', 'alamat_ayah',
+            'nama_ibu', 'pekerjaan_ibu', 'pendidikan_ibu', 'penghasilan_ibu', 'no_hp_ibu', 'alamat_ibu',
+            'nama_wali', 'pekerjaan_wali', 'pendidikan_wali', 'penghasilan_wali', 'no_hp_wali', 'alamat_wali',
             'tempat_lahir', 'tanggal_lahir', 'nik', 'agama',
             'asal_sekolah', 'kecamatan', 'alamat', 'email', 'nomor_hp',
             'status', 'jalur',
@@ -1114,6 +1154,31 @@ const Pendaftar = () => {
                 <DetailField label="No. Pendaftaran" value={viewCandidate.no_pendaftaran} />
                 <DetailField label="NISN" value={viewCandidate.nisn} />
                 <DetailField label="Nama Lengkap" value={viewCandidate.nama_lengkap} highlight />
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Ayah</h4></div>
+                <DetailField label="Nama Ayah" value={viewCandidate.nama_ayah} />
+                <DetailField label="Pekerjaan Ayah" value={viewCandidate.pekerjaan_ayah} />
+                <DetailField label="Pendidikan Ayah" value={viewCandidate.pendidikan_ayah} />
+                <DetailField label="Penghasilan Ayah" value={viewCandidate.penghasilan_ayah} />
+                <DetailField label="No HP Ayah" value={viewCandidate.no_hp_ayah} />
+                <div className="sm:col-span-2"><DetailField label="Alamat Ayah" value={viewCandidate.alamat_ayah} /></div>
+                
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Ibu</h4></div>
+                <DetailField label="Nama Ibu" value={viewCandidate.nama_ibu} />
+                <DetailField label="Pekerjaan Ibu" value={viewCandidate.pekerjaan_ibu} />
+                <DetailField label="Pendidikan Ibu" value={viewCandidate.pendidikan_ibu} />
+                <DetailField label="Penghasilan Ibu" value={viewCandidate.penghasilan_ibu} />
+                <DetailField label="No HP Ibu" value={viewCandidate.no_hp_ibu} />
+                <div className="sm:col-span-2"><DetailField label="Alamat Ibu" value={viewCandidate.alamat_ibu} /></div>
+
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Wali</h4></div>
+                <DetailField label="Nama Wali" value={viewCandidate.nama_wali} />
+                <DetailField label="Pekerjaan Wali" value={viewCandidate.pekerjaan_wali} />
+                <DetailField label="Pendidikan Wali" value={viewCandidate.pendidikan_wali} />
+                <DetailField label="Penghasilan Wali" value={viewCandidate.penghasilan_wali} />
+                <DetailField label="No HP Wali" value={viewCandidate.no_hp_wali} />
+                <div className="sm:col-span-2"><DetailField label="Alamat Wali" value={viewCandidate.alamat_wali} /></div>
+                
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Tambahan</h4></div>
                 <DetailField label="Jenis Kelamin" value={viewCandidate.jenis_kelamin === 'L' ? 'Laki-laki' : viewCandidate.jenis_kelamin === 'P' ? 'Perempuan' : '-'} />
                 <DetailField label="Tempat Lahir" value={viewCandidate.tempat_lahir} />
                 <DetailField label="Tanggal Lahir" value={viewCandidate.tanggal_lahir ? new Date(viewCandidate.tanggal_lahir).toLocaleDateString('id-ID') : '-'} />
@@ -1165,6 +1230,103 @@ const Pendaftar = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
                   <input type="text" name="nama_lengkap" defaultValue={currentCandidate?.nama_lengkap || ''} required className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="Nama lengkap siswa" />
                 </div>
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Ayah</h4></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Ayah</label>
+                  <input type="text" name="nama_ayah" disabled={parentType === 'wali'} defaultValue={currentCandidate?.nama_ayah || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="Nama ayah" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Pekerjaan Ayah</label>
+                  <input type="text" name="pekerjaan_ayah" disabled={parentType === 'wali'} defaultValue={currentCandidate?.pekerjaan_ayah || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="Pekerjaan ayah" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Pendidikan Ayah</label>
+                  <select name="pendidikan_ayah" disabled={parentType === 'wali'} defaultValue={currentCandidate?.pendidikan_ayah || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                    <option value="">— Pilih —</option>
+                    {PENDIDIKAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Penghasilan Ayah</label>
+                  <select name="penghasilan_ayah" disabled={parentType === 'wali'} defaultValue={currentCandidate?.penghasilan_ayah || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                    <option value="">— Pilih —</option>
+                    {PENGHASILAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">No HP Ayah</label>
+                  <input type="text" name="no_hp_ayah" disabled={parentType === 'wali'} defaultValue={currentCandidate?.no_hp_ayah || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="No HP ayah" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat Ayah</label>
+                  <textarea name="alamat_ayah" disabled={parentType === 'wali'} defaultValue={currentCandidate?.alamat_ayah || ''} onChange={checkParentMode} rows="2" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 resize-none disabled:bg-slate-100 disabled:text-slate-400" placeholder="Alamat ayah"></textarea>
+                </div>
+
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Ibu</h4></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Ibu</label>
+                  <input type="text" name="nama_ibu" disabled={parentType === 'wali'} defaultValue={currentCandidate?.nama_ibu || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="Nama ibu" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Pekerjaan Ibu</label>
+                  <input type="text" name="pekerjaan_ibu" disabled={parentType === 'wali'} defaultValue={currentCandidate?.pekerjaan_ibu || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="Pekerjaan ibu" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Pendidikan Ibu</label>
+                  <select name="pendidikan_ibu" disabled={parentType === 'wali'} defaultValue={currentCandidate?.pendidikan_ibu || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                    <option value="">— Pilih —</option>
+                    {PENDIDIKAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Penghasilan Ibu</label>
+                  <select name="penghasilan_ibu" disabled={parentType === 'wali'} defaultValue={currentCandidate?.penghasilan_ibu || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                    <option value="">— Pilih —</option>
+                    {PENGHASILAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">No HP Ibu</label>
+                  <input type="text" name="no_hp_ibu" disabled={parentType === 'wali'} defaultValue={currentCandidate?.no_hp_ibu || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="No HP ibu" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat Ibu</label>
+                  <textarea name="alamat_ibu" disabled={parentType === 'wali'} defaultValue={currentCandidate?.alamat_ibu || ''} onChange={checkParentMode} rows="2" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 resize-none disabled:bg-slate-100 disabled:text-slate-400" placeholder="Alamat ibu"></textarea>
+                </div>
+
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Wali</h4></div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Nama Wali</label>
+                  <input type="text" name="nama_wali" disabled={parentType === 'ayah_ibu'} defaultValue={currentCandidate?.nama_wali || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="Nama wali" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Pekerjaan Wali</label>
+                  <input type="text" name="pekerjaan_wali" disabled={parentType === 'ayah_ibu'} defaultValue={currentCandidate?.pekerjaan_wali || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="Pekerjaan wali" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Pendidikan Wali</label>
+                  <select name="pendidikan_wali" disabled={parentType === 'ayah_ibu'} defaultValue={currentCandidate?.pendidikan_wali || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                    <option value="">— Pilih —</option>
+                    {PENDIDIKAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Penghasilan Wali</label>
+                  <select name="penghasilan_wali" disabled={parentType === 'ayah_ibu'} defaultValue={currentCandidate?.penghasilan_wali || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                    <option value="">— Pilih —</option>
+                    {PENGHASILAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">No HP Wali</label>
+                  <input type="text" name="no_hp_wali" disabled={parentType === 'ayah_ibu'} defaultValue={currentCandidate?.no_hp_wali || ''} onChange={checkParentMode} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 disabled:bg-slate-100 disabled:text-slate-400" placeholder="No HP wali" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat Wali</label>
+                  <textarea name="alamat_wali" disabled={parentType === 'ayah_ibu'} defaultValue={currentCandidate?.alamat_wali || ''} onChange={checkParentMode} rows="2" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 resize-none disabled:bg-slate-100 disabled:text-slate-400" placeholder="Alamat wali"></textarea>
+                </div>
+
+                <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Tambahan</h4></div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Jenis Kelamin</label>
                   <select name="jenis_kelamin" defaultValue={currentCandidate?.jenis_kelamin || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white">
@@ -1325,6 +1487,79 @@ const Pendaftar = () => {
                               <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap</label>
                               <input type="text" value={c.nama_lengkap || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nama_lengkap: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm" />
                             </div>
+                            <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Ayah</h4></div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Ayah</label>
+                              <input type="text" name="nama_ayah" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.nama_ayah || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nama_ayah: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm disabled:bg-slate-100 disabled:text-slate-400" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Pekerjaan Ayah</label>
+                              <input type="text" name="pekerjaan_ayah" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.pekerjaan_ayah || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], pekerjaan_ayah: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm disabled:bg-slate-100 disabled:text-slate-400" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Pendidikan Ayah</label>
+                              <select name="pendidikan_ayah" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.pendidikan_ayah || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], pendidikan_ayah: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                                <option value="">— Pilih —</option>
+                                {PENDIDIKAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Penghasilan Ayah</label>
+                              <select name="penghasilan_ayah" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.penghasilan_ayah || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], penghasilan_ayah: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                                <option value="">— Pilih —</option>
+                                {PENGHASILAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            </div>
+
+                            <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Ibu</h4></div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Ibu</label>
+                              <input type="text" name="nama_ibu" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.nama_ibu || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nama_ibu: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm disabled:bg-slate-100 disabled:text-slate-400" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Pekerjaan Ibu</label>
+                              <input type="text" name="pekerjaan_ibu" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.pekerjaan_ibu || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], pekerjaan_ibu: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm disabled:bg-slate-100 disabled:text-slate-400" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Pendidikan Ibu</label>
+                              <select name="pendidikan_ibu" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.pendidikan_ibu || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], pendidikan_ibu: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                                <option value="">— Pilih —</option>
+                                {PENDIDIKAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Penghasilan Ibu</label>
+                              <select name="penghasilan_ibu" disabled={!!(c.nama_wali || c.pekerjaan_wali || c.no_hp_wali || c.alamat_wali || c.pendidikan_wali || c.penghasilan_wali)} value={c.penghasilan_ibu || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], penghasilan_ibu: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                                <option value="">— Pilih —</option>
+                                {PENGHASILAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            </div>
+
+                            <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Wali</h4></div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Wali</label>
+                              <input type="text" name="nama_wali" disabled={!!(c.nama_ayah || c.pekerjaan_ayah || c.pendidikan_ayah || c.penghasilan_ayah || c.nama_ibu || c.pekerjaan_ibu || c.pendidikan_ibu || c.penghasilan_ibu)} value={c.nama_wali || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], nama_wali: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm disabled:bg-slate-100 disabled:text-slate-400" />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Pekerjaan Wali</label>
+                              <input type="text" name="pekerjaan_wali" disabled={!!(c.nama_ayah || c.pekerjaan_ayah || c.pendidikan_ayah || c.penghasilan_ayah || c.nama_ibu || c.pekerjaan_ibu || c.pendidikan_ibu || c.penghasilan_ibu)} value={c.pekerjaan_wali || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], pekerjaan_wali: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm disabled:bg-slate-100 disabled:text-slate-400" />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Pendidikan Wali</label>
+                              <select name="pendidikan_wali" disabled={!!(c.nama_ayah || c.pekerjaan_ayah || c.pendidikan_ayah || c.penghasilan_ayah || c.nama_ibu || c.pekerjaan_ibu || c.pendidikan_ibu || c.penghasilan_ibu)} value={c.pendidikan_wali || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], pendidikan_wali: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                                <option value="">— Pilih —</option>
+                                {PENDIDIKAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Penghasilan Wali</label>
+                              <select name="penghasilan_wali" disabled={!!(c.nama_ayah || c.pekerjaan_ayah || c.pendidikan_ayah || c.penghasilan_ayah || c.nama_ibu || c.pekerjaan_ibu || c.pendidikan_ibu || c.penghasilan_ibu)} value={c.penghasilan_wali || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], penghasilan_wali: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm bg-white disabled:bg-slate-100 disabled:text-slate-400">
+                                <option value="">— Pilih —</option>
+                                {PENGHASILAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              </select>
+                            </div>
+
+                            <div className="sm:col-span-2 mt-2 pt-4 border-t border-slate-100"><h4 className="text-[13px] font-bold text-slate-800 uppercase tracking-wider">Data Tambahan</h4></div>
                             <div>
                               <label className="block text-xs font-semibold text-slate-700 mb-1">Jenis Kelamin</label>
                               <select value={c.jenis_kelamin || ''} onChange={e => setPerUserData(prev => ({ ...prev, [id]: { ...prev[id], jenis_kelamin: e.target.value } }))} className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 text-sm">
