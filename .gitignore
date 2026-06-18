@@ -23,3 +23,7 @@ Backend/.vscode
 Backend/.zed
 .antigravitycli/
 AGENTS.md
+agents.md
+design.md
+rules.md
+tasks.md

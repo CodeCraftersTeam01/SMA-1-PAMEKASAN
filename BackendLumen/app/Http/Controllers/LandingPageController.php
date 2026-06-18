@@ -79,6 +79,21 @@ class LandingPageController extends Controller
         return $this->cached($calendars);
     }
 
+    /**
+     * GET /api/announcements/marquee or GET /api/public/announcements/marquee
+     */
+    public function getMarquee()
+    {
+        $marquee = \Illuminate\Support\Facades\DB::table('academic_calendars')
+            ->select('id', 'title', 'event_date')
+            ->where('event_date', '>=', \Carbon\Carbon::today()->toDateString())
+            ->orderBy('event_date', 'asc')
+            ->limit(5)
+            ->get();
+
+        return $this->cached($marquee);
+    }
+
     public function getVirtualClassroom()
     {
         $classes = \Illuminate\Support\Facades\DB::table('virtual_classrooms')

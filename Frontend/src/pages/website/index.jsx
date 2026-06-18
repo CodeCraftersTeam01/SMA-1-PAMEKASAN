@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Features from "./components/Features";
 import Announcement from "./components/Announcement";
+import AnnouncementMarquee from "./components/AnnouncementMarquee";
 import Footer from "./components/Footer";
 import LoginModal from "./components/LoginModal";
 
@@ -12,6 +13,7 @@ import ProgramsSection from "./sections/ProgramsSection";
 import AchievementsSection from "./sections/AchievementsSection";
 import FacilitiesSection from "./sections/FacilitiesSection";
 import TeachersSection from "./sections/TeachersSection";
+import ExtracurricularSection from "./sections/ExtracurricularSection";
 
 import useLoginModal from "./hooks/useLoginModal";
 
@@ -123,6 +125,7 @@ export default function WebsiteHome() {
   return (
     <div className="website-page">
       <Navbar onLoginClick={openLogin} isScrolled={isScrolled} isLoginOpen={isLoginOpen} />
+      <AnnouncementMarquee />
 
       <main>
         <Hero onLoginClick={openLogin} stats={dashboardStats} />
@@ -133,6 +136,7 @@ export default function WebsiteHome() {
         <AchievementsSection />
         <FacilitiesSection />
         <TeachersSection />
+        <ExtracurricularSection />
         <Announcement />
       </main>
 

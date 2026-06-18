@@ -18,10 +18,18 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-anim': ['framer-motion', 'gsap', '@gsap/react'],
-          'vendor-lenis': ['lenis'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('framer-motion') || id.includes('gsap') || id.includes('@gsap/react')) {
+              return 'vendor-anim';
+            }
+            if (id.includes('lenis')) {
+              return 'vendor-lenis';
+            }
+          }
         }
       }
     }

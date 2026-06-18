@@ -12,6 +12,8 @@ import SplitText from './SplitText';
 import CountUp from './CountUp';
 import Navbar from './components/Navbar';
 import LoginModal from './components/LoginModal';
+import AnnouncementMarquee from './components/AnnouncementMarquee';
+import ExtracurricularSection from './components/ExtracurricularSection';
 
 const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
@@ -399,6 +401,7 @@ export default function App() {
           } />
           <Route path="/" element={
             <PageTransition>
+              <AnnouncementMarquee />
               <main>
         
         {/* HERO SECTION */}
@@ -831,8 +834,11 @@ export default function App() {
           </div>
         </section>
 
+        {/* EKSTRAKURIKULER */}
+        <ExtracurricularSection />
+
         {/* DIREKTORI GURU */}
-        <section id="guru" className="py-24 bg-white">
+        <section id="guru" className="py-24 bg-gray-50 border-t border-gray-200">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex justify-between items-end mb-16">
               <div>

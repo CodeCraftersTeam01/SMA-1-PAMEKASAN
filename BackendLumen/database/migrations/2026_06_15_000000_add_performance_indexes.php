@@ -86,6 +86,15 @@ class AddPerformanceIndexes extends Migration
 
     private function indexExists(string $table, string $index): bool
     {
+        $driver = DB::connection()->getDriverName();
+        if ($driver === 'sqlite') {
+            $result = DB::select(
+                "SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = ? AND name = ?",
+                [$table, $index]
+            );
+            return !empty($result);
+        }
+
         $result = DB::select(
             "SHOW INDEX FROM `{$table}` WHERE Key_name = ?",
             [$index]

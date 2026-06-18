@@ -1,0 +1,95 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Extracurricular;
+use Illuminate\Http\Request;
+
+class ExtracurricularController extends Controller
+{
+    /**
+     * Display a listing of extracurriculars.
+     */
+    public function index()
+    {
+        $items = Extracurricular::orderBy('name', 'asc')->get();
+        return response()->json($items);
+    }
+
+    /**
+     * Store a newly created extracurricular in storage.
+     */
+    public function store(Request $request)
+    {
+        $this->validate($request, [
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
+        ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('extracurriculars', 'public');
+            $imagePath = url('storage/' . $path);
+        } elseif ($request->input('image_path')) {
+            $imagePath = $request->input('image_path');
+        }
+
+        $item = Extracurricular::create([
+            'name' => $request->input('name'),
+            'description' => $request->input('description'),
+            'image_path' => $imagePath,
+        ]);
+
+        return response()->json($item, 201);
+    }
+
+    /**
+     * Display the specified extracurricular.
+     */
+    public function show($id)
+    {
+        $item = Extracurricular::findOrFail($id);
+        return response()->json($item);
+    }
+
+    /**
+     * Update the specified extracurricular in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $this->validate($request, [
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
+        ]);
+
+        $item = Extracurricular::findOrFail($id);
+
+        $imagePath = $item->image_path;
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('extracurriculars', 'public');
+            $imagePath = url('storage/' . $path);
+        } elseif ($request->has('image_path')) {
+            $imagePath = $request->input('image_path');
+        }
+
+        $item->update([
+            'name' => $request->input('name'),
+            'description' => $request->input('description'),
+            'image_path' => $imagePath,
+        ]);
+
+        return response()->json($item);
+    }
+
+    /**
+     * Remove the specified extracurricular from storage.
+     */
+    public function destroy($id)
+    {
+        $item = Extracurricular::findOrFail($id);
+        $item->delete();
+        return response()->json(['message' => 'Deleted successfully']);
+    }
+}

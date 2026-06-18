@@ -67,11 +67,13 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     $router->get('news', 'LandingPageController@getNews');
     $router->get('news/{id}', 'LandingPageController@getNewsDetail');
     $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
+    $router->get('announcements/marquee', 'LandingPageController@getMarquee');
     $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
     $router->get('forum', 'LandingPageController@getForum');
     $router->get('teachers', 'LandingPageController@getTeachers');
     $router->get('features', 'LandingPageController@getFeatures');
     $router->get('programs', 'LandingPageController@getPrograms');
+    $router->get('extracurriculars', 'ExtracurricularController@index');
     $router->get('landing-settings', 'LandingPageController@getSettings');
 
     // Dynamic CMS Content
@@ -80,6 +82,9 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     $router->get('visitors', 'PublicContentController@getVisitors');
     $router->get('random-quote', 'TeacherQuoteController@getRandomQuote');
 });
+
+// Direct alias for RESTful URL standard outside the prefix group
+$router->get('api/announcements/marquee', 'LandingPageController@getMarquee');
 
 // API prefix group with Auth middleware
 $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']], function () use ($router) {
@@ -210,6 +215,13 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->get('admin/programs/{id}', ['middleware' => 'permission:programs,view', 'uses' => 'AdminProgramController@show']);
     $router->put('admin/programs/{id}', ['middleware' => 'permission:programs,edit', 'uses' => 'AdminProgramController@update']);
     $router->delete('admin/programs/{id}', ['middleware' => 'permission:programs,delete', 'uses' => 'AdminProgramController@destroy']);
+
+    $router->get('admin/extracurriculars', ['middleware' => 'permission:ekstrakurikuler,view', 'uses' => 'ExtracurricularController@index']);
+    $router->post('admin/extracurriculars', ['middleware' => 'permission:ekstrakurikuler,create', 'uses' => 'ExtracurricularController@store']);
+    $router->get('admin/extracurriculars/{id}', ['middleware' => 'permission:ekstrakurikuler,view', 'uses' => 'ExtracurricularController@show']);
+    $router->put('admin/extracurriculars/{id}', ['middleware' => 'permission:ekstrakurikuler,edit', 'uses' => 'ExtracurricularController@update']);
+    $router->post('admin/extracurriculars/{id}', ['middleware' => 'permission:ekstrakurikuler,edit', 'uses' => 'ExtracurricularController@update']); // Spoofed PUT request for file upload support
+    $router->delete('admin/extracurriculars/{id}', ['middleware' => 'permission:ekstrakurikuler,delete', 'uses' => 'ExtracurricularController@destroy']);
 
     // Landing Page Settings (Single Record) - admin only
     $router->get('admin/landing-page-settings', ['middleware' => 'role:admin', 'uses' => 'AdminLandingPageSettingController@index']);
