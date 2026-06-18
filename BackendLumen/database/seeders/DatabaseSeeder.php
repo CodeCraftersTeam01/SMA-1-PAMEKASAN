@@ -41,19 +41,25 @@ class DatabaseSeeder extends Seeder
         $jurusanSMA = ['MIPA', 'IPS', 'Bahasa'];
 
         for ($i = 0; $i < 10; $i++) {
-            $status = $faker->randomElement($statusOptions);
-            
-            \Illuminate\Support\Facades\DB::table('alumnis')->insert([
+            $kategori = $faker->randomElement(['kuliah', 'kerja', 'bisnis']);
+            $alumniId = \Illuminate\Support\Facades\DB::table('alumnis')->insertGetId([
                 'nisn' => $faker->unique()->numerify('##########'),
                 'nama_lengkap' => $faker->name,
                 'tahun_lulus' => $faker->numberBetween(2018, 2023),
                 'jurusan' => $faker->randomElement($jurusanSMA),
-                'status_saat_ini' => $status,
-                'nama_instansi' => in_array($status, ['kuliah', 'kerja']) ? $faker->company : null,
-                'posisi_jurusan' => in_array($status, ['kuliah']) ? 'Sistem Informasi' : (in_array($status, ['kerja']) ? 'Staff' : null),
                 'no_telepon' => $faker->phoneNumber,
                 'email' => $faker->unique()->safeEmail,
                 'alamat_domisili' => $faker->address,
+                'created_at' => \Carbon\Carbon::now(),
+                'updated_at' => \Carbon\Carbon::now(),
+            ]);
+
+            \Illuminate\Support\Facades\DB::table('rencana_karirs')->insert([
+                'alumni_id' => $alumniId,
+                'siswa_id' => null,
+                'kategori_pilihan' => $kategori,
+                'nama_perusahaan' => $kategori === 'kerja' ? $faker->company : null,
+                'posisi_pekerjaan' => $kategori === 'kerja' ? 'Staff' : null,
                 'created_at' => \Carbon\Carbon::now(),
                 'updated_at' => \Carbon\Carbon::now(),
             ]);

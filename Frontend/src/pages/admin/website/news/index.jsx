@@ -9,6 +9,7 @@ export default function AdminNews() {
     title: '',
     content: '',
     image_url: '',
+    image: null,
     category: 'Berita Sekolah'
   });
 
@@ -40,20 +41,30 @@ export default function AdminNews() {
       ? `${import.meta.env.VITE_API_BASE_URL}/api/admin/news/${formData.id}`
       : `${import.meta.env.VITE_API_BASE_URL}/api/admin/news`;
       
+    const payload = new FormData();
+    payload.append('title', formData.title);
+    payload.append('content', formData.content);
+    payload.append('category', formData.category);
+    if (formData.image) {
+      payload.append('image', formData.image);
+    }
+    if (isEditing) {
+      payload.append('_method', 'PUT');
+    }
+
     try {
       const response = await fetch(url, {
-        method: isEditing ? 'PUT' : 'POST',
+        method: 'POST', // Use POST for FormData, Lumen handles _method=PUT
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: payload
       });
       if (response.ok) {
         setIsModalOpen(false);
         fetchNews();
-        setFormData({ id: null, title: '', content: '', image_url: '', category: 'Berita Sekolah' });
+        setFormData({ id: null, title: '', content: '', image_url: '', image: null, category: 'Berita Sekolah' });
       } else {
         alert("Gagal menyimpan berita.");
       }
@@ -68,6 +79,7 @@ export default function AdminNews() {
       title: item.title,
       content: item.content,
       image_url: item.image_url || '',
+      image: null,
       category: item.category || 'Berita Sekolah'
     });
     setIsModalOpen(true);
@@ -90,7 +102,7 @@ export default function AdminNews() {
   };
 
   const handleOpenModal = () => {
-    setFormData({ id: null, title: '', content: '', image_url: '', category: 'Berita Sekolah' });
+    setFormData({ id: null, title: '', content: '', image_url: '', image: null, category: 'Berita Sekolah' });
     setIsModalOpen(true);
   };
 
@@ -194,14 +206,18 @@ export default function AdminNews() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">URL Gambar Header</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Gambar Header (Opsional)</label>
                   <input 
-                    type="text" 
-                    value={formData.image_url} 
-                    onChange={e => setFormData({...formData, image_url: e.target.value})} 
-                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="https://..."
+                    type="file" 
+                    accept="image/*"
+                    onChange={e => setFormData({...formData, image: e.target.files[0]})} 
+                    className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
+                  {formData.image_url && !formData.image && (
+                    <div className="mt-2 text-[11px] text-gray-500">
+                      Gambar saat ini: <a href={formData.image_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">Lihat Gambar</a>
+                    </div>
+                  )}
                 </div>
               </div>
               <div>

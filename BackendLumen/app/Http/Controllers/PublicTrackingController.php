@@ -100,7 +100,7 @@ class PublicTrackingController extends Controller
         }
 
         // 2. Ambil pengaturan tracking (default open jika tidak ada record)
-        $config = PengaturanTracking::first();
+        $config = PengaturanTracking::with('tahunAjaran')->first();
         $isOpen = $config ? (bool)$config->is_open : true;
         if (!$isOpen) {
             return response()->json([
@@ -121,24 +121,20 @@ class PublicTrackingController extends Controller
             ], 404);
         }
 
-        // 4. Verifikasi batasan Tahun Ajaran (maksimal 4 tahun dari tahun ajaran aktif)
+        // 4. Verifikasi batasan Tahun Ajaran berdasarkan pengaturan tracking
+        if ($config && $config->tahun_ajaran_id) {
+            if ($siswa->tahun_ajaran_id != $config->tahun_ajaran_id) {
+                $allowedTahun = $config->tahunAjaran ? $config->tahunAjaran->tahun : 'yang telah ditentukan';
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Akses Ditolak: Hanya siswa dari Tahun Ajaran ' . $allowedTahun . ' yang diizinkan mengisi form ini.'
+                ], 403);
+            }
+        }
+
         $activeTahunAjaran = TahunAjaran::where('is_active', true)->first();
         if (!$activeTahunAjaran) {
             $activeTahunAjaran = TahunAjaran::orderBy('tahun', 'desc')->first();
-        }
-
-        if ($activeTahunAjaran) {
-            $siswaTahun = $siswa->tahunAjaran ? $siswa->tahunAjaran->tahun : ($siswa->tahun_masuk ?? date('Y'));
-            $activeYear = (int) substr($activeTahunAjaran->tahun, 0, 4);
-            $siswaYear = (int) substr($siswaTahun, 0, 4);
-            $diff = $activeYear - $siswaYear;
-
-            if ($diff < 0 || $diff > 4) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Akses Ditolak: Tahun Ajaran Anda (' . $siswaTahun . ') tidak diperbolehkan untuk mengisi penelusuran alumni saat ini (Maksimal 4 tahun dari tahun ajaran aktif ' . $activeTahunAjaran->tahun . ').'
-                ], 403);
-            }
         }
 
         // 5. Muat data rencana karir jika sudah ada
@@ -200,7 +196,7 @@ class PublicTrackingController extends Controller
         }
 
         // 1. Ambil pengaturan tracking (default open jika tidak ada record)
-        $config = PengaturanTracking::first();
+        $config = PengaturanTracking::with('tahunAjaran')->first();
         $isOpen = $config ? (bool)$config->is_open : true;
         if (!$isOpen) {
             return response()->json([
@@ -221,24 +217,19 @@ class PublicTrackingController extends Controller
             ], 404);
         }
 
-        // 3. Verifikasi batasan tahun ajaran
-        $activeTahunAjaran = TahunAjaran::where('is_active', true)->first();
-        if (!$activeTahunAjaran) {
-            $activeTahunAjaran = TahunAjaran::orderBy('tahun', 'desc')->first();
-        }
-
-        if ($activeTahunAjaran) {
-            $siswaTahun = $siswa->tahunAjaran ? $siswa->tahunAjaran->tahun : ($siswa->tahun_masuk ?? date('Y'));
-            $activeYear = (int) substr($activeTahunAjaran->tahun, 0, 4);
-            $siswaYear = (int) substr($siswaTahun, 0, 4);
-            $diff = $activeYear - $siswaYear;
-
-            if ($diff < 0 || $diff > 4) {
+        // 3. Verifikasi batasan tahun ajaran berdasarkan pengaturan tracking
+        if ($config && $config->tahun_ajaran_id) {
+            if ($siswa->tahun_ajaran_id != $config->tahun_ajaran_id) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Akses Ditolak: Tahun Ajaran Anda tidak memiliki akses.'
                 ], 403);
             }
+        }
+
+        $activeTahunAjaran = TahunAjaran::where('is_active', true)->first();
+        if (!$activeTahunAjaran) {
+            $activeTahunAjaran = TahunAjaran::orderBy('tahun', 'desc')->first();
         }
 
         try {

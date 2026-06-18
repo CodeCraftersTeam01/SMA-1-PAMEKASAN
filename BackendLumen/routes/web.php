@@ -26,7 +26,7 @@ $router->get('/', function () use ($router) {
 // $router->post('api/register', ['middleware' => 'throttle:10,60', 'uses' => 'AuthController@register']);
 $router->post('api/login', ['middleware' => 'throttle:20,60', 'uses' => 'AuthController@login']);
 
-$router->get('api/dashboard', ['middleware' => 'api.key', 'uses' => 'DashboardController@index']);
+
 
 // Serve uploaded files from the "public" disk via route (no storage:link needed)
 $router->get('storage/{path:.*}', 'StorageController@show');
@@ -77,12 +77,17 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     // Dynamic CMS Content
     $router->get('navbars', 'PublicContentController@getNavbars');
     $router->get('pages/{slug}', 'PublicContentController@getPage');
+    $router->get('visitors', 'PublicContentController@getVisitors');
+    $router->get('random-quote', 'TeacherQuoteController@getRandomQuote');
 });
 
 // API prefix group with Auth middleware
 $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']], function () use ($router) {
     $router->post('logout', 'AuthController@logout');
     $router->get('user', 'AuthController@user');
+    
+    // Routes untuk Dashboard
+    $router->get('dashboard', 'DashboardController@index');
 
     // Routes untuk Profile
     $router->post('profile', 'ProfileController@updateProfile');
@@ -216,6 +221,11 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->get('admin/navbars/{id}', ['middleware' => 'permission:navigasi,view', 'uses' => 'AdminNavbarController@show']);
     $router->put('admin/navbars/{id}', ['middleware' => 'permission:navigasi,edit', 'uses' => 'AdminNavbarController@update']);
     $router->delete('admin/navbars/{id}', ['middleware' => 'permission:navigasi,delete', 'uses' => 'AdminNavbarController@destroy']);
+
+    $router->get('teacher-quotes', 'TeacherQuoteController@index');
+    $router->post('teacher-quotes', 'TeacherQuoteController@store');
+    $router->put('teacher-quotes/{id}', 'TeacherQuoteController@update');
+    $router->delete('teacher-quotes/{id}', 'TeacherQuoteController@destroy');
 });
 
 //hello 

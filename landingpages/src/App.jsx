@@ -85,6 +85,7 @@ const LoadingScreen = () => (
 
 export default function App() {
   const location = useLocation();
+  const isFormRoute = location.pathname === '/prestasi/form';
 
   useEffect(() => {
     if (location.hash) {
@@ -116,7 +117,9 @@ export default function App() {
     facilities: [],
     features: [],
     programs: [],
-    settings: {}
+    settings: {},
+    visitors: { today: 0, month: 0, year: 0 },
+    quote: null
   });
   const [navItems, setNavItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -169,9 +172,9 @@ export default function App() {
 
   const STORAGE_BASE = API_BASE.replace('/api/public', '/storage');
   
-  const heroImages = data.settings?.hero_image 
-    ? [`${STORAGE_BASE}/${data.settings.hero_image}`] 
-    : ["/gerbang-sma.jpg"];
+  const heroImages = data.settings?.hero_images && data.settings.hero_images.length > 0
+    ? data.settings.hero_images.map(img => `${STORAGE_BASE}/${img}`)
+    : (data.settings?.hero_image ? [`${STORAGE_BASE}/${data.settings.hero_image}`] : ["/gerbang-sma.jpg"]);
 
   const handleScroll = useCallback(() => {
     setIsScrolled(window.scrollY > 50);
@@ -220,7 +223,7 @@ export default function App() {
 
     const fetchSettingsAndData = async () => {
       try {
-        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes] = await Promise.all([
+        const [newsRes, calRes, forumRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes, quoteRes] = await Promise.all([
           fetch(`${API_BASE}/news`, { headers }),
           fetch(`${API_BASE}/academic-calendar`, { headers }),
           fetch(`${API_BASE}/forum`, { headers }),
@@ -229,11 +232,13 @@ export default function App() {
           fetch(`${API_BASE}/facilities`, { headers }),
           fetch(`${API_BASE}/features`, { headers }),
           fetch(`${API_BASE}/programs`, { headers }),
-          fetch(`${API_BASE}/landing-settings`, { headers }),
+          fetch(`${API_BASE}/landing-settings?t=${new Date().getTime()}`, { headers }),
+          fetch(`${API_BASE}/visitors`, { headers }),
+          fetch(`${API_BASE}/random-quote`, { headers }),
         ]);
         const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
         const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
-        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings] = await Promise.all([
+        const [news, calendar, forums, achievements, teachers, facilities, features, programs, settings, visitors, quote] = await Promise.all([
           newsRes.ok ? newsRes.json() : [],
           calRes.ok ? calRes.json() : [],
           forumRes.ok ? forumRes.json() : [],
@@ -243,6 +248,8 @@ export default function App() {
           featRes.ok ? featRes.json() : [],
           progRes.ok ? progRes.json() : [],
           settingsRes.ok ? settingsRes.json() : {},
+          visitorsRes.ok ? visitorsRes.json() : { today: 0, month: 0, year: 0 },
+          quoteRes.ok ? quoteRes.json() : null,
         ]);
         setData({
           news: toArr(news),
@@ -254,6 +261,8 @@ export default function App() {
           features: toArr(features),
           programs: toArr(programs),
           settings: toObj(settings),
+          visitors: toObj(visitors),
+          quote: toObj(quote)
         });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -338,6 +347,7 @@ export default function App() {
         {isLoading && <LoadingScreen />}
       </AnimatePresence>
       
+      {!isFormRoute && (
       <motion.div
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: !isLoading ? 0 : -100, opacity: !isLoading ? 1 : 0 }}
@@ -346,6 +356,7 @@ export default function App() {
       >
         <Navbar isScrolled={isScrolled} navItems={navItems} onLoginClick={() => setShowLoginModal(true)} />
       </motion.div>
+      )}
 
       <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
 
@@ -461,7 +472,7 @@ export default function App() {
           >
             <div 
               ref={statsCardRef}
-              className="bg-white rounded-[2rem] shadow-lg p-5 md:p-6 max-w-4xl w-full flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
+              className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-[2rem] shadow-lg p-3 md:p-6 w-[95%] md:w-full max-w-4xl mx-auto flex flex-row justify-around divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
             >
               {/* Shiny Overlay */}
               <div 
@@ -470,17 +481,17 @@ export default function App() {
                 style={{ filter: 'blur(2px)' }}
               ></div>
               
-              <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={3} duration={1500} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Program Peminatan</p>
+              <div className="flex-1 text-center px-1 py-2 md:py-0 relative z-10 flex flex-col justify-center">
+                <h3 className="text-xl sm:text-2xl lg:text-4xl font-bold text-smansa-navy mb-0.5 tracking-tighter"><CountUp end={data.settings?.total_kelas || 0} duration={1500} /></h3>
+                <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium">Kelas</p>
               </div>
-              <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={1200} suffix="+" duration={2000} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Siswa Aktif</p>
+              <div className="flex-1 text-center px-1 py-2 md:py-0 relative z-10 flex flex-col justify-center">
+                <h3 className="text-xl sm:text-2xl lg:text-4xl font-bold text-smansa-navy mb-0.5 tracking-tighter"><CountUp end={data.settings?.total_siswa || 0} duration={2000} /></h3>
+                <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium">Siswa Aktif</p>
               </div>
-              <div className="flex-1 text-center py-3 md:py-0 relative z-10">
-                <h3 className="text-3xl lg:text-4xl font-bold text-smansa-navy mb-1 tracking-tighter"><CountUp end={10000} suffix="+" duration={2500} /></h3>
-                <p className="text-gray-500 text-sm font-medium">Alumni Sukses</p>
+              <div className="flex-1 text-center px-1 py-2 md:py-0 relative z-10 flex flex-col justify-center">
+                <h3 className="text-xl sm:text-2xl lg:text-4xl font-bold text-smansa-navy mb-0.5 tracking-tighter"><CountUp end={data.settings?.total_alumni || 0} duration={2500} /></h3>
+                <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium">Alumni</p>
               </div>
             </div>
           </motion.div>
@@ -755,44 +766,58 @@ export default function App() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {data.achievements.slice(0, 3).map((item, index) => (
-                <div key={index} className="bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full overflow-hidden">
-                  {item.image_url && (
-                    <div className="aspect-[16/10] overflow-hidden bg-gray-100">
-                      <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                    </div>
+                <div key={index} className="group relative bg-gray-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 h-[400px] flex flex-col justify-end border border-gray-100">
+                  {/* Background Image */}
+                  {item.image_url ? (
+                    <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
+                  ) : (
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-600 to-indigo-800 group-hover:scale-110 transition-transform duration-700 opacity-90"></div>
                   )}
-                  <div className="p-8 flex flex-col flex-1">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="w-16 h-16 bg-yellow-50 text-smansa-gold rounded-full flex items-center justify-center shrink-0">
-                        <Trophy className="w-8 h-8" />
-                      </div>
-                      <span className="text-xs font-bold bg-gray-100 text-gray-600 px-3 py-1 rounded-full">{item.level}</span>
+                  
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                  {/* Content */}
+                  <div className="relative p-6 flex flex-col justify-end h-full text-white z-10">
+                    {/* Always visible (Title, Level, Icon) */}
+                    <div className="flex justify-between items-end mb-2">
+                       <div className="flex-1 pr-4">
+                         <h3 className="text-2xl font-bold mb-1 drop-shadow-md line-clamp-2">{item.title} ({item.year})</h3>
+                       </div>
+                       <div className="flex flex-col items-end gap-3 shrink-0">
+                         <div className="w-12 h-12 bg-yellow-400/20 backdrop-blur-md text-yellow-400 rounded-full flex items-center justify-center border border-yellow-400/30">
+                            <Trophy className="w-6 h-6" />
+                         </div>
+                         <span className="text-xs font-bold bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/20">{item.level}</span>
+                       </div>
                     </div>
-                    
-                    <h3 className="text-xl font-bold text-smansa-navy mb-4">{item.title} ({item.year})</h3>
 
-                    {item.siswas && item.siswas.length > 0 ? (
-                      <div className="flex flex-col gap-2 mb-4 self-start">
-                        {item.siswas.map((s, idx) => (
-                          <div key={idx} className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                            {s.nama_lengkap}
-                            {s.jenis_kelamin === 'L' && <span className="text-blue-500 font-black ml-1">(L)</span>}
-                            {s.jenis_kelamin === 'P' && <span className="text-pink-500 font-black ml-1">(P)</span>}
-                            {s.kelas && <span className="ml-1 text-xs font-semibold bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                    {/* Expanded Details on Hover */}
+                    <div className="max-h-0 opacity-0 group-hover:max-h-[300px] group-hover:opacity-100 group-hover:mt-4 transition-all duration-500 overflow-hidden flex flex-col gap-3">
+                        {/* Student Name */}
+                        {item.siswas && item.siswas.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {item.siswas.map((s, idx) => (
+                              <div key={idx} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                {s.nama_lengkap}
+                                {s.jenis_kelamin === 'L' && <span className="text-blue-300 font-black ml-1">(L)</span>}
+                                {s.jenis_kelamin === 'P' && <span className="text-pink-300 font-black ml-1">(P)</span>}
+                                {s.kelas && <span className="ml-1 text-xs font-semibold bg-white/20 text-white px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    ) : item.student_name ? (
-                      <div className="flex flex-col gap-2 mb-4 self-start">
-                        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-xl font-bold text-sm">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                          {item.student_name}
-                        </div>
-                      </div>
-                    ) : null}
+                        ) : item.student_name ? (
+                          <div className="flex flex-wrap gap-2">
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              {item.student_name}
+                            </div>
+                          </div>
+                        ) : null}
 
-                    <p className="text-gray-500 text-sm mt-auto">{item.description}</p>
+                        <p className="text-gray-200 text-sm line-clamp-3 leading-relaxed drop-shadow-sm">{item.description}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -843,6 +868,34 @@ export default function App() {
             </div>
           </div>
         </section>
+
+        {/* KATA KATA GURU */}
+        {data.quote && data.quote.quote && (
+          <section className="py-16 bg-white relative overflow-hidden">
+            <div className="absolute inset-0 bg-smansa-navy/[0.02] pointer-events-none" />
+            <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                className="bg-white rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-slate-100 relative"
+              >
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 bg-smansa-gold rounded-full flex items-center justify-center text-white shadow-lg">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
+                </div>
+                <p className="text-xl md:text-2xl lg:text-3xl font-medium text-slate-700 italic leading-relaxed mt-4">
+                  "{data.quote.quote}"
+                </p>
+                <div className="mt-6 flex flex-col items-center justify-center gap-2">
+                  <div className="w-10 h-1 bg-smansa-gold rounded-full"></div>
+                  <span className="font-bold text-smansa-navy uppercase tracking-widest text-sm mt-2">{data.quote.teacher_name}</span>
+                  <span className="text-xs text-slate-400 font-medium">Pengajar SMAN 1 Pamekasan</span>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        )}
 
         {/* AGENDA SEKOLAH */}
         <section id="agenda" className="py-24 bg-smansa-navy text-white relative overflow-hidden">
@@ -909,6 +962,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* FOOTER (4 Column Design) */}
+      {!isFormRoute && (
       <footer className="bg-smansa-navy text-white pt-24 pb-12 border-t-4 border-smansa-gold">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
@@ -982,15 +1036,15 @@ export default function App() {
               <div className="bg-white/5 rounded-2xl p-6 border border-white/10 mb-8 backdrop-blur-sm">
                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
                   <span className="text-blue-100/80 text-sm">Hari ini</span>
-                  <span className="font-bold text-smansa-gold text-lg">124</span>
+                  <span className="font-bold text-smansa-gold text-lg">{data.visitors?.today?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-3">
                   <span className="text-blue-100/80 text-sm">Bulan ini</span>
-                  <span className="font-bold text-smansa-gold text-lg">3,450</span>
+                  <span className="font-bold text-smansa-gold text-lg">{data.visitors?.month?.toLocaleString() || 0}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-blue-100/80 text-sm">Tahun ini</span>
-                  <span className="font-bold text-smansa-gold text-lg">45,102</span>
+                  <span className="font-bold text-smansa-gold text-lg">{data.visitors?.year?.toLocaleString() || 0}</span>
                 </div>
               </div>
             </div>
@@ -1013,6 +1067,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }

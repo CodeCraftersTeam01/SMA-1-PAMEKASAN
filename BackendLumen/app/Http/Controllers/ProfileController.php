@@ -33,7 +33,7 @@ class ProfileController extends Controller
             }
 
             // Store new photo in 'profiles' directory inside storage/app/public
-            $path = $request->file('photo')->store('profiles', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('photo'), 'profiles');
             $user->photo = $path;
         }
 

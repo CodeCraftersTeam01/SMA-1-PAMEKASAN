@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('rencana_karirs', function (Blueprint $table) {
             $table->foreignId('alumni_id')->nullable()->after('siswa_id')->constrained('alumnis')->onDelete('set null');
+            $table->unsignedBigInteger('siswa_id')->nullable()->change();
         });
     }
 

@@ -28,7 +28,7 @@ const AlumniList = () => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/alumni`, {
+      const response = await axios.get(`${API_BASE_URL}/api/alumni-tracking`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
