@@ -223,41 +223,26 @@ export default function App() {
 
     const fetchSettingsAndData = async () => {
       try {
-        const [newsRes, achRes, teacherRes, facRes, featRes, progRes, settingsRes, visitorsRes, quoteRes] = await Promise.all([
-          fetch(`${API_BASE}/news`, { headers }),
-          fetch(`${API_BASE}/achievements`, { headers }),
-          fetch(`${API_BASE}/teachers`, { headers }),
-          fetch(`${API_BASE}/facilities`, { headers }),
-          fetch(`${API_BASE}/features`, { headers }),
-          fetch(`${API_BASE}/programs`, { headers }),
-          fetch(`${API_BASE}/landing-settings?t=${new Date().getTime()}`, { headers }),
-          fetch(`${API_BASE}/visitors`, { headers }),
-          fetch(`${API_BASE}/random-quote`, { headers }),
-        ]);
-        const toArr = (json) => Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
-        const toObj = (json) => typeof json === 'object' && json !== null && !Array.isArray(json) ? (json.data || json) : {};
-        const [news, achievements, teachers, facilities, features, programs, settings, visitors, quote] = await Promise.all([
-          newsRes.ok ? newsRes.json() : [],
-          achRes.ok ? achRes.json() : [],
-          teacherRes.ok ? teacherRes.json() : [],
-          facRes.ok ? facRes.json() : [],
-          featRes.ok ? featRes.json() : [],
-          progRes.ok ? progRes.json() : [],
-          settingsRes.ok ? settingsRes.json() : {},
-          visitorsRes.ok ? visitorsRes.json() : { today: 0, month: 0, year: 0 },
-          quoteRes.ok ? quoteRes.json() : null,
-        ]);
-        setData({
-          news: toArr(news),
-          achievements: toArr(achievements),
-          teachers: toArr(teachers),
-          facilities: toArr(facilities),
-          features: toArr(features),
-          programs: toArr(programs),
-          settings: toObj(settings),
-          visitors: toObj(visitors),
-          quote: toObj(quote)
-        });
+        const res = await fetch(`${API_BASE}/landing-data`, { headers });
+        if (res.ok) {
+          const json = await res.json();
+          const d = json.data || {};
+          
+          const toArr = (val) => Array.isArray(val) ? val : [];
+          const toObj = (val) => typeof val === 'object' && val !== null && !Array.isArray(val) ? val : {};
+
+          setData({
+            news: toArr(d.news),
+            achievements: toArr(d.achievements),
+            teachers: toArr(d.teachers),
+            facilities: toArr(d.facilities),
+            features: toArr(d.features),
+            programs: toArr(d.programs),
+            settings: toObj(d.settings),
+            visitors: toObj(d.visitors),
+            quote: toObj(d.quote)
+          });
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }

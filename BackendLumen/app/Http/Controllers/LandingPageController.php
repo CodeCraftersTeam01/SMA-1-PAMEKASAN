@@ -20,6 +20,65 @@ class LandingPageController extends Controller
     }
 
     /**
+     * GET /api/public/landing-data
+     * Aggregates all landing page data into a single request to solve the single-threaded PHP built-in server bottleneck
+     * and drastically improve Frontend LCP performance.
+     */
+    public function getLandingData()
+    {
+        // Settings & Stats
+        $settings = \App\Models\LandingPageSetting::first() ?? new \App\Models\LandingPageSetting();
+        $settings->total_kelas = \App\Models\Kelas::count();
+        $settings->total_siswa = \App\Models\Siswa::where('is_active', 1)->count();
+        $settings->total_alumni = \App\Models\Alumni::count();
+
+        // Visitors
+        $visitors = [
+            'today' => \App\Models\WebsiteVisitor::whereDate('visited_at', date('Y-m-d'))->count(),
+            'month' => \App\Models\WebsiteVisitor::whereYear('visited_at', date('Y'))->whereMonth('visited_at', date('m'))->count(),
+            'year'  => \App\Models\WebsiteVisitor::whereYear('visited_at', date('Y'))->count(),
+        ];
+
+        // Random Quote
+        $quote = \App\Models\TeacherQuote::inRandomOrder()->first();
+
+        // Arrays
+        $news = News::whereNotNull('published_at')
+            ->select('id', 'title', 'content', 'category', 'image_url', 'published_at')
+            ->orderBy('published_at', 'desc')->limit(6)->get();
+
+        $achievements = Achievement::with(['siswas:id,nama_lengkap,kelas,jenis_kelamin,tahun_masuk'])
+            ->select('id', 'title', 'student_name', 'category', 'year', 'level', 'description', 'image_url')
+            ->orderBy('year', 'desc')->limit(12)->get();
+
+        $teachers = \App\Models\Teacher::select('id', 'name', 'subject', 'photo')
+            ->orderBy('order', 'asc')->orderBy('name', 'asc')->get();
+
+        $facilities = Facility::select('id', 'name', 'description', 'image_url', 'order')
+            ->orderBy('order', 'asc')->get();
+
+        $features = \App\Models\Feature::select('id', 'title', 'description', 'icon')
+            ->orderBy('order', 'asc')->get();
+
+        $programs = \App\Models\Program::select('id', 'title', 'description', 'features_json')
+            ->orderBy('order', 'asc')->get();
+
+        $data = [
+            'settings'     => $settings,
+            'visitors'     => $visitors,
+            'quote'        => $quote,
+            'news'         => $news,
+            'achievements' => $achievements,
+            'teachers'     => $teachers,
+            'facilities'   => $facilities,
+            'features'     => $features,
+            'programs'     => $programs,
+        ];
+
+        return $this->cached($data, 300);
+    }
+
+    /**
      * GET /api/public/facilities
      */
     public function getFacilities()
