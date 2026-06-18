@@ -16,6 +16,22 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 1000,
-    rollupOptions: {}
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('framer-motion') || id.includes('gsap') || id.includes('@gsap/react')) {
+              return 'vendor-anim';
+            }
+            if (id.includes('lenis')) {
+              return 'vendor-lenis';
+            }
+          }
+        }
+      }
+    }
   }
 })

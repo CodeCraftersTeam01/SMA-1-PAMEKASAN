@@ -34,14 +34,16 @@ return new class extends Migration
         }
 
         // Drop the old column
-        Schema::table('achievements', function (Blueprint $table) {
-            // Depending on how it was created, we might need to drop foreign key first
-            // But in Lumen/Laravel if it wasn't constrained, we can just drop it.
-            // Let's check if there's a constraint. In a previous migration I used constrained().
-            // So we should drop the foreign key. The FK name is usually achievements_siswa_id_foreign
-            $table->dropForeign(['siswa_id']);
-            $table->dropColumn('siswa_id');
-        });
+        if (DB::connection()->getDriverName() !== 'sqlite') {
+            Schema::table('achievements', function (Blueprint $table) {
+                // Depending on how it was created, we might need to drop foreign key first
+                // But in Lumen/Laravel if it wasn't constrained, we can just drop it.
+                // Let's check if there's a constraint. In a previous migration I used constrained().
+                // So we should drop the foreign key. The FK name is usually achievements_siswa_id_foreign
+                $table->dropForeign(['siswa_id']);
+                $table->dropColumn('siswa_id');
+            });
+        }
     }
 
     /**

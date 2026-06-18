@@ -43,15 +43,19 @@ class Authenticate
             return $next($request);
         }
 
-        // If no guard is specified, try 'api' first, then 'students'
+        // If no guard is specified, try 'api' first, then 'students' (if defined)
         if (!$this->auth->guard('api')->guest()) {
             $this->auth->shouldUse('api');
             return $next($request);
         }
 
-        if (!$this->auth->guard('students')->guest()) {
-            $this->auth->shouldUse('students');
-            return $next($request);
+        try {
+            if (!$this->auth->guard('students')->guest()) {
+                $this->auth->shouldUse('students');
+                return $next($request);
+            }
+        } catch (\InvalidArgumentException $e) {
+            // Guard 'students' is not defined in config/auth.php, skip it
         }
 
         return response('Unauthorized.', 401);
