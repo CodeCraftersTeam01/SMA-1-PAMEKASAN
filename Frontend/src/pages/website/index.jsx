@@ -7,6 +7,11 @@ import Footer from "./components/Footer";
 import LoginModal from "./components/LoginModal";
 
 import StatisticsSection from "./sections/StatisticsSection";
+import SambutanSection from "./sections/SambutanSection";
+import ProgramsSection from "./sections/ProgramsSection";
+import AchievementsSection from "./sections/AchievementsSection";
+import FacilitiesSection from "./sections/FacilitiesSection";
+import TeachersSection from "./sections/TeachersSection";
 
 import useLoginModal from "./hooks/useLoginModal";
 
@@ -64,7 +69,11 @@ export default function WebsiteHome() {
     const fetchStats = async () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.smansa.m-tech.fun";
-        const res = await fetch(`${API_BASE_URL}/api/dashboard`);
+        const res = await fetch(`${API_BASE_URL}/api/dashboard`, {
+          headers: {
+            'x-api-key': import.meta.env.VITE_API_KEY || 'smansa-secure-key-2026'
+          }
+        });
         if (res.ok) {
           const data = await res.json();
           setDashboardStats(data.stats);
@@ -118,7 +127,12 @@ export default function WebsiteHome() {
       <main>
         <Hero onLoginClick={openLogin} stats={dashboardStats} />
         <StatisticsSection stats={dashboardStats} />
+        <SambutanSection />
         <Features />
+        <ProgramsSection />
+        <AchievementsSection />
+        <FacilitiesSection />
+        <TeachersSection />
         <Announcement />
       </main>
 

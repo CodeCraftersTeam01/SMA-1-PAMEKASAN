@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,11 +9,22 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lockSeconds, setLockSeconds] = useState(0);
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // Countdown timer while the account is locked out.
+  useEffect(() => {
+    if (lockSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setLockSeconds((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [lockSeconds]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (lockSeconds > 0) return;
     setError('');
     setIsLoading(true);
 
@@ -33,8 +44,16 @@ const LoginPage = () => {
         // Let AuthContext handle storage — only token is stored, NOT user JSON
         login(data.user, data.token, rememberMe);
         navigate('/dashboard');
+      } else if (response.status === 429) {
+        // Locked out: start the countdown.
+        const wait = data.retry_after || 60;
+        setLockSeconds(wait);
+        setError(data.message || `Terlalu banyak percobaan. Coba lagi dalam ${wait} detik.`);
       } else {
-        setError(data.message || 'Email atau kata sandi salah');
+        const left = typeof data.attempts_left === 'number'
+          ? ` (sisa ${data.attempts_left} percobaan)`
+          : '';
+        setError((data.message || 'Email atau kata sandi salah') + left);
       }
     } catch (err) {
       setError('Tidak dapat terhubung ke server. Periksa koneksi atau API.');
@@ -160,10 +179,12 @@ const LoginPage = () => {
               <div className="pt-2">
                 <button 
                   type="submit"
-                  disabled={isLoading}
-                  className={`w-full bg-[#4685ff] hover:bg-[#3b75e6] text-white text-[11px] font-bold py-3.5 rounded-[6px] transition-all border border-[#2d68e1] uppercase tracking-[0.1em] ${isLoading ? 'opacity-70 cursor-not-allowed shadow-none translate-y-[3px]' : 'shadow-[0_3px_0_0_#2d68e1] active:translate-y-[3px] active:shadow-none'}`}
+                  disabled={isLoading || lockSeconds > 0}
+                  className={`w-full bg-[#4685ff] hover:bg-[#3b75e6] text-white text-[11px] font-bold py-3.5 rounded-[6px] transition-all border border-[#2d68e1] uppercase tracking-[0.1em] ${(isLoading || lockSeconds > 0) ? 'opacity-70 cursor-not-allowed shadow-none translate-y-[3px]' : 'shadow-[0_3px_0_0_#2d68e1] active:translate-y-[3px] active:shadow-none'}`}
                 >
-                  {isLoading ? 'Memproses...' : 'Masuk'}
+                  {lockSeconds > 0
+                    ? `Coba lagi dalam ${lockSeconds}s`
+                    : (isLoading ? 'Memproses...' : 'Masuk')}
                 </button>
               </div>
             </form>

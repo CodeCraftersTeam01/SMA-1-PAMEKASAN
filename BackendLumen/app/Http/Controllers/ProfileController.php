@@ -98,7 +98,7 @@ class ProfileController extends Controller
         $user->password = Hash::make($request->new_password);
 
         // Set the is_password_changed flag to 1 (or true)
-        if (isset($user->is_password_changed) || $user instanceof \App\Models\AkunSiswa) {
+        if (isset($user->is_password_changed)) {
             $user->is_password_changed = true;
         }
 

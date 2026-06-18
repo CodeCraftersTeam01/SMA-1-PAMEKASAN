@@ -204,6 +204,12 @@ class UserController extends Controller
      */
     public function getPermissions($id)
     {
+        if ($this->authorizeAdmin() === false) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya admin yang dapat melihat izin pengguna.'
+            ], 403);
+        }
+
         try {
             $user = User::find($id);
 
@@ -230,6 +236,12 @@ class UserController extends Controller
      */
     public function updatePermissions(Request $request, $id)
     {
+        if ($this->authorizeAdmin() === false) {
+            return response()->json([
+                'message' => 'Akses ditolak. Hanya admin yang dapat mengubah izin pengguna.'
+            ], 403);
+        }
+
         try {
             $user = User::find($id);
 

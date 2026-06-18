@@ -27,20 +27,12 @@ class Siswa extends Model
                 'is_active',
                 'tahun_masuk',
                 'tahun_lulus',
+                'kelas_10',
+                'kelas_11',
+                'kelas_12',
         ];
 
-        protected static function booted()
-        {
-                static::created(function ($siswa) {
-                        \App\Models\AkunSiswa::updateOrCreate(
-                                ['siswa_id' => $siswa->id],
-                                [
-                                        'password' => \Illuminate\Support\Facades\Hash::make('12345678'),
-                                        'is_password_changed' => false,
-                                ]
-                        );
-                });
-        }
+
 
         // Relasi ke Pendaftaran
         public function pendaftaran()
@@ -54,16 +46,18 @@ class Siswa extends Model
                 return $this->belongsTo(TahunAjaran::class, 'tahun_ajaran_id');
         }
 
-        // Relasi ke AkunSiswa
-        public function akunSiswa()
-        {
-                return $this->hasOne(AkunSiswa::class, 'siswa_id');
-        }
+
 
         // Relasi ke RencanaKarir
         public function rencanaKarir()
         {
                 return $this->hasOne(RencanaKarir::class, 'siswa_id');
+        }
+
+        // Relasi ke Prestasi (Achievements)
+        public function achievements()
+        {
+                return $this->belongsToMany(Achievement::class, 'achievement_siswa', 'siswa_id', 'achievement_id');
         }
 }
 

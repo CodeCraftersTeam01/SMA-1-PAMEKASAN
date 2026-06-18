@@ -66,12 +66,17 @@ TUGAS KAMU:
    - PENTING: Jika sistem telah mendeteksi baris header secara otomatis, GUNAKAN indeks tersebut.
    
 2. Dari baris header yang terdeteksi, petakan setiap nilai header ke kolom database yang PALING COCOK secara semantik dan SANGAT LOGIS.
-   - Contoh: "Nama" atau "Nama Siswa" → nama_lengkap
+   - PENTING (BACA DATA SAMPLE): Kamu WAJIB melihat minimal 1 baris sample data (baris setelah header) untuk memastikan kecocokan kolom.
+     - KHUSUS KOLOM NAMA: Jika kamu menemukan header Excel seperti "Nama" atau "Nama Peserta Didik", kamu HARUS melihat contoh datanya. Jika datanya berisi nama orang (misal "arjuna lanang adiwarsana" atau "Adly Rosyid Pratama"), maka LANGSUNG petakan ke `nama_lengkap`.
+     - Misal jika data samplenya mengandung karakter '@', maka itu `email`.
+     - Misal jika data samplenya adalah L atau P, maka itu `jenis_kelamin`.
+     - Misal jika data samplenya angka 16 digit, maka itu `nik`.
    - Contoh: "NISN" atau "No NISN" atau "NIPD" → nisn
    - Contoh: "Sekolah Asal" atau "Asal SMP" → asal_sekolah
    - ATURAN KERAS (PENTING!):
      - DILARANG memetakan "No", "Nomor", "No Ujian", "No Ijazah" ke "no_pendaftaran". Kolom "no_pendaftaran" adalah kode unik sistem registrasi (auto-generate). Jika di Excel hanya ada "No" (nomor urut), petakan ke `null`.
      - DILARANG memetakan kolom jenis kelamin (JK/L/P) ke nama_lengkap atau nisn.
+     - DILARANG memetakan nama wali/ayah/ibu/bank ke nama_lengkap.
      - Jika kolom Excel tidak punya padanan yang benar-benar masuk akal di Database (misal: "Agama", "Tempat Lahir", "Tanggal Lahir", "No Ijazah"), petakan ke `null` (Abaikan).
      - Lebih baik memetakan ke `null` daripada salah memetakan data yang tidak logis.
    - Satu kolom DB hanya boleh dipetakan ke SATU header Excel.

@@ -62,6 +62,7 @@ $app->singleton(
 $app->configure('app');
 $app->configure('auth');
 $app->configure('mail');
+$app->configure('cache');
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +82,8 @@ $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
     'role' => App\Http\Middleware\RoleMiddleware::class,
     'permission' => App\Http\Middleware\PermissionMiddleware::class,
+    'api.key' => App\Http\Middleware\VerifyApiKey::class,
+    'throttle' => App\Http\Middleware\ThrottleRequests::class,
 ]);
 
 /*

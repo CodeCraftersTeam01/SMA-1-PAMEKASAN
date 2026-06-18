@@ -151,6 +151,7 @@ const Siswa = () => {
       penerima_kps: false, nomor_kps: '',
       penerima_kip: false, nomor_kip: '',
       is_active: true,
+      kelas_10: '', kelas_11: '', kelas_12: '',
     });
     setIsFormModalOpen(true);
   };
@@ -182,7 +183,7 @@ const Siswa = () => {
         'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
         'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
         'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
-        'is_active',
+        'is_active', 'kelas_10', 'kelas_11', 'kelas_12',
       ];
       fields.forEach(f => { if (formSiswa[f] !== undefined) payload[f] = formSiswa[f]; });
       payload.is_active = payload.is_active === true || payload.is_active === 1;
@@ -1247,7 +1248,7 @@ const Siswa = () => {
 
                 {/* Kelas */}
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas Saat Ini</label>
                   <select value={formSiswa.kelas || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600">
                     <option value="">— Pilih —</option>
                     <option value="X">X</option>
@@ -1255,6 +1256,23 @@ const Siswa = () => {
                     <option value="XII">XII</option>
                   </select>
                 </div>
+
+                {/* History Kelas */}
+                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas 10</label>
+                    <input type="text" placeholder="Contoh: X-1" value={formSiswa.kelas_10 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_10: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas 11</label>
+                    <input type="text" placeholder="Contoh: XI-MIPA 1" value={formSiswa.kelas_11 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_11: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Kelas 12</label>
+                    <input type="text" placeholder="Contoh: XII-MIPA 1" value={formSiswa.kelas_12 || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelas_12: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                  </div>
+                </div>
+
 
                 {/* NISN */}
                 <div>
@@ -1411,7 +1429,10 @@ const Siswa = () => {
                 <DetailField label="NIS" value={viewSiswa.nis} highlight />
                 <DetailField label="NISN" value={viewSiswa.nisn} />
                 <DetailField label="Nama Lengkap" value={viewSiswa.nama_lengkap} highlight />
-                <DetailField label="Kelas" value={viewSiswa.kelas} />
+                <DetailField label="Kelas Saat Ini" value={viewSiswa.kelas} />
+                <DetailField label="Kelas 10" value={viewSiswa.kelas_10} />
+                <DetailField label="Kelas 11" value={viewSiswa.kelas_11} />
+                <DetailField label="Kelas 12" value={viewSiswa.kelas_12} />
                 <DetailField label="Jenis Kelamin" value={viewSiswa.jenis_kelamin === 'L' ? 'Laki-laki' : viewSiswa.jenis_kelamin === 'P' ? 'Perempuan' : '-'} />
                 <DetailField label="Tempat Lahir" value={viewSiswa.tempat_lahir} />
                 <DetailField label="Tanggal Lahir" value={viewSiswa.tanggal_lahir ? new Date(viewSiswa.tanggal_lahir).toLocaleDateString('id-ID') : '-'} />

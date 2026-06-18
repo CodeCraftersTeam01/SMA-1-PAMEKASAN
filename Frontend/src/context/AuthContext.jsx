@@ -32,6 +32,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyAuth = async () => {
+      // Intercept token from URL query string if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromUrl = urlParams.get('token');
+      if (tokenFromUrl) {
+        localStorage.setItem('token', tokenFromUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
       const storedToken = localStorage.getItem('token') || sessionStorage.getItem('token');
 
       if (!storedToken) {
@@ -103,10 +111,14 @@ export const AuthProvider = ({ children }) => {
 
   const can = (resource, action = 'view') => {
     if (!user) return false;
-    if (user.role === 'admin') return true;
+    // Admins always have full access
+    if (user.role === 'admin' || user.role === 'superadmin' || user.role === 'Admin') return true;
+    // Non-admins are gated by their granted permissions map
     const perms = user.permissions;
-    if (!perms || !perms[resource]) return false;
-    return perms[resource][action] === true;
+    if (!perms || typeof perms !== 'object') return false;
+    const resourcePerms = perms[resource];
+    if (!resourcePerms) return false;
+    return resourcePerms[action] === true;
   };
 
   return (
