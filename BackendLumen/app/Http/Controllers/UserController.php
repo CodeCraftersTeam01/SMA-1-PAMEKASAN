@@ -290,4 +290,20 @@ class UserController extends Controller
 
         return true;
     }
+
+    public function bulkDelete(\Illuminate\Http\Request $request)
+    {
+        $ids = $request->input('ids', []);
+        $deleted = 0;
+        foreach ($ids as $id) {
+            try {
+                $this->destroy($id);
+                $deleted++;
+            } catch (\Exception $e) {
+                // skip
+            }
+        }
+        return response()->json(['message' => "$deleted data berhasil dihapus"]);
+    }
+
 }

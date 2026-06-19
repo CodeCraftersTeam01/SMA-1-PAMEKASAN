@@ -16,6 +16,9 @@ export default function AdminExtracurricular() {
     imageFile: null,
   });
 
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
   const showToast = (message, type = 'info') => setToast({ message, type });
 
   const fetchItems = async () => {
@@ -44,6 +47,47 @@ export default function AdminExtracurricular() {
   useEffect(() => {
     fetchItems();
   }, []);
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(items.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Yakin ingin menghapus ${selectedItems.length} data terpilih?`)) return;
+    setIsBulkDeleting(true);
+    const rawApiUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/extracurriculars/bulk-delete`, { ids: selectedItems }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.status === 200 || response.status === 201) {
+        setSelectedItems([]);
+        fetchItems();
+        showToast(`${selectedItems.length} data berhasil dihapus`, 'success');
+      } else {
+        showToast("Gagal menghapus data terpilih.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Terjadi kesalahan koneksi.", "error");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
 
   const handleOpenAdd = () => {
     setFormData({
@@ -180,7 +224,19 @@ export default function AdminExtracurricular() {
       {/* Main Container */}
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-100">
         <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
-          <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Ekstrakurikuler</h3>
+          <div className="flex items-center gap-4">
+            <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Ekstrakurikuler</h3>
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkDeleting}
+                className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                {isBulkDeleting ? 'Menghapus...' : `Hapus (${selectedItems.length})`}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -193,6 +249,9 @@ export default function AdminExtracurricular() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="pb-3 pl-4 w-10">
+                    <input type="checkbox" className="rounded border-slate-300" checked={items.length > 0 && selectedItems.length === items.length} onChange={handleSelectAll} />
+                  </th>
                   <th className="pb-3 pl-2 w-20">Foto</th>
                   <th className="pb-3">Nama Kegiatan</th>
                   <th className="pb-3">Deskripsi Singkat</th>
@@ -202,6 +261,9 @@ export default function AdminExtracurricular() {
               <tbody className="text-[13px] text-slate-600">
                 {items.map((item) => (
                   <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3 pl-4 w-10">
+                      <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(item.id)} onChange={() => handleSelectItem(item.id)} />
+                    </td>
                     <td className="py-3 pl-2">
                       <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
                         {item.image_path ? (
@@ -259,7 +321,7 @@ export default function AdminExtracurricular() {
                 ))}
                 {items.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="py-16 text-center">
+                    <td colSpan="5" className="py-16 text-center">
                       <p className="font-semibold text-slate-500">Belum ada data ekstrakurikuler</p>
                     </td>
                   </tr>

@@ -260,6 +260,25 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->get('admin/announcements/{id}', 'AnnouncementController@show');
     $router->put('admin/announcements/{id}', 'AnnouncementController@update');
     $router->delete('admin/announcements/{id}', 'AnnouncementController@destroy');
+
+    // --- Bulk Delete Endpoints ---
+    $router->post('tahun-ajaran/bulk-delete', ['middleware' => 'permission:tahun_ajaran,delete', 'uses' => 'TahunAjaranController@bulkDelete']);
+    $router->post('kelas/bulk-delete', ['middleware' => 'permission:kelas,delete', 'uses' => 'KelasController@bulkDelete']);
+    $router->post('users/bulk-delete', ['middleware' => 'role:admin', 'uses' => 'UserController@bulkDelete']);
+    $router->post('alumni/bulk-delete', ['middleware' => 'permission:alumni,delete', 'uses' => 'AlumniController@bulkDelete']);
+    $router->post('admin/news/bulk-delete', ['middleware' => 'permission:berita,delete', 'uses' => 'AdminNewsController@bulkDelete']);
+    $router->post('admin/achievements/bulk-delete', ['middleware' => 'permission:prestasi,delete', 'uses' => 'AdminAchievementController@bulkDelete']);
+    $router->post('admin/facilities/bulk-delete', ['middleware' => 'permission:fasilitas,delete', 'uses' => 'AdminFacilityController@bulkDelete']);
+    $router->post('admin/pages/bulk-delete', ['middleware' => 'permission:halaman,delete', 'uses' => 'AdminPageController@bulkDelete']);
+    $router->post('admin/teachers/bulk-delete', ['middleware' => 'permission:teachers,delete', 'uses' => 'AdminTeacherController@bulkDelete']);
+    $router->post('admin/features/bulk-delete', ['middleware' => 'permission:features,delete', 'uses' => 'AdminFeatureController@bulkDelete']);
+    $router->post('admin/programs/bulk-delete', ['middleware' => 'permission:programs,delete', 'uses' => 'AdminProgramController@bulkDelete']);
+    $router->post('admin/extracurriculars/bulk-delete', ['middleware' => 'permission:ekstrakurikuler,delete', 'uses' => 'ExtracurricularController@bulkDelete']);
+    $router->post('admin/navbars/bulk-delete', ['middleware' => 'permission:navigasi,delete', 'uses' => 'AdminNavbarController@bulkDelete']);
+    $router->post('teacher-quotes/bulk-delete', 'TeacherQuoteController@bulkDelete');
+    $router->post('admin/agendas/bulk-delete', 'AcademicCalendarController@bulkDelete');
+    $router->post('admin/announcements/bulk-delete', 'AnnouncementController@bulkDelete');
+
 });
 
 //hello 

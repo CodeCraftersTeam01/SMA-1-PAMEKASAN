@@ -68,6 +68,9 @@ const QuotesPage = () => {
 
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null, title: '' });
 
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
@@ -94,6 +97,46 @@ const QuotesPage = () => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(data.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Yakin ingin menghapus ${selectedItems.length} kutipan terpilih?`)) return;
+    setIsBulkDeleting(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/teacher-quotes/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ids: selectedItems })
+      });
+      if (response.ok) {
+        setSelectedItems([]);
+        fetchData();
+        showToast(`${selectedItems.length} kutipan berhasil dihapus`, 'success');
+      } else {
+        showToast("Gagal menghapus data terpilih.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Terjadi kesalahan koneksi.", "error");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
 
   const handleCreate = async () => {
     if (!formName.trim() || !formQuote.trim()) { showToast('Semua field wajib diisi', 'error'); return; }
@@ -228,10 +271,29 @@ const QuotesPage = () => {
         ) : error ? (
           <div className="py-20 text-center text-red-500">{error}</div>
         ) : (
+          <>
+            <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
+              <div className="flex items-center gap-4">
+                <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Kutipan</h3>
+                {selectedItems.length > 0 && (
+                  <button
+                    onClick={handleBulkDelete}
+                    disabled={isBulkDeleting}
+                    className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    {isBulkDeleting ? 'Menghapus...' : `Hapus (${selectedItems.length})`}
+                  </button>
+                )}
+              </div>
+            </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase">
+                  <th className="pb-3 pl-4 w-10">
+                    <input type="checkbox" className="rounded border-slate-300" checked={data.length > 0 && selectedItems.length === data.length} onChange={handleSelectAll} />
+                  </th>
                   <th className="pb-3 pl-2">Nama Guru</th>
                   <th className="pb-3">Kutipan</th>
                   <th className="pb-3">Status</th>
@@ -241,6 +303,9 @@ const QuotesPage = () => {
               <tbody className="text-[13px] text-slate-600">
                 {data.map((item) => (
                   <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50">
+                    <td className="py-4 pl-4 w-10">
+                      <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(item.id)} onChange={() => handleSelectItem(item.id)} />
+                    </td>
                     <td className="py-4 pl-2 font-bold text-slate-700">{item.teacher_name}</td>
                     <td className="py-4 max-w-md truncate">{item.quote}</td>
                     <td className="py-4">
@@ -260,6 +325,7 @@ const QuotesPage = () => {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

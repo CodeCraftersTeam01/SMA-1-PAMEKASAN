@@ -5,7 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
 // Public pages — kept reasonably light, still split from the dashboard bundle
-const LoginPage = lazy(() => import('./pages/auth/login'));
+// const LoginPage = lazy(() => import('./pages/auth/login')); // Disabled: redirected to landing page
 const PublicTracking = lazy(() => import('./pages/website/PublicTracking'));
 
 // Dashboard + admin pages — loaded on demand to keep the initial bundle small
@@ -80,8 +80,8 @@ const AnimatedRoutes = () => {
           {/* Base URL redirects to Landing Pages */}
           <Route path="/" element={<ExternalRedirect />} />
 
-          {/* Admin Login Portal */}
-          <Route path="/login" element={<Page slide={false}><LoginPage /></Page>} />
+          {/* Admin Login Portal - Redirected to Landing Pages */}
+          <Route path="/login" element={<ExternalRedirect />} />
 
           {/* Independent Public Alumni Tracking Page */}
           <Route path="/siswas/tracking" element={<Page slide={false}><PublicTracking /></Page>} />
