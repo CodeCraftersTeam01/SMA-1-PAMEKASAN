@@ -6,6 +6,28 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function AnnouncementMarquee({ isScrolled = false }) {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [footerVisibleHeight, setFooterVisibleHeight] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const footer = document.querySelector('footer');
+      if (footer) {
+        const rect = footer.getBoundingClientRect();
+        const visibleHeight = window.innerHeight - rect.top;
+        if (visibleHeight > 0) {
+          setFooterVisibleHeight(visibleHeight);
+        } else {
+          setFooterVisibleHeight(0);
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial check just in case
+    setTimeout(handleScroll, 100);
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const fetchMarquee = async () => {
@@ -30,11 +52,12 @@ export default function AnnouncementMarquee({ isScrolled = false }) {
   if (items.length === 0) return null;
 
   return (
-    <div className={`transition-all duration-700 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-50 overflow-hidden py-3 px-6 rounded-2xl lg:rounded-full tracking-wide ${
+    <div 
+      className={`transition-all duration-500 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-50 overflow-hidden py-3 px-6 rounded-2xl lg:rounded-full tracking-wide ${
       isScrolled 
         ? 'fixed bottom-6 bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl text-smansa-navy font-bold'
         : 'absolute bottom-[5.5rem] bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl text-white font-medium'
-    }`}>
+    } ${footerVisibleHeight > 0 ? 'opacity-0 translate-y-10 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
       <div className="flex whitespace-nowrap animate-marquee items-center text-[13px] md:text-sm">
         <div className="flex gap-16 shrink-0 justify-around min-w-full">
           {items.map((item, idx) => {
