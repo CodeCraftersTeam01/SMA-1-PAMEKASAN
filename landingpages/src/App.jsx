@@ -227,6 +227,9 @@ export default function App() {
 
     const fetchSettingsAndData = async () => {
       try {
+        // Record the visit (backend will count it unconditionally now)
+        fetch(`${API_BASE}/visitors`, { headers }).catch(() => {});
+
         const res = await fetch(`${API_BASE}/landing-data`, { headers });
         if (res.ok) {
           const json = await res.json();

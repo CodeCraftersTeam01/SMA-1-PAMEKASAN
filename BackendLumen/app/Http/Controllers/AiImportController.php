@@ -67,8 +67,18 @@ class AiImportController extends Controller
             'nomor_kps'       => 'Nomor Kartu Perlindungan Sosial (KPS) jika penerima KPS',
             'penerima_kip'    => 'Penerima Kartu Indonesia Pintar (KIP): Ya/Tidak atau 1/0',
             'nomor_kip'       => 'Nomor Kartu Indonesia Pintar (KIP) jika penerima KIP',
-            'kelas'           => 'Kelas atau Rombel siswa, misal X.G, XI IPS 1, 10, 11, 12. Sangat penting untuk menentukan tahun masuk.',
+            'kelas'           => 'Kelas atau Rombel siswa, misal X.G, XI IPS 1. Kosongkan jika alumni.',
+            'tahun_masuk'     => 'Tahun masuk siswa (misal 2020). Jika (tahun sekarang - tahun masuk >= 3), siswa otomatis jadi alumni dan kelas diabaikan.',
             'is_active'       => 'Status aktif (1) atau alumni (0)',
+            'rt'              => 'RT tempat tinggal siswa',
+            'rw'              => 'RW tempat tinggal siswa',
+            'dusun'           => 'Dusun tempat tinggal siswa',
+            'kelurahan'       => 'Kelurahan atau desa tempat tinggal',
+            'kode_pos'        => 'Kode Pos tempat tinggal',
+            'jenis_tinggal'   => 'Jenis tempat tinggal (misal: Bersama orang tua, Kos, Asrama)',
+            'alat_transportasi'=> 'Alat transportasi ke sekolah (misal: Jalan kaki, Sepeda motor, Angkutan umum)',
+            'lintang'         => 'Garis lintang (latitude) alamat siswa',
+            'bujur'           => 'Garis bujur (longitude) alamat siswa',
         ],
     ];
 
@@ -136,10 +146,10 @@ class AiImportController extends Controller
             foreach ($dbColumnsRaw as $col) {
                 $colName = $col->COLUMN_NAME;
                 if (in_array($colName, $this->systemColumns)) continue;
-                if ($targetTable === 'siswas' && in_array($colName, ['tahun_ajaran_id', 'tahun_masuk', 'pendaftar_id', 'kelas_10', 'kelas_11', 'kelas_12'])) continue;
+                if ($targetTable === 'siswas' && in_array($colName, ['tahun_ajaran_id', 'pendaftar_id', 'kelas_10', 'kelas_11', 'kelas_12'])) continue;
 
                 $isRequired = ($col->IS_NULLABLE === 'NO' && $col->COLUMN_DEFAULT === null);
-                if ($targetTable === 'siswas' && $colName === 'is_active') $isRequired = false;
+                if ($targetTable === 'siswas' && in_array($colName, ['is_active', 'tahun_masuk'])) $isRequired = false;
                 
                 $dbSchema[] = [
                     'column'      => $colName,
@@ -153,8 +163,8 @@ class AiImportController extends Controller
                 $dbSchema[] = [
                     'column'      => 'kelas',
                     'type'        => 'varchar(50)',
-                    'required'    => true,
-                    'description' => $descriptions['kelas'] ?? 'Kelas/Rombel (X, XI, XII)',
+                    'required'    => false,
+                    'description' => $descriptions['kelas'] ?? 'Kelas/Rombel (X, XI, XII). Boleh kosong jika data alumni.',
                 ];
             }
 
@@ -261,95 +271,118 @@ class AiImportController extends Controller
             $cleanMapping = [];
             $usedDbCols = []; // Track mapped columns to prevent overwriting correct early columns
             foreach ($headers as $idx => $h) {
-                $mappedTo = $aiMapping[$h] ?? null;
+                $lowerH = strtolower($h);
+                $isParentCol = preg_match('/ayah|ibu|wali|periodik|kesejahteraan/i', $lowerH);
+                $mappedTo = null;
 
-                // Jika AI gagal menemukan (karena nama kolom beda jauh atau 2-level header), gunakan smart auto-mapping
-                if (!$mappedTo) {
-                    $lowerH = strtolower($h);
-                    $isParentCol = preg_match('/ayah|ibu|wali|periodik|kesejahteraan/i', $lowerH);
-                    
-                    if ($targetTable === 'siswas') {
-                        if (!$isParentCol && preg_match('/nama|peserta didik/i', trim(explode('-', $h)[1] ?? $h)) && !preg_match('/ayah|ibu|wali|rekening|bank|kip|kps|pihak|kks/i', $lowerH)) {
-                            $mappedTo = 'nama_lengkap';
-                        } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
-                            $mappedTo = 'nisn';
-                        } elseif (!$isParentCol && preg_match('/nis|nipd|induk/i', $lowerH) && !preg_match('/nisn|jenis/i', $lowerH)) {
-                            $mappedTo = 'nis';
-                        } elseif (!$isParentCol && preg_match('/kelas|rombel/i', $lowerH)) {
-                            $mappedTo = 'kelas';
-                        } elseif (!$isParentCol && preg_match('/kelamin|jk/i', $lowerH)) {
-                            $mappedTo = 'jenis_kelamin';
-                        } elseif (!$isParentCol && preg_match('/tempat.*lahir/i', $lowerH)) {
-                            $mappedTo = 'tempat_lahir';
-                        } elseif (!$isParentCol && preg_match('/tanggal.*lahir|tgl.*lahir|birth|ttl/i', $lowerH)) {
-                            $mappedTo = 'tanggal_lahir';
-                        } elseif (!$isParentCol && preg_match('/agama/i', $lowerH)) {
-                            $mappedTo = 'agama';
-                        } elseif (!$isParentCol && preg_match('/alamat|domisili/i', $lowerH)) {
-                            $mappedTo = 'alamat';
-                        } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
-                            $mappedTo = 'nomor_hp';
-                        } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
-                            $mappedTo = 'email';
-                        } elseif (!$isParentCol && preg_match('/nomor.*kps|no.*kps/i', $lowerH)) {
-                            $mappedTo = 'nomor_kps';
-                        } elseif (!$isParentCol && preg_match('/penerima.*kps|^kps\b/i', $lowerH)) {
-                            $mappedTo = 'penerima_kps';
-                        } elseif (!$isParentCol && preg_match('/nomor.*kip|no.*kip/i', $lowerH)) {
-                            $mappedTo = 'nomor_kip';
-                        } elseif (!$isParentCol && preg_match('/penerima.*kip|^kip\b/i', $lowerH)) {
-                            $mappedTo = 'penerima_kip';
-                        }
-                    } elseif ($targetTable === 'pendaftarans') {
-                        if (!$isParentCol && preg_match('/nama|peserta didik/i', trim(explode('-', $h)[1] ?? $h)) && !preg_match('/ayah|ibu|wali|rekening|bank|kip|kps|pihak|kks/i', $lowerH)) {
-                            $mappedTo = 'nama_lengkap';
-                        } elseif (preg_match('/ayah/i', $lowerH)) {
-                            if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ayah';
-                            elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ayah';
-                            elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ayah';
-                            elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ayah';
-                        } elseif (preg_match('/ibu/i', $lowerH)) {
-                            if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ibu';
-                            elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ibu';
-                            elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ibu';
-                            elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ibu';
-                        } elseif (preg_match('/wali/i', $lowerH)) {
-                            if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_wali';
-                            elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_wali';
-                            elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_wali';
-                            elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_wali';
-                        } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
-                            $mappedTo = 'nisn';
-                        } elseif (!$isParentCol && preg_match('/nik/i', $lowerH)) {
-                            $mappedTo = 'nik';
-                        } elseif (!$isParentCol && preg_match('/kelamin|jk/i', $lowerH)) {
-                            $mappedTo = 'jenis_kelamin';
-                        } elseif (!$isParentCol && preg_match('/tempat.*lahir/i', $lowerH)) {
-                            $mappedTo = 'tempat_lahir';
-                        } elseif (!$isParentCol && preg_match('/tanggal.*lahir|tgl.*lahir|birth|ttl/i', $lowerH)) {
-                            $mappedTo = 'tanggal_lahir';
-                        } elseif (!$isParentCol && preg_match('/agama/i', $lowerH)) {
-                            $mappedTo = 'agama';
-                        } elseif (preg_match('/pendaftaran|daftar/i', $lowerH)) {
-                            $mappedTo = 'no_pendaftaran';
-                        } elseif (preg_match('/asal.*sekolah|sekolah.*asal|smp/i', $lowerH)) {
-                            $mappedTo = 'asal_sekolah';
-                        } elseif (preg_match('/alamat|domisili/i', $lowerH)) {
-                            $mappedTo = 'alamat';
-                        } elseif (preg_match('/kecamatan/i', $lowerH)) {
-                            $mappedTo = 'kecamatan';
-                        } elseif (preg_match('/jalur|penerimaan/i', $lowerH)) {
-                            $mappedTo = 'jalur';
-                        } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
-                            $mappedTo = 'email';
-                        } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
-                            $mappedTo = 'nomor_hp';
-                        } elseif (!$isParentCol && preg_match('/status/i', $lowerH)) {
-                            $mappedTo = 'status';
-                        }
+                // SMART AUTO-MAPPING FIRST (Prioritas tertinggi untuk nama kolom yang sudah pasti)
+                if ($targetTable === 'siswas') {
+                    if (!$isParentCol && preg_match('/^nama$|^nama lengkap$|peserta didik/i', $lowerH) && !preg_match('/ayah|ibu|wali|rekening|bank|kip|kps|pihak|kks/i', $lowerH)) {
+                        $mappedTo = 'nama_lengkap';
+                    } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
+                        $mappedTo = 'nisn';
+                    } elseif (!$isParentCol && preg_match('/nis|nipd|induk/i', $lowerH) && !preg_match('/nisn|jenis/i', $lowerH)) {
+                        $mappedTo = 'nis';
+                    } elseif (!$isParentCol && preg_match('/kelas|rombel/i', $lowerH)) {
+                        $mappedTo = 'kelas';
+                    } elseif (!$isParentCol && preg_match('/tahun.*masuk|angkatan/i', $lowerH)) {
+                        $mappedTo = 'tahun_masuk';
+                    } elseif (!$isParentCol && preg_match('/kelamin|jk/i', $lowerH)) {
+                        $mappedTo = 'jenis_kelamin';
+                    } elseif (!$isParentCol && preg_match('/tempat.*lahir/i', $lowerH)) {
+                        $mappedTo = 'tempat_lahir';
+                    } elseif (!$isParentCol && preg_match('/tanggal.*lahir|tgl.*lahir|birth|ttl/i', $lowerH)) {
+                        $mappedTo = 'tanggal_lahir';
+                    } elseif (!$isParentCol && preg_match('/agama/i', $lowerH)) {
+                        $mappedTo = 'agama';
+                    } elseif (!$isParentCol && preg_match('/alamat|domisili/i', $lowerH)) {
+                        $mappedTo = 'alamat';
+                    } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
+                        $mappedTo = 'nomor_hp';
+                    } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
+                        $mappedTo = 'email';
+                    } elseif (!$isParentCol && preg_match('/nomor.*kps|no.*kps/i', $lowerH)) {
+                        $mappedTo = 'nomor_kps';
+                    } elseif (!$isParentCol && preg_match('/penerima.*kps|^kps\b/i', $lowerH)) {
+                        $mappedTo = 'penerima_kps';
+                    } elseif (!$isParentCol && preg_match('/nomor.*kip|no.*kip/i', $lowerH)) {
+                        $mappedTo = 'nomor_kip';
+                    } elseif (!$isParentCol && preg_match('/penerima.*kip|^kip\b/i', $lowerH)) {
+                        $mappedTo = 'penerima_kip';
+                    } elseif (!$isParentCol && preg_match('/^rt$/i', $lowerH)) {
+                        $mappedTo = 'rt';
+                    } elseif (!$isParentCol && preg_match('/^rw$/i', $lowerH)) {
+                        $mappedTo = 'rw';
+                    } elseif (!$isParentCol && preg_match('/dusun/i', $lowerH)) {
+                        $mappedTo = 'dusun';
+                    } elseif (!$isParentCol && preg_match('/desa|kelurahan/i', $lowerH)) {
+                        $mappedTo = 'kelurahan';
+                    } elseif (!$isParentCol && preg_match('/kode.*pos/i', $lowerH)) {
+                        $mappedTo = 'kode_pos';
+                    } elseif (!$isParentCol && preg_match('/jenis.*tinggal/i', $lowerH)) {
+                        $mappedTo = 'jenis_tinggal';
+                    } elseif (!$isParentCol && preg_match('/alat.*transportasi|kendaraan/i', $lowerH)) {
+                        $mappedTo = 'alat_transportasi';
+                    } elseif (!$isParentCol && preg_match('/lintang|latitude/i', $lowerH)) {
+                        $mappedTo = 'lintang';
+                    } elseif (!$isParentCol && preg_match('/bujur|longitude/i', $lowerH)) {
+                        $mappedTo = 'bujur';
+                    }
+                } elseif ($targetTable === 'pendaftarans') {
+                    if (!$isParentCol && preg_match('/^nama$|^nama lengkap$|peserta didik/i', $lowerH) && !preg_match('/ayah|ibu|wali|rekening|bank|kip|kps|pihak|kks/i', $lowerH)) {
+                        $mappedTo = 'nama_lengkap';
+                    } elseif (preg_match('/ayah/i', $lowerH)) {
+                        if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ayah';
+                        elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ayah';
+                        elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ayah';
+                        elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ayah';
+                    } elseif (preg_match('/ibu/i', $lowerH)) {
+                        if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ibu';
+                        elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ibu';
+                        elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ibu';
+                        elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ibu';
+                    } elseif (preg_match('/wali/i', $lowerH)) {
+                        if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_wali';
+                        elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_wali';
+                        elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_wali';
+                        elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_wali';
+                    } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
+                        $mappedTo = 'nisn';
+                    } elseif (!$isParentCol && preg_match('/nik/i', $lowerH)) {
+                        $mappedTo = 'nik';
+                    } elseif (!$isParentCol && preg_match('/kelamin|jk/i', $lowerH)) {
+                        $mappedTo = 'jenis_kelamin';
+                    } elseif (!$isParentCol && preg_match('/tempat.*lahir/i', $lowerH)) {
+                        $mappedTo = 'tempat_lahir';
+                    } elseif (!$isParentCol && preg_match('/tanggal.*lahir|tgl.*lahir|birth|ttl/i', $lowerH)) {
+                        $mappedTo = 'tanggal_lahir';
+                    } elseif (!$isParentCol && preg_match('/agama/i', $lowerH)) {
+                        $mappedTo = 'agama';
+                    } elseif (preg_match('/pendaftaran|daftar/i', $lowerH)) {
+                        $mappedTo = 'no_pendaftaran';
+                    } elseif (preg_match('/asal.*sekolah|sekolah.*asal|smp/i', $lowerH)) {
+                        $mappedTo = 'asal_sekolah';
+                    } elseif (preg_match('/alamat|domisili/i', $lowerH)) {
+                        $mappedTo = 'alamat';
+                    } elseif (preg_match('/kecamatan/i', $lowerH)) {
+                        $mappedTo = 'kecamatan';
+                    } elseif (preg_match('/jalur|penerimaan/i', $lowerH)) {
+                        $mappedTo = 'jalur';
+                    } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
+                        $mappedTo = 'email';
+                    } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
+                        $mappedTo = 'nomor_hp';
+                    } elseif (!$isParentCol && preg_match('/status/i', $lowerH)) {
+                        $mappedTo = 'status';
                     }
                 }
 
+                // Jika smart mapping gagal, gunakan hasil AI / Fallback
+                if (!$mappedTo) {
+                    $mappedTo = $aiMapping[$h] ?? null;
+                }
+
+                // Pastikan kolom valid dan belum digunakan
                 if ($mappedTo && in_array($mappedTo, $dbColumnNames) && !in_array($mappedTo, $usedDbCols)) {
                     $cleanMapping[$h] = $mappedTo;
                     $usedDbCols[] = $mappedTo;
@@ -427,6 +460,9 @@ class AiImportController extends Controller
         $targetTable = $request->input('target_table');
         $headerRow   = (int) $request->input('header_row');
         $mapping     = json_decode($request->input('mapping'), true);
+        
+        $importType    = $request->input('import_type', 'baru'); // 'baru' atau 'lama'
+        $tahunAjaranId = $request->input('tahun_ajaran_id');
 
         if (!in_array($targetTable, $this->allowedTables, true)) {
             return response()->json(['message' => "Tabel '{$targetTable}' tidak diizinkan untuk import."], 422);
@@ -521,7 +557,7 @@ class AiImportController extends Controller
 
             $dataRows = array_slice($allRows, $headerRow + 1);
 
-            return response()->stream(function () use ($dataRows, $mapping, $headers, $targetTable, $headerRow) {
+            return response()->stream(function () use ($dataRows, $mapping, $headers, $targetTable, $headerRow, $importType, $tahunAjaranId) {
                 // Prevent PHP timeout for long imports + disable output buffering for SSE
                 set_time_limit(0);
                 if (ob_get_level()) ob_end_clean();
@@ -624,8 +660,48 @@ class AiImportController extends Controller
 
                         // Normalisasi spasi setelah titik, misal "X. A" jadi "X.A"
                         $kelasUpper = preg_replace('/\.\s+/', '.', $kelasUpper);
-                        if (!empty($kelasUpper)) {
-                            $data['kelas'] = $kelasUpper;
+                        
+                        $activeTa = DB::table('tahun_ajarans')->where('is_active', 1)->first();
+                        $baseYear = $activeTa ? (int)substr($activeTa->tahun, 0, 4) : (int)date('Y');
+                        
+                        if ($importType === 'lama') {
+                            $data['is_active'] = 0;
+                            $data['kelas'] = null;
+                            $kelasUpper = ''; // Prevent class logic
+                            
+                            $selectedTa = DB::table('tahun_ajarans')->where('id', $tahunAjaranId)->first();
+                            if ($selectedTa) {
+                                $data['tahun_ajaran_id'] = $selectedTa->id;
+                                $data['tahun_masuk'] = (int)substr($selectedTa->tahun, 0, 4);
+                            } else {
+                                // Default jika terjadi kesalahan
+                                $data['tahun_masuk'] = $baseYear - 3;
+                            }
+                            $tahunMasuk = $data['tahun_masuk'];
+                            $isAlumni = true;
+                        } else {
+                            // Hitung tahun masuk otomatis
+                            if (isset($data['tahun_masuk']) && trim((string)$data['tahun_masuk']) !== '') {
+                                $tahunMasuk = (int) trim($data['tahun_masuk']);
+                            } else {
+                                $tahunMasuk = $baseYear;
+                                if (str_starts_with($kelasUpper, 'XII') || str_starts_with($kelasUpper, '12')) {
+                                    $tahunMasuk = $baseYear - 2;
+                                } elseif (str_starts_with($kelasUpper, 'XI') || str_starts_with($kelasUpper, '11')) {
+                                    $tahunMasuk = $baseYear - 1;
+                                }
+                            }
+                            $data['tahun_masuk'] = $tahunMasuk;
+                            
+                            // Deteksi jika alumni (lebih dari atau sama dengan 3 tahun)
+                            $isAlumni = ($baseYear - $tahunMasuk) >= 3;
+                            if ($isAlumni) {
+                                $data['is_active'] = 0;
+                                $data['kelas'] = null;
+                                $kelasUpper = ''; // Prevent class logic
+                            } elseif (!empty($kelasUpper)) {
+                                $data['kelas'] = $kelasUpper;
+                            }
                         }
 
                         if (!empty($kelasUpper)) {
@@ -669,8 +745,6 @@ class AiImportController extends Controller
                                 ]);
                             }
                             
-                            $data['kelas'] = $kelasUpper;
-
                             // Set ke kolom history kelas
                             if ($tingkat === '12') {
                                 $data['kelas_12'] = $kelasUpper;
@@ -681,30 +755,21 @@ class AiImportController extends Controller
                             }
                         }
                         
-                        $activeTa = DB::table('tahun_ajarans')->where('is_active', 1)->first();
-                        $baseYear = $activeTa ? (int)substr($activeTa->tahun, 0, 4) : (int)date('Y');
-                        
-                        $tahunMasuk = $baseYear;
-                        if (str_starts_with($kelasUpper, 'XII') || str_starts_with($kelasUpper, '12')) {
-                            $tahunMasuk = $baseYear - 2;
-                        } elseif (str_starts_with($kelasUpper, 'XI') || str_starts_with($kelasUpper, '11')) {
-                            $tahunMasuk = $baseYear - 1;
-                        }
-                        $data['tahun_masuk'] = $tahunMasuk;
-                        
-                        $entryTa = DB::table('tahun_ajarans')
-                            ->where('tahun', $tahunMasuk . '/' . ($tahunMasuk + 1))
-                            ->first();
-                        if ($entryTa) {
-                            $data['tahun_ajaran_id'] = $entryTa->id;
-                        } else {
-                            $taId = DB::table('tahun_ajarans')->insertGetId([
-                                'tahun' => $tahunMasuk . '/' . ($tahunMasuk + 1),
-                                'is_active' => 0,
-                                'created_at' => date('Y-m-d H:i:s'),
-                                'updated_at' => date('Y-m-d H:i:s')
-                            ]);
-                            $data['tahun_ajaran_id'] = $taId;
+                        if ($importType !== 'lama' || !isset($data['tahun_ajaran_id'])) {
+                            $entryTa = DB::table('tahun_ajarans')
+                                ->where('tahun', $tahunMasuk . '/' . ($tahunMasuk + 1))
+                                ->first();
+                            if ($entryTa) {
+                                $data['tahun_ajaran_id'] = $entryTa->id;
+                            } else {
+                                $taId = DB::table('tahun_ajarans')->insertGetId([
+                                    'tahun' => $tahunMasuk . '/' . ($tahunMasuk + 1),
+                                    'is_active' => 0,
+                                    'created_at' => date('Y-m-d H:i:s'),
+                                    'updated_at' => date('Y-m-d H:i:s')
+                                ]);
+                                $data['tahun_ajaran_id'] = $taId;
+                            }
                         }
                     }
 

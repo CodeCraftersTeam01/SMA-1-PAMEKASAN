@@ -76,6 +76,10 @@ const Siswa = () => {
   const [aiResult, setAiResult]             = useState(null);
   const [aiError, setAiError]               = useState('');
   const [importProgress, setImportProgress] = useState(null);
+  
+  // AI wizard options
+  const [aiImportType, setAiImportType] = useState('baru');
+  const [aiTahunAjaranId, setAiTahunAjaranId] = useState('');
 
   // Batch selection
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -183,12 +187,13 @@ const Siswa = () => {
   const openFormForCreate = () => {
     setIsSelectionModalOpen(false);
     setFormSiswa({
-      nis: '', kelas: '', nama_lengkap: '', jenis_kelamin: '', nisn: '',
-      tempat_lahir: '', tanggal_lahir: '', agama: '',
-      alamat: '', nomor_hp: '', email: '',
-      penerima_kps: false, nomor_kps: '',
-      penerima_kip: false, nomor_kip: '',
-      is_active: true, tahun_ajaran_id: '',
+      nis: '', kelas: '', nama_lengkap: '', jenis_kelamin: 'L', nisn: '',
+      tempat_lahir: '', tanggal_lahir: '', agama: 'Islam', alamat: '',
+      rt: '', rw: '', dusun: '', kelurahan: '', kode_pos: '',
+      jenis_tinggal: '', alat_transportasi: '', lintang: '', bujur: '',
+      nomor_hp: '', email: '',
+      penerima_kps: false, nomor_kps: '', penerima_kip: false, nomor_kip: '',
+      is_active: true, tahun_masuk: '', tahun_ajaran_id: '',
       kelas_10: '', kelas_11: '', kelas_12: '', tahun_lulus: ''
     });
     setIsFormModalOpen(true);
@@ -209,6 +214,7 @@ const Siswa = () => {
     setAiHeaderRow(0); setAiDbSchema([]);
     setAiStep(AI_STEPS.UPLOAD);
     setAiFile(null); setAiAnalysis(null); setAiMapping({}); setAiResult(null); setAiError('');
+    setAiImportType('baru'); setAiTahunAjaranId('');
     setIsAiWizardOpen(true);
   };
 
@@ -219,9 +225,10 @@ const Siswa = () => {
       const payload = {};
       const fields = [
         'nis', 'kelas', 'nama_lengkap', 'jenis_kelamin', 'nisn', 'tempat_lahir',
-        'tanggal_lahir', 'agama', 'alamat', 'nomor_hp', 'email',
+        'tanggal_lahir', 'agama', 'alamat', 'rt', 'rw', 'dusun', 'kelurahan', 'kode_pos', 
+        'jenis_tinggal', 'alat_transportasi', 'lintang', 'bujur', 'nomor_hp', 'email',
         'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
-        'is_active', 'kelas_10', 'kelas_11', 'kelas_12', 'tahun_ajaran_id', 'tahun_lulus'
+        'is_active', 'tahun_masuk', 'kelas_10', 'kelas_11', 'kelas_12', 'tahun_ajaran_id', 'tahun_lulus'
       ];
       fields.forEach(f => { if (formSiswa[f] !== undefined) payload[f] = formSiswa[f]; });
       payload.is_active = payload.is_active === true || payload.is_active === 1;
@@ -439,6 +446,10 @@ const Siswa = () => {
 
   const handleAiAnalyze = async () => {
     if (!aiFile) return;
+    if (aiImportType === 'lama' && !aiTahunAjaranId) {
+      setAiError('Pilih Tahun Ajaran untuk data lama terlebih dahulu.');
+      return;
+    }
     setAiStep(AI_STEPS.ANALYZING);
     setAiError('');
     const fd = new FormData();
@@ -469,6 +480,11 @@ const Siswa = () => {
 
   const handleAiExecute = async () => {
     if (!aiFile || !aiAnalysis) return;
+    if (aiImportType === 'lama' && !aiTahunAjaranId) {
+      setAiError('Pilih Tahun Ajaran untuk data lama.');
+      return;
+    }
+
     setAiStep(AI_STEPS.IMPORTING);
     setImportProgress({ current: 0, total: 0, success: 0, fail: 0 });
     const fd = new FormData();
@@ -476,6 +492,10 @@ const Siswa = () => {
     fd.append('target_table', 'siswas');
     fd.append('mapping', JSON.stringify(aiMapping));
     fd.append('header_row', String(aiHeaderRow));
+    fd.append('import_type', aiImportType);
+    if (aiImportType === 'lama') {
+      fd.append('tahun_ajaran_id', aiTahunAjaranId);
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/api/ai-import/execute`, {
         method: 'POST',
@@ -910,6 +930,56 @@ const Siswa = () => {
               {/* STEP 1 — Upload */}
               {aiStep === AI_STEPS.UPLOAD && (
                 <div className="space-y-5">
+                  {/* Pilihan Jenis Import diletakkan di awal */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-4 mb-4 shadow-sm">
+                    <p className="text-sm font-bold text-slate-800 mb-3">Pengaturan Import Data</p>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                      <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${aiImportType === 'baru' ? 'border-blue-500 bg-blue-50/50' : 'border-slate-100 hover:border-slate-300 bg-white'}`}>
+                        <input type="radio" name="aiImportType" value="baru" checked={aiImportType === 'baru'} onChange={() => setAiImportType('baru')} className="w-4 h-4 text-blue-600 focus:ring-blue-500/20" />
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Siswa Baru / Aktif</p>
+                          <p className="text-xs text-slate-500 mt-0.5">Siswa yang masih aktif bersekolah</p>
+                        </div>
+                      </label>
+                      <label className={`flex-1 flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all ${aiImportType === 'lama' ? 'border-blue-500 bg-blue-50/50' : 'border-slate-100 hover:border-slate-300 bg-white'}`}>
+                        <input type="radio" name="aiImportType" value="lama" checked={aiImportType === 'lama'} onChange={() => setAiImportType('lama')} className="w-4 h-4 text-blue-600 focus:ring-blue-500/20" />
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Siswa Lama / Alumni</p>
+                          <p className="text-xs text-slate-500 mt-0.5">Siswa yang sudah lulus atau alumni</p>
+                        </div>
+                      </label>
+                    </div>
+
+                    {aiImportType === 'lama' && (() => {
+                      const activeTA = tahunAjaranList.find(t => t.is_active === 1 || t.is_active === true);
+                      const getStartYear = (str) => parseInt(str?.substring(0, 4) || "0", 10);
+                      const activeYear = activeTA ? getStartYear(activeTA.tahun) : new Date().getFullYear();
+                      const pastTahunAjaran = tahunAjaranList.filter(t => getStartYear(t.tahun) <= activeYear - 3);
+
+                      return (
+                        <div className="animate-fade-up">
+                          <label className="block text-sm font-bold text-slate-700 mb-1.5">Pilih Tahun Ajaran (Angkatan Lama)</label>
+                          <select 
+                            value={aiTahunAjaranId} 
+                            onChange={(e) => setAiTahunAjaranId(e.target.value)}
+                            className="w-full text-sm px-3 py-2.5 rounded-xl border-2 border-slate-200 focus:outline-none focus:ring-4 focus:ring-slate-800/10 transition-all font-medium bg-slate-50"
+                          >
+                            <option value="">— Pilih Tahun Ajaran —</option>
+                            {pastTahunAjaran.map(ta => (
+                              <option key={ta.id} value={ta.id}>{ta.tahun}</option>
+                            ))}
+                          </select>
+                          {pastTahunAjaran.length === 0 && (
+                            <p className="text-xs text-red-500 mt-2 font-medium">Data Tahun Ajaran lama (&lt;= 3 tahun lalu) tidak ditemukan di sistem.</p>
+                          )}
+                          <p className="text-xs text-slate-500 mt-2">
+                            Catatan: Semua siswa yang diimport akan diatur sebagai Alumni (Tidak Aktif) pada tahun ajaran yang dipilih, dan kolom Kelas akan diabaikan.
+                          </p>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
                   {aiError && (
                     <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 flex gap-2 items-start">
                       <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -1151,6 +1221,8 @@ const Siswa = () => {
                   <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-xs text-amber-700">
                     <strong>Total {aiAnalysis.total_rows} baris</strong> akan diimport. Proses ini tidak dapat dibatalkan.
                   </div>
+
+                  {aiError && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">{aiError}</div>}
 
                   <div className="flex items-center justify-between pt-1">
                     <button onClick={() => setAiStep(AI_STEPS.MAPPING)} className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
@@ -1426,9 +1498,49 @@ const Siswa = () => {
                 </div>
 
                 {/* Alamat */}
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat</label>
-                  <textarea rows={2} value={formSiswa.alamat || ''} onChange={e => setFormSiswa(prev => ({ ...prev, alamat: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 resize-none" />
+                <div className="sm:col-span-2 border-t border-slate-100 pt-5 mt-4">
+                  <p className="text-sm font-bold text-slate-700 mb-4">Detail Alamat & Tempat Tinggal</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Jalan / Alamat Lengkap</label>
+                      <textarea rows={2} value={formSiswa.alamat || ''} onChange={e => setFormSiswa(prev => ({ ...prev, alamat: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 resize-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">RT / RW</label>
+                      <div className="flex gap-2">
+                        <input type="text" placeholder="RT" value={formSiswa.rt || ''} onChange={e => setFormSiswa(prev => ({ ...prev, rt: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                        <input type="text" placeholder="RW" value={formSiswa.rw || ''} onChange={e => setFormSiswa(prev => ({ ...prev, rw: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Dusun</label>
+                      <input type="text" value={formSiswa.dusun || ''} onChange={e => setFormSiswa(prev => ({ ...prev, dusun: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Kelurahan / Desa</label>
+                      <input type="text" value={formSiswa.kelurahan || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kelurahan: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Kode Pos</label>
+                      <input type="text" value={formSiswa.kode_pos || ''} onChange={e => setFormSiswa(prev => ({ ...prev, kode_pos: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Jenis Tinggal</label>
+                      <input type="text" value={formSiswa.jenis_tinggal || ''} onChange={e => setFormSiswa(prev => ({ ...prev, jenis_tinggal: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Alat Transportasi</label>
+                      <input type="text" value={formSiswa.alat_transportasi || ''} onChange={e => setFormSiswa(prev => ({ ...prev, alat_transportasi: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Lintang (Latitude)</label>
+                      <input type="text" value={formSiswa.lintang || ''} onChange={e => setFormSiswa(prev => ({ ...prev, lintang: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-1">Bujur (Longitude)</label>
+                      <input type="text" value={formSiswa.bujur || ''} onChange={e => setFormSiswa(prev => ({ ...prev, bujur: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Status Aktif */}
@@ -1527,7 +1639,6 @@ const Siswa = () => {
                 <DetailField label="Jenis Kelamin" value={viewSiswa.jenis_kelamin === 'L' ? 'Laki-laki' : viewSiswa.jenis_kelamin === 'P' ? 'Perempuan' : '-'} />
                 <DetailField label="Tempat Lahir" value={viewSiswa.tempat_lahir} />
                 <DetailField label="Tanggal Lahir" value={viewSiswa.tanggal_lahir ? new Date(viewSiswa.tanggal_lahir).toLocaleDateString('id-ID') : '-'} />
-                <DetailField label="Agama" value={viewSiswa.agama} />
                 <DetailField label="Nomor HP" value={viewSiswa.nomor_hp} />
                 <DetailField label="Email" value={viewSiswa.email} />
                 <DetailField label="Tahun Masuk" value={viewSiswa.tahun_masuk} />
