@@ -14,6 +14,8 @@ import Navbar from './components/Navbar';
 import LoginModal from './components/LoginModal';
 import AnnouncementMarquee from './components/AnnouncementMarquee';
 import ExtracurricularSection from './components/ExtracurricularSection';
+import TestimonialSection from './components/TestimonialSection';
+import TestimonialForm from './components/TestimonialForm';
 
 const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
@@ -881,6 +883,36 @@ export default function App() {
             </div>
           </section>
         )}
+
+        {/* TESTIMONI UNIFIED SECTION */}
+        <section id="testimoni" className="py-24 bg-gray-50 border-t border-gray-200">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-16"
+            >
+              <div className="w-12 h-1 bg-smansa-gold mx-auto mb-6"></div>
+              <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight">Apa Kata Mereka?</h2>
+              <p className="text-gray-600 text-lg max-w-2xl mx-auto">Pengalaman belajar dan berkembang bersama SMAN 1 Pamekasan.</p>
+            </motion.div>
+
+            <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-16">
+              <div className="mb-8 border-b border-gray-100 pb-4">
+                <h3 className="text-2xl font-bold text-smansa-navy text-center">Kirim Testimoni Anda</h3>
+                <p className="text-gray-500 text-sm mt-1 text-center">Bagikan kisah inspiratif Anda kepada dunia.</p>
+              </div>
+              <TestimonialForm />
+            </div>
+
+            {/* BOTTOM SECTION: DISPLAY */}
+            <div className="max-w-7xl mx-auto">
+              <TestimonialSection />
+            </div>
+          </div>
+        </section>
 
         {/* AGENDA SEKOLAH */}
         <section id="agenda" className="py-24 bg-smansa-navy text-white relative overflow-hidden">
