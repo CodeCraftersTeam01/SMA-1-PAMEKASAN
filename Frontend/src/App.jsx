@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -60,6 +60,16 @@ const Page = ({ children, slide = true }) => (
   </motion.div>
 );
 
+// External Redirect Component for root path
+const ExternalRedirect = () => {
+  useEffect(() => {
+    // Redirect to landing page base URL defined in .env
+    const landingUrl = import.meta.env.VITE_LANDING_PAGE_URL || 'http://localhost:5174';
+    window.location.href = landingUrl;
+  }, []);
+  return null;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -67,11 +77,11 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Suspense fallback={<RouteFallback />}>
         <Routes location={location} key={location.pathname}>
-          {/* Public Website - login via modal */}
-          <Route path="/" element={<Page slide={false}><LoginPage /></Page>} />
+          {/* Base URL redirects to Landing Pages */}
+          <Route path="/" element={<ExternalRedirect />} />
 
-          {/* Admin Login Portal - Redirect to homepage modal */}
-          <Route path="/login" element={<Navigate to="/" replace />} />
+          {/* Admin Login Portal */}
+          <Route path="/login" element={<Page slide={false}><LoginPage /></Page>} />
 
           {/* Independent Public Alumni Tracking Page */}
           <Route path="/siswas/tracking" element={<Page slide={false}><PublicTracking /></Page>} />

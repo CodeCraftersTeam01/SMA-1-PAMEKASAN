@@ -8,7 +8,8 @@ export default function LoginModal({ isOpen, onClose }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-  const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:5174';
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || (isLocalhost ? 'http://localhost:5173' : window.location.origin);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -28,7 +29,7 @@ export default function LoginModal({ isOpen, onClose }) {
       const data = await response.json();
 
       if (response.ok && data.token) {
-        window.location.href = `${FRONTEND_URL}/dashboard?token=${data.token}`;
+        window.location.href = `${DASHBOARD_URL}/dashboard?token=${data.token}`;
       } else {
         setError(data.message || 'Email atau kata sandi salah');
       }

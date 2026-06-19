@@ -2,25 +2,60 @@ import React, { useState, useEffect } from 'react';
 
 const PRESET_ROLES = ['admin', 'petugas', 'tu', 'guru', 'kepsek'];
 
-const RESOURCES = [
-  { key: 'dashboard', label: 'Dashboard Utama' },
-  { key: 'pendaftaran', label: 'Pendaftaran' },
-  { key: 'siswa', label: 'Siswa' },
-  { key: 'tahun_ajaran', label: 'Tahun Ajaran' },
-  { key: 'laporan', label: 'Laporan' },
-  { key: 'alumni', label: 'Alumni' },
-  { key: 'alumni_tracking', label: 'Penelusuran Alumni' },
-  { key: 'kelas', label: 'Kelas' },
-  { key: 'berita', label: 'Berita Sekolah' },
-  { key: 'prestasi', label: 'Prestasi Siswa' },
-  { key: 'fasilitas', label: 'Fasilitas' },
-  { key: 'halaman', label: 'Halaman Kustom' },
-  { key: 'navigasi', label: 'Navigasi' },
-  { key: 'teachers', label: 'Data Guru (CMS)' },
-  { key: 'features', label: 'Keunggulan' },
-  { key: 'programs', label: 'Program Peminatan' },
-  { key: 'pengaturan', label: 'Pengaturan' },
+const RESOURCE_GROUPS = [
+  {
+    groupName: 'Menu Utama',
+    resources: [
+      { key: 'dashboard', label: 'Dashboard Utama' },
+      { key: 'tahun_ajaran', label: 'Tahun Ajaran' },
+    ]
+  },
+  {
+    groupName: 'Data Sekolah',
+    resources: [
+      { key: 'pendaftaran', label: 'Pendaftar' },
+      { key: 'siswa', label: 'Siswa' },
+      { key: 'kelas', label: 'Kelas' },
+      { key: 'set_kelas', label: 'Pembagian Kelas' },
+      { key: 'laporan', label: 'Laporan' },
+    ]
+  },
+  {
+    groupName: 'Alumni',
+    resources: [
+      { key: 'alumni', label: 'Daftar Alumni' },
+      { key: 'alumni_tracking', label: 'Penelusuran Alumni' },
+    ]
+  },
+  {
+    groupName: 'Tampilan Website',
+    resources: [
+      { key: 'berita', label: 'Berita Sekolah' },
+      { key: 'prestasi', label: 'Prestasi Siswa' },
+      { key: 'fasilitas', label: 'Fasilitas Sekolah' },
+      { key: 'ekstrakurikuler', label: 'Ekstrakurikuler' },
+      { key: 'agenda', label: 'Agenda Sekolah' },
+      { key: 'pengumuman', label: 'Pengumuman' },
+      { key: 'halaman', label: 'Halaman Tambahan' },
+      { key: 'navigasi', label: 'Menu Navigasi' },
+      { key: 'teachers', label: 'Data Guru' },
+      { key: 'features', label: 'Keunggulan Sekolah' },
+      { key: 'programs', label: 'Program Jurusan' },
+      { key: 'quotes', label: 'Kata-kata Guru' },
+      { key: 'landing_settings', label: 'Sambutan & Kontak' },
+    ]
+  },
+  {
+    groupName: 'Pengaturan',
+    resources: [
+      { key: 'pengaturan_nis', label: 'Pengaturan NIS' },
+      { key: 'pengaturan_tracking', label: 'Pengaturan Penelusuran' },
+      { key: 'user_management', label: 'Pengguna & Akses' },
+    ]
+  }
 ];
+
+const RESOURCES = RESOURCE_GROUPS.flatMap(group => group.resources);
 
 const ACTIONS = [
   { key: 'view', label: 'Lihat' },
@@ -103,8 +138,24 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
     });
   };
 
+  const handleSelectGroup = (group, checked) => {
+    setPermissions(prev => {
+      const newPerms = { ...prev };
+      group.resources.forEach(r => {
+        const updated = { ...newPerms[r.key] };
+        ACTIONS.forEach(a => { updated[a.key] = checked; });
+        newPerms[r.key] = updated;
+      });
+      return newPerms;
+    });
+  };
+
   const isAllSelected = (resource) => {
     return ACTIONS.every(a => permissions[resource]?.[a.key]);
+  };
+
+  const isGroupSelected = (group) => {
+    return group.resources.every(r => isAllSelected(r.key));
   };
 
   const handleSubmit = async (e) => {
@@ -336,32 +387,51 @@ const UserForm = ({ user, onSubmit, isEditing }) => {
                 </tr>
               </thead>
               <tbody>
-                {RESOURCES.map(r => (
-                  <tr key={r.key} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                    <td className="py-2.5 pr-4 text-[13px] font-semibold text-slate-700">{r.label}</td>
-                    {ACTIONS.map(a => (
-                      <td key={a.key} className="py-2.5 px-3 text-center">
+                {RESOURCE_GROUPS.map((group, gIdx) => (
+                  <React.Fragment key={gIdx}>
+                    <tr className="bg-slate-50/80 border-b border-slate-100">
+                      <td colSpan={5} className="py-2.5 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        {group.groupName}
+                      </td>
+                      <td className="py-2.5 pl-3 text-center">
                         <label className="inline-flex items-center justify-center cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={permissions[r.key]?.[a.key] || false}
-                            onChange={() => handlePermissionChange(r.key, a.key)}
+                            checked={isGroupSelected(group)}
+                            onChange={(e) => handleSelectGroup(group, e.target.checked)}
                             className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
                           />
                         </label>
                       </td>
+                    </tr>
+                    {group.resources.map(r => (
+                      <tr key={r.key} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                        <td className="py-2.5 pl-6 pr-4 text-[13px] font-semibold text-slate-700">{r.label}</td>
+                        {ACTIONS.map(a => (
+                          <td key={a.key} className="py-2.5 px-3 text-center">
+                            <label className="inline-flex items-center justify-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={permissions[r.key]?.[a.key] || false}
+                                onChange={() => handlePermissionChange(r.key, a.key)}
+                                className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
+                              />
+                            </label>
+                          </td>
+                        ))}
+                        <td className="py-2.5 pl-3 text-center">
+                          <label className="inline-flex items-center justify-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isAllSelected(r.key)}
+                              onChange={(e) => handleSelectAll(r.key, e.target.checked)}
+                              className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
+                            />
+                          </label>
+                        </td>
+                      </tr>
                     ))}
-                    <td className="py-2.5 pl-3 text-center">
-                      <label className="inline-flex items-center justify-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isAllSelected(r.key)}
-                          onChange={(e) => handleSelectAll(r.key, e.target.checked)}
-                          className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
-                        />
-                      </label>
-                    </td>
-                  </tr>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

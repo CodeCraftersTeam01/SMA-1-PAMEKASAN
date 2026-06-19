@@ -49,7 +49,9 @@ const PageTransition = ({ children }) => (
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const API_KEY = import.meta.env.VITE_API_KEY || 'smansa123';
-const API_BASE = 'http://localhost:8000/api/public';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '/api/public';
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || (isLocalhost ? 'http://localhost:5173' : window.location.origin);
 
 // Full-page loading screen component
 const LoadingScreen = () => (
@@ -460,7 +462,7 @@ export default function App() {
                 {data.settings?.hero_subtitle || 'Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.'}
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-4">
-                <a href={data.settings?.ppdb_link || "http://localhost:5173"} className="bg-smansa-gold text-white font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-sm">
+                <a href={data.settings?.ppdb_link || FRONTEND_URL} className="bg-smansa-gold text-white font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-sm">
                   Daftar Sekarang <ArrowRight className="w-4 h-4" />
                 </a>
                 <a href={data.settings?.video_link || "#video-profil"} className="bg-transparent border border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white hover:text-smansa-navy transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
@@ -547,9 +549,9 @@ export default function App() {
                 <h2 className="text-4xl lg:text-5xl font-bold text-smansa-navy mb-4 tracking-tight">Mengapa memilih<br/>SMAN 1 Pamekasan?</h2>
                 <p className="text-gray-600 text-lg">Sekolah unggulan dengan segudang prestasi dan fasilitas berstandar internasional.</p>
               </motion.div>
-              <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
-                <a href={data.settings?.ppdb_link || "http://localhost:5173"} className="bg-smansa-navy text-white px-8 py-4 rounded-full text-base font-bold inline-flex items-center gap-2 hover:bg-blue-900 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
-                  Daftar PPDB <ArrowRight className="w-5 h-5"/>
+              <motion.div variants={fadeUp} className="flex flex-wrap gap-4 mt-8">
+                <a href={data.settings?.ppdb_link || FRONTEND_URL} className="bg-smansa-navy text-white px-8 py-4 rounded-full text-base font-bold inline-flex items-center gap-2 hover:bg-blue-900 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl">
+                  Daftar Sekarang <ArrowRight className="w-5 h-5"/>
                 </a>
               </motion.div>
             </div>
@@ -1054,7 +1056,7 @@ export default function App() {
               
               <h4 className="font-bold text-xl mb-6 tracking-tight">Aplikasi Siswa</h4>
               <ul className="space-y-3 text-blue-100/80">
-                <li><a href="http://localhost:5173/dashboard" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Sistem Akademik (Admin)</a></li>
+                <li><a href={`${FRONTEND_URL}/dashboard`} className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Sistem Akademik (Admin)</a></li>
                 <li><Link to="/tracking-alumni" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Tracking Alumni</Link></li>
                 <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">E-Learning</a></li>
               </ul>
