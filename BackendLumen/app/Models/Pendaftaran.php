@@ -24,6 +24,7 @@ class Pendaftaran extends Model
         'email',
         'nomor_hp',
         'jalur',
+        'rt', 'rw', 'dusun', 'kelurahan', 'kode_pos', 'jenis_tinggal', 'alat_transportasi', 'lintang', 'bujur',
     ];
 
     public function tahunAjaran()

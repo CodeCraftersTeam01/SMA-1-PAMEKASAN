@@ -434,7 +434,7 @@ const Pendaftar = () => {
             'nama_ibu', 'pekerjaan_ibu', 'pendidikan_ibu', 'penghasilan_ibu', 'no_hp_ibu', 'alamat_ibu',
             'nama_wali', 'pekerjaan_wali', 'pendidikan_wali', 'penghasilan_wali', 'no_hp_wali', 'alamat_wali',
             'tempat_lahir', 'tanggal_lahir', 'nik', 'agama',
-            'asal_sekolah', 'kecamatan', 'alamat', 'email', 'nomor_hp',
+            'asal_sekolah', 'kecamatan', 'alamat', 'rt', 'rw', 'dusun', 'kelurahan', 'kode_pos', 'jenis_tinggal', 'alat_transportasi', 'lintang', 'bujur', 'email', 'nomor_hp',
             'status', 'jalur',
           ];
           fields.forEach(f => {
@@ -1191,6 +1191,15 @@ const Pendaftar = () => {
                 <div className="sm:col-span-2">
                   <DetailField label="Alamat" value={viewCandidate.alamat} />
                 </div>
+                <DetailField label="RT" value={viewCandidate.rt} />
+                <DetailField label="RW" value={viewCandidate.rw} />
+                <DetailField label="Dusun" value={viewCandidate.dusun} />
+                <DetailField label="Kelurahan / Desa" value={viewCandidate.kelurahan} />
+                <DetailField label="Kode Pos" value={viewCandidate.kode_pos} />
+                <DetailField label="Jenis Tinggal" value={viewCandidate.jenis_tinggal} />
+                <DetailField label="Alat Transportasi" value={viewCandidate.alat_transportasi} />
+                <DetailField label="Lintang" value={viewCandidate.lintang} />
+                <DetailField label="Bujur" value={viewCandidate.bujur} />
                 <DetailField label="Jalur Pendaftaran" value={viewCandidate.jalur ? viewCandidate.jalur.replace('_', ' ') : '-'} />
                 <DetailField label="Status" value={getStatusText(viewCandidate.status)} />
                 <DetailField label="Tanggal Daftar" value={viewCandidate.created_at ? new Date(viewCandidate.created_at).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '-'} />
@@ -1370,6 +1379,59 @@ const Pendaftar = () => {
                 <div className="sm:col-span-2">
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Alamat Lengkap</label>
                   <textarea name="alamat" defaultValue={currentCandidate?.alamat || ''} required rows="2" className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 resize-none" placeholder="Alamat lengkap siswa"></textarea>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">RT</label>
+                  <input type="text" name="rt" defaultValue={currentCandidate?.rt || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="001" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">RW</label>
+                  <input type="text" name="rw" defaultValue={currentCandidate?.rw || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="002" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Dusun</label>
+                  <input type="text" name="dusun" defaultValue={currentCandidate?.dusun || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="Nama dusun" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Kelurahan / Desa</label>
+                  <input type="text" name="kelurahan" defaultValue={currentCandidate?.kelurahan || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="Nama desa / kelurahan" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Kode Pos</label>
+                  <input type="text" name="kode_pos" defaultValue={currentCandidate?.kode_pos || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="69311" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Jenis Tinggal</label>
+                  <select name="jenis_tinggal" defaultValue={currentCandidate?.jenis_tinggal || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white">
+                    <option value="">— Pilih —</option>
+                    <option value="Bersama Orang Tua">Bersama Orang Tua</option>
+                    <option value="Bersama Wali">Bersama Wali</option>
+                    <option value="Kos">Kos</option>
+                    <option value="Asrama">Asrama</option>
+                    <option value="Panti Asuhan">Panti Asuhan</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Alat Transportasi</label>
+                  <select name="alat_transportasi" defaultValue={currentCandidate?.alat_transportasi || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white">
+                    <option value="">— Pilih —</option>
+                    <option value="Jalan Kaki">Jalan Kaki</option>
+                    <option value="Sepeda">Sepeda</option>
+                    <option value="Sepeda Motor">Sepeda Motor</option>
+                    <option value="Mobil Pribadi">Mobil Pribadi</option>
+                    <option value="Antar Jemput Sekolah">Antar Jemput Sekolah</option>
+                    <option value="Angkutan Umum">Angkutan Umum</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Lintang</label>
+                  <input type="number" step="any" name="lintang" defaultValue={currentCandidate?.lintang || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="-7.1234567" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Bujur</label>
+                  <input type="number" step="any" name="bujur" defaultValue={currentCandidate?.bujur || ''} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" placeholder="113.1234567" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-1">Email</label>

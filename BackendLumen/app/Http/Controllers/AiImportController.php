@@ -229,7 +229,7 @@ class AiImportController extends Controller
                 if ($h1Raw !== '') {
                     $currentTop = $h1Raw;
                 } elseif ($currentTop !== '') {
-                    if (!preg_match('/nama|tahun|lahir|pendidikan|pekerjaan|penghasilan|nik|kebutuhan|kps|pkh|kip|kks/i', $h2)) {
+                    if (!preg_match('/nama|tahun|lahir|pendidikan|pekerjaan|penghasilan|nik|kebutuhan|kps|pkh|kip|kks|hp|telepon|telp|phone|alamat|domisili|wa|whatsapp|handphone|nohp|kontak/i', $h2)) {
                         $currentTop = '';
                     }
                 }
@@ -270,6 +270,15 @@ class AiImportController extends Controller
 
             $cleanMapping = [];
             $usedDbCols = []; // Track mapped columns to prevent overwriting correct early columns
+            
+            $hasHpCol = false;
+            foreach ($headers as $h) {
+                if (preg_match('/\bhp\b|wa\b|whatsapp|handphone|nohp/i', $h)) {
+                    $hasHpCol = true;
+                    break;
+                }
+            }
+
             foreach ($headers as $idx => $h) {
                 $lowerH = strtolower($h);
                 $isParentCol = preg_match('/ayah|ibu|wali|periodik|kesejahteraan/i', $lowerH);
@@ -295,9 +304,11 @@ class AiImportController extends Controller
                         $mappedTo = 'tanggal_lahir';
                     } elseif (!$isParentCol && preg_match('/agama/i', $lowerH)) {
                         $mappedTo = 'agama';
-                    } elseif (!$isParentCol && preg_match('/alamat|domisili/i', $lowerH)) {
+                    } elseif (!$isParentCol && preg_match('/alamat|domisili|jalan|tempat tinggal/i', $lowerH)) {
                         $mappedTo = 'alamat';
-                    } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
+                    } elseif (!$isParentCol && preg_match('/\bhp\b|wa\b|whatsapp|handphone|nohp/i', $lowerH)) {
+                        $mappedTo = 'nomor_hp';
+                    } elseif (!$isParentCol && !$hasHpCol && preg_match('/telepon|telp|phone|kontak/i', $lowerH)) {
                         $mappedTo = 'nomor_hp';
                     } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
                         $mappedTo = 'email';
@@ -334,18 +345,27 @@ class AiImportController extends Controller
                     } elseif (preg_match('/ayah/i', $lowerH)) {
                         if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ayah';
                         elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ayah';
-                        elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ayah';
-                        elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ayah';
+                        elseif (preg_match('/pendidikan/i', $lowerH)) $mappedTo = 'pendidikan_ayah';
+                        elseif (preg_match('/penghasilan/i', $lowerH)) $mappedTo = 'penghasilan_ayah';
+                        elseif (preg_match('/\bhp\b|wa\b|whatsapp|handphone|nohp/i', $lowerH)) $mappedTo = 'no_hp_ayah';
+                        elseif (!$hasHpCol && preg_match('/telepon|telp|phone|kontak/i', $lowerH)) $mappedTo = 'no_hp_ayah';
+                        elseif (preg_match('/alamat|domisili|jalan/i', $lowerH)) $mappedTo = 'alamat_ayah';
                     } elseif (preg_match('/ibu/i', $lowerH)) {
                         if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_ibu';
                         elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_ibu';
-                        elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_ibu';
-                        elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_ibu';
+                        elseif (preg_match('/pendidikan/i', $lowerH)) $mappedTo = 'pendidikan_ibu';
+                        elseif (preg_match('/penghasilan/i', $lowerH)) $mappedTo = 'penghasilan_ibu';
+                        elseif (preg_match('/\bhp\b|wa\b|whatsapp|handphone|nohp/i', $lowerH)) $mappedTo = 'no_hp_ibu';
+                        elseif (!$hasHpCol && preg_match('/telepon|telp|phone|kontak/i', $lowerH)) $mappedTo = 'no_hp_ibu';
+                        elseif (preg_match('/alamat|domisili|jalan/i', $lowerH)) $mappedTo = 'alamat_ibu';
                     } elseif (preg_match('/wali/i', $lowerH)) {
                         if (preg_match('/nama/i', $lowerH)) $mappedTo = 'nama_wali';
                         elseif (preg_match('/pekerjaan/i', $lowerH)) $mappedTo = 'pekerjaan_wali';
-                        elseif (preg_match('/hp|telepon|telp|phone/i', $lowerH)) $mappedTo = 'no_hp_wali';
-                        elseif (preg_match('/alamat/i', $lowerH)) $mappedTo = 'alamat_wali';
+                        elseif (preg_match('/pendidikan/i', $lowerH)) $mappedTo = 'pendidikan_wali';
+                        elseif (preg_match('/penghasilan/i', $lowerH)) $mappedTo = 'penghasilan_wali';
+                        elseif (preg_match('/\bhp\b|wa\b|whatsapp|handphone|nohp/i', $lowerH)) $mappedTo = 'no_hp_wali';
+                        elseif (!$hasHpCol && preg_match('/telepon|telp|phone|kontak/i', $lowerH)) $mappedTo = 'no_hp_wali';
+                        elseif (preg_match('/alamat|domisili|jalan/i', $lowerH)) $mappedTo = 'alamat_wali';
                     } elseif (!$isParentCol && preg_match('/nisn/i', $lowerH)) {
                         $mappedTo = 'nisn';
                     } elseif (!$isParentCol && preg_match('/nik/i', $lowerH)) {
@@ -362,7 +382,7 @@ class AiImportController extends Controller
                         $mappedTo = 'no_pendaftaran';
                     } elseif (preg_match('/asal.*sekolah|sekolah.*asal|smp/i', $lowerH)) {
                         $mappedTo = 'asal_sekolah';
-                    } elseif (preg_match('/alamat|domisili/i', $lowerH)) {
+                    } elseif (preg_match('/alamat|domisili|jalan|tempat tinggal/i', $lowerH)) {
                         $mappedTo = 'alamat';
                     } elseif (preg_match('/kecamatan/i', $lowerH)) {
                         $mappedTo = 'kecamatan';
@@ -370,10 +390,30 @@ class AiImportController extends Controller
                         $mappedTo = 'jalur';
                     } elseif (!$isParentCol && preg_match('/e-?mail/i', $lowerH)) {
                         $mappedTo = 'email';
-                    } elseif (!$isParentCol && preg_match('/hp|telepon|telp|phone/i', $lowerH)) {
+                    } elseif (!$isParentCol && preg_match('/\bhp\b|wa\b|whatsapp|handphone|nohp/i', $lowerH)) {
+                        $mappedTo = 'nomor_hp';
+                    } elseif (!$isParentCol && !$hasHpCol && preg_match('/telepon|telp|phone|kontak/i', $lowerH)) {
                         $mappedTo = 'nomor_hp';
                     } elseif (!$isParentCol && preg_match('/status/i', $lowerH)) {
                         $mappedTo = 'status';
+                    } elseif (!$isParentCol && preg_match('/^rt$/i', $lowerH)) {
+                        $mappedTo = 'rt';
+                    } elseif (!$isParentCol && preg_match('/^rw$/i', $lowerH)) {
+                        $mappedTo = 'rw';
+                    } elseif (!$isParentCol && preg_match('/dusun/i', $lowerH)) {
+                        $mappedTo = 'dusun';
+                    } elseif (!$isParentCol && preg_match('/desa|kelurahan/i', $lowerH)) {
+                        $mappedTo = 'kelurahan';
+                    } elseif (!$isParentCol && preg_match('/kode.*pos/i', $lowerH)) {
+                        $mappedTo = 'kode_pos';
+                    } elseif (!$isParentCol && preg_match('/jenis.*tinggal/i', $lowerH)) {
+                        $mappedTo = 'jenis_tinggal';
+                    } elseif (!$isParentCol && preg_match('/alat.*transportasi|kendaraan/i', $lowerH)) {
+                        $mappedTo = 'alat_transportasi';
+                    } elseif (!$isParentCol && preg_match('/lintang|latitude/i', $lowerH)) {
+                        $mappedTo = 'lintang';
+                    } elseif (!$isParentCol && preg_match('/bujur|longitude/i', $lowerH)) {
+                        $mappedTo = 'bujur';
                     }
                 }
 
@@ -612,6 +652,28 @@ class AiImportController extends Controller
 
                     if ($targetTable === 'pendaftarans' && !isset($data['status'])) {
                         $data['status'] = 'pending';
+                    }
+
+                    if ($targetTable === 'pendaftarans') {
+                        if (empty($data['asal_sekolah'])) {
+                            $data['asal_sekolah'] = '-';
+                        }
+                        if (empty($data['alamat'])) {
+                            $data['alamat'] = '-';
+                        }
+                        if (empty($data['nama_lengkap'])) {
+                            $data['nama_lengkap'] = '-';
+                        }
+                    }
+
+                    // Validasi Lintang & Bujur agar tidak Out of Range
+                    if (isset($data['lintang'])) {
+                        $l = (float) $data['lintang'];
+                        if ($l < -90 || $l > 90) $data['lintang'] = null;
+                    }
+                    if (isset($data['bujur'])) {
+                        $b = (float) $data['bujur'];
+                        if ($b < -180 || $b > 180) $data['bujur'] = null;
                     }
 
                     if ($targetTable === 'siswas') {
