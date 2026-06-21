@@ -11,8 +11,32 @@ const RESOURCE_LABELS = {
   pengaturan: 'Pengaturan',
 };
 
-const UserList = ({ users, isLoading, onEdit, onDelete, onRefresh, onManagePermissions }) => {
+const UserList = ({ users, isLoading, onEdit, onDelete, onBulkDelete, onRefresh, onManagePermissions }) => {
   const [showPerms, setShowPerms] = useState(null);
+
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(users.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    setIsBulkDeleting(true);
+    const success = await onBulkDelete(selectedItems);
+    if (success) {
+      setSelectedItems([]);
+    }
+    setIsBulkDeleting(false);
+  };
 
   if (isLoading) {
     return (
@@ -45,9 +69,25 @@ const UserList = ({ users, isLoading, onEdit, onDelete, onRefresh, onManagePermi
 
   return (
     <div className="overflow-x-auto">
+      {selectedItems.length > 0 && (
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <span className="text-sm font-semibold text-slate-700">{selectedItems.length} pengguna terpilih</span>
+          <button
+            onClick={handleBulkDelete}
+            disabled={isBulkDeleting}
+            className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+            {isBulkDeleting ? 'Menghapus...' : 'Hapus Terpilih'}
+          </button>
+        </div>
+      )}
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <th className="pb-3 px-6 text-left w-10">
+              <input type="checkbox" className="rounded border-slate-300" checked={users.length > 0 && selectedItems.length === users.length} onChange={handleSelectAll} />
+            </th>
             <th className="pb-3 px-6 text-left">No</th>
             <th className="pb-3 px-6 text-left">Nama</th>
             <th className="pb-3 px-6 text-left">Email</th>
@@ -60,6 +100,9 @@ const UserList = ({ users, isLoading, onEdit, onDelete, onRefresh, onManagePermi
         <tbody>
           {users.map((user, index) => (
             <tr key={user.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+              <td className="px-6 py-4 w-10">
+                <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(user.id)} onChange={() => handleSelectItem(user.id)} />
+              </td>
               <td className="px-6 py-4 text-[13px] text-slate-400 font-medium">{index + 1}</td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">

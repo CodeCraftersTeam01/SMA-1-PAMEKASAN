@@ -14,6 +14,7 @@ import AchievementsSection from "./sections/AchievementsSection";
 import FacilitiesSection from "./sections/FacilitiesSection";
 import TeachersSection from "./sections/TeachersSection";
 import ExtracurricularSection from "./sections/ExtracurricularSection";
+import AgendaSection from "./sections/AgendaSection";
 
 import useLoginModal from "./hooks/useLoginModal";
 
@@ -38,7 +39,7 @@ export default function WebsiteHome() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Handle Reveal animations on scroll
+  // Handle Reveal animations on scroll with MutationObserver for dynamic content
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -49,20 +50,34 @@ export default function WebsiteHome() {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('active');
-          // Optionally unobserve if you only want it to animate once
-          // observer.unobserve(entry.target);
-        } else {
-          // Keep it commented if you want it to trigger only once
-          // entry.target.classList.remove('active');
         }
       });
     }, observerOptions);
 
-    const revealElements = document.querySelectorAll('[class*="reveal"]');
-    revealElements.forEach(el => observer.observe(el));
+    const observeElements = () => {
+      const revealElements = document.querySelectorAll('[class*="reveal"]:not(.observed)');
+      revealElements.forEach(el => {
+        observer.observe(el);
+        el.classList.add('observed');
+      });
+    };
+
+    // Initial observation
+    observeElements();
+
+    // Observe DOM changes for dynamically loaded sections (like facilities, announcements)
+    const mutationObserver = new MutationObserver(() => {
+      observeElements();
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
 
     return () => {
-      revealElements.forEach(el => observer.unobserve(el));
+      observer.disconnect();
+      mutationObserver.disconnect();
     };
   }, []);
 
@@ -137,6 +152,7 @@ export default function WebsiteHome() {
         <FacilitiesSection />
         <TeachersSection />
         <ExtracurricularSection />
+        <AgendaSection />
         <Announcement />
       </main>
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Toast from '../../../../components/Toast';
 
 export default function AdminExtracurricular() {
   const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [toast, setToast] = useState(null);
   const [formData, setFormData] = useState({
     id: null,
     name: '',
@@ -14,6 +15,11 @@ export default function AdminExtracurricular() {
     image_path: '',
     imageFile: null,
   });
+
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  const showToast = (message, type = 'info') => setToast({ message, type });
 
   const fetchItems = async () => {
     setIsLoading(true);
@@ -32,7 +38,7 @@ export default function AdminExtracurricular() {
       setItems(response.data);
     } catch (error) {
       console.error('Failed to fetch extracurriculars:', error);
-      setErrorMessage(error.response?.data?.message || 'Gagal memuat data ekstrakurikuler.');
+      showToast(error.response?.data?.message || 'Gagal memuat data ekstrakurikuler.', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -42,6 +48,47 @@ export default function AdminExtracurricular() {
     fetchItems();
   }, []);
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(items.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Yakin ingin menghapus ${selectedItems.length} data terpilih?`)) return;
+    setIsBulkDeleting(true);
+    const rawApiUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/admin/extracurriculars/bulk-delete`, { ids: selectedItems }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.status === 200 || response.status === 201) {
+        setSelectedItems([]);
+        fetchItems();
+        showToast(`${selectedItems.length} data berhasil dihapus`, 'success');
+      } else {
+        showToast("Gagal menghapus data terpilih.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showToast("Terjadi kesalahan koneksi.", "error");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   const handleOpenAdd = () => {
     setFormData({
       id: null,
@@ -50,7 +97,6 @@ export default function AdminExtracurricular() {
       image_path: '',
       imageFile: null,
     });
-    setErrorMessage('');
     setIsModalOpen(true);
   };
 
@@ -62,7 +108,6 @@ export default function AdminExtracurricular() {
       image_path: item.image_path || '',
       imageFile: null,
     });
-    setErrorMessage('');
     setIsModalOpen(true);
   };
 
@@ -80,10 +125,11 @@ export default function AdminExtracurricular() {
           'Accept': 'application/json',
         }
       });
+      showToast('Ekstrakurikuler berhasil dihapus.', 'success');
       fetchItems();
     } catch (error) {
       console.error('Failed to delete extracurricular:', error);
-      alert(error.response?.data?.message || 'Gagal menghapus data.');
+      showToast(error.response?.data?.message || 'Gagal menghapus data.', 'error');
     }
   };
 
@@ -98,8 +144,8 @@ export default function AdminExtracurricular() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSaving) return;
     setIsSaving(true);
-    setErrorMessage('');
 
     const rawApiUrl = import.meta.env.VITE_API_BASE_URL || '';
     const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
@@ -135,12 +181,13 @@ export default function AdminExtracurricular() {
       });
 
       if (response.status === 200 || response.status === 201) {
+        showToast(`Ekstrakurikuler berhasil ${isEditing ? 'diperbarui' : 'ditambahkan'}.`, 'success');
         setIsModalOpen(false);
         fetchItems();
       }
     } catch (error) {
       console.error('Failed to save extracurricular:', error);
-      setErrorMessage(error.response?.data?.message || 'Gagal menyimpan data.');
+      showToast(error.response?.data?.message || 'Gagal menyimpan data.', 'error');
     } finally {
       setIsSaving(false);
     }
@@ -172,17 +219,25 @@ export default function AdminExtracurricular() {
         </div>
       </div>
 
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       {/* Main Container */}
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-100">
         <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
-          <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Ekstrakurikuler</h3>
-        </div>
-
-        {errorMessage && !isModalOpen && (
-          <div className="mb-4 p-3.5 bg-red-50 text-red-700 text-sm rounded-xl border border-red-100">
-            {errorMessage}
+          <div className="flex items-center gap-4">
+            <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Ekstrakurikuler</h3>
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkDeleting}
+                className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                {isBulkDeleting ? 'Menghapus...' : `Hapus (${selectedItems.length})`}
+              </button>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="overflow-x-auto">
           {isLoading ? (
@@ -194,6 +249,9 @@ export default function AdminExtracurricular() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="pb-3 pl-4 w-10">
+                    <input type="checkbox" className="rounded border-slate-300" checked={items.length > 0 && selectedItems.length === items.length} onChange={handleSelectAll} />
+                  </th>
                   <th className="pb-3 pl-2 w-20">Foto</th>
                   <th className="pb-3">Nama Kegiatan</th>
                   <th className="pb-3">Deskripsi Singkat</th>
@@ -203,6 +261,9 @@ export default function AdminExtracurricular() {
               <tbody className="text-[13px] text-slate-600">
                 {items.map((item) => (
                   <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3 pl-4 w-10">
+                      <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(item.id)} onChange={() => handleSelectItem(item.id)} />
+                    </td>
                     <td className="py-3 pl-2">
                       <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
                         {item.image_path ? (
@@ -260,7 +321,7 @@ export default function AdminExtracurricular() {
                 ))}
                 {items.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="py-16 text-center">
+                    <td colSpan="5" className="py-16 text-center">
                       <p className="font-semibold text-slate-500">Belum ada data ekstrakurikuler</p>
                     </td>
                   </tr>
@@ -273,25 +334,20 @@ export default function AdminExtracurricular() {
 
       {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex p-4 bg-black/55 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md m-auto border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white rounded-t-2xl z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-scale-up border border-slate-100">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <h2 className="text-xl font-bold text-[#1e293b]">
                 {formData.id ? 'Edit Ekstrakurikuler' : 'Tambah Ekstrakurikuler'}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 ✕
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              {errorMessage && (
-                <div className="p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-xl border border-red-100">
-                  {errorMessage}
-                </div>
-              )}
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
               <div>
                 <label className="block text-sm font-medium mb-1.5 text-slate-700">Nama Kegiatan</label>
@@ -332,7 +388,7 @@ export default function AdminExtracurricular() {
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -344,7 +400,7 @@ export default function AdminExtracurricular() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold shadow-lg shadow-slate-900/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSaving ? (
                     <>
@@ -352,7 +408,7 @@ export default function AdminExtracurricular() {
                       Menyimpan...
                     </>
                   ) : (
-                    'Simpan'
+                    'Simpan Ekstrakurikuler'
                   )}
                 </button>
               </div>

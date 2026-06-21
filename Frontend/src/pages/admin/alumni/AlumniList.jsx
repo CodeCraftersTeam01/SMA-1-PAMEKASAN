@@ -15,9 +15,55 @@ const AlumniList = () => {
   // Modal State
   const [selectedAlumni, setSelectedAlumni] = useState(null);
 
+  // Bulk actions
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
   useEffect(() => {
     fetchAlumniData();
   }, []);
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(filteredData.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Yakin ingin menghapus ${selectedItems.length} data terpilih?`)) return;
+    setIsBulkDeleting(true);
+    const rawApiUrl = import.meta.env.VITE_API_BASE_URL || "";
+    const API_BASE_URL = rawApiUrl.replace(/\/$/, "");
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/alumni/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ids: selectedItems }),
+      });
+      if (res.ok) {
+        alert(`${selectedItems.length} data berhasil dihapus`);
+        setSelectedItems([]);
+        fetchAlumniData();
+      } else {
+        alert('Gagal menghapus data');
+      }
+    } catch {
+      alert('Terjadi kesalahan koneksi');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
 
   const fetchAlumniData = async () => {
     setIsLoading(true);
@@ -90,14 +136,26 @@ const AlumniList = () => {
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Welcome Card */}
       <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-800">Daftar Alumni SMAN 1 Pamekasan</h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Menampilkan seluruh alumni yang terhitung sejak 3 tahun sebelum tahun ajaran aktif saat ini: 
-            <span className="ml-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">
-              {activeTahunAjaran || "Belum Set Aktif"}
-            </span>
-          </p>
+        <div className="flex flex-col gap-2">
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">Daftar Alumni SMAN 1 Pamekasan</h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Menampilkan seluruh alumni yang terhitung sejak 3 tahun sebelum tahun ajaran aktif saat ini: 
+              <span className="ml-1.5 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">
+                {activeTahunAjaran || "Belum Set Aktif"}
+              </span>
+            </p>
+          </div>
+          {selectedItems.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
+              className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2 self-start"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              {isBulkDeleting ? 'Menghapus...' : `Hapus (${selectedItems.length})`}
+            </button>
+          )}
         </div>
         <button 
           onClick={fetchAlumniData}
@@ -269,6 +327,9 @@ const AlumniList = () => {
             <table className="w-full border-collapse text-left text-slate-600">
               <thead>
                 <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-400 uppercase text-[10px] font-bold tracking-wider">
+                  <th className="py-4 px-4 w-10 text-center">
+                    <input type="checkbox" className="rounded border-slate-300" checked={filteredData.length > 0 && selectedItems.length === filteredData.length} onChange={handleSelectAll} />
+                  </th>
                   <th className="py-4 px-6 text-center w-14">No</th>
                   <th className="py-4 px-4 w-28">NIS</th>
                   <th className="py-4 px-4">Nama Lengkap</th>
@@ -283,6 +344,9 @@ const AlumniList = () => {
                 {filteredData.map((item, index) => {
                   return (
                     <tr key={item.id} className="hover:bg-slate-50/40 transition-colors">
+                      <td className="py-3.5 px-4 text-center">
+                        <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(item.id)} onChange={() => handleSelectItem(item.id)} />
+                      </td>
                       <td className="py-3.5 px-6 text-center text-slate-400 font-medium">{index + 1}</td>
                       <td className="py-3.5 px-4 font-semibold text-slate-700">{item.nis}</td>
                       <td className="py-3.5 px-4">

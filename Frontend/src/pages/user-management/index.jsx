@@ -154,6 +154,35 @@ const UserManagement = () => {
     }
   };
 
+  // Bulk delete users
+  const handleBulkDeleteUsers = async (ids) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus ${ids.length} pengguna terpilih?`)) return false;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ids }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal menghapus pengguna');
+      }
+
+      setToast({ message: data.message || `${ids.length} pengguna berhasil dihapus`, type: 'success' });
+      fetchUsers();
+      return true;
+    } catch (error) {
+      setToast({ message: error.message, type: 'error' });
+      return false;
+    }
+  };
+
   // Save permissions
   const handleSavePermissions = async (userId, permissions) => {
     try {
@@ -256,6 +285,7 @@ const UserManagement = () => {
                 setShowForm(true);
               }}
               onDelete={handleDeleteUser}
+              onBulkDelete={handleBulkDeleteUsers}
               onRefresh={fetchUsers}
               onManagePermissions={(user) => setPermModalUser(user)}
             />

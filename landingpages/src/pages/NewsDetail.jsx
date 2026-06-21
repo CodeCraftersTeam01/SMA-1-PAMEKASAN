@@ -180,7 +180,7 @@ export default function NewsDetail() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
                 <h4 className="text-xl font-bold mb-2 relative z-10">Penerimaan Siswa Baru</h4>
                 <p className="text-blue-100 text-sm mb-4 relative z-10">Daftarkan diri Anda sekarang dan jadilah bagian dari generasi cerdas SMAN 1 Pamekasan.</p>
-                <a href="http://localhost:5173/dashboard" className="inline-block bg-smansa-gold text-smansa-navy font-bold text-sm px-5 py-2.5 rounded-full hover:bg-yellow-400 transition-colors relative z-10">Daftar Sekarang</a>
+                <a href={`${import.meta.env.VITE_FRONTEND_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5173' : window.location.origin)}/dashboard`} className="inline-block bg-smansa-gold text-smansa-navy font-bold text-sm px-5 py-2.5 rounded-full hover:bg-yellow-400 transition-colors relative z-10">Daftar Sekarang</a>
               </div>
             </div>
           </div>

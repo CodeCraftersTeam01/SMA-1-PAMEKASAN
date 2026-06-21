@@ -77,14 +77,14 @@ TUGAS KAMU:
      - DILARANG memetakan "No", "Nomor", "No Ujian", "No Ijazah" ke "no_pendaftaran". Kolom "no_pendaftaran" adalah kode unik sistem registrasi (auto-generate). Jika di Excel hanya ada "No" (nomor urut), petakan ke `null`.
      - DILARANG memetakan kolom jenis kelamin (JK/L/P) ke nama_lengkap atau nisn.
      - DILARANG memetakan nama wali/ayah/ibu/bank ke nama_lengkap.
-     - Jika kolom Excel tidak punya padanan yang benar-benar masuk akal di Database (misal: "Agama", "Tempat Lahir", "Tanggal Lahir", "No Ijazah"), petakan ke `null` (Abaikan).
-     - Lebih baik memetakan ke `null` daripada salah memetakan data yang tidak logis.
+     - PETAKAN kolom-kolom terkait alamat seperti RT, RW, Dusun, Kelurahan, Kode Pos, Alat Transportasi, Jenis Tinggal ke kolom database yang relevan (misal `rt` ke `rt`, `dusun` ke `dusun`, `kelurahan` ke `kelurahan`, dst).
+     - HANYA abaikan dan petakan ke `null` JIKA BENAR-BENAR tidak ada kolom database yang relevan (misal kolom "No Ujian", "Tinggi Badan" jika tidak ada di list schema).
    - Satu kolom DB hanya boleh dipetakan ke SATU header Excel.
 
 Balas HANYA dengan JSON valid tanpa penjelasan, tanpa markdown fence, format:
 {"header_row": <integer>, "mapping": {"<nilai header Excel>": "<db_column atau null>"}}
 
-Contoh: {"header_row": 5, "mapping": {"Nama": "nama_lengkap", "NIPD": "nisn", "No Ijazah": null, "No": null}}
+Contoh: {"header_row": 5, "mapping": {"Nama": "nama_lengkap", "NIPD": "nisn", "RT": "rt", "Dusun": "dusun", "No": null}}
 PROMPT;
 
         try {
@@ -257,5 +257,39 @@ PROMPT;
         }
 
         return ['header_row' => $headerRow, 'mapping' => $mapping];
+    }
+
+    /**
+     * Generate a short and to-the-point announcement for a new Agenda using AI.
+     */
+    public function generateAgendaAnnouncement(string $title, string $description, string $date): string
+    {
+        if (empty($this->apiKey)) {
+            $descText = $description ? " Agenda ini mencakup: {$description}." : "";
+            return "Pemberitahuan kepada seluruh warga SMAN 1 Pamekasan, bahwa akan diadakan kegiatan {$title} yang dijadwalkan pada tanggal {$date}.{$descText} Mohon perhatian dan partisipasinya. Terima kasih.";
+        }
+
+        $prompt = <<<PROMPT
+Kamu adalah sistem humas SMAN 1 Pamekasan.
+Ada agenda baru:
+- Judul: {$title}
+- Tanggal: {$date}
+- Deskripsi: {$description}
+
+Buatkan 1 kalimat pemberitahuan singkat yang sangat simpel, langsung pada intinya (to the point), dan komunikatif untuk teks berjalan (marquee).
+PENTING:
+- JANGAN buat judul atau headline.
+- JANGAN mengulang Judul di awal.
+- Langsung sampaikan informasinya (contoh: "Harap diperhatikan bahwa kegiatan...").
+- JANGAN gunakan markdown.
+PROMPT;
+
+        try {
+            $response = $this->callApi($prompt);
+            return trim($response);
+        } catch (\Throwable $e) {
+            $descText = $description ? " Agenda ini mencakup: {$description}." : "";
+            return "Pemberitahuan kepada seluruh warga SMAN 1 Pamekasan, bahwa akan diadakan kegiatan {$title} yang dijadwalkan pada tanggal {$date}.{$descText} Mohon perhatian dan partisipasinya. Terima kasih.";
+        }
     }
 }

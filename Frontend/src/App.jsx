@@ -1,11 +1,11 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
 // Public pages — kept reasonably light, still split from the dashboard bundle
-const LoginPage = lazy(() => import('./pages/auth/login'));
+// const LoginPage = lazy(() => import('./pages/auth/login')); // Disabled: redirected to landing page
 const PublicTracking = lazy(() => import('./pages/website/PublicTracking'));
 
 // Dashboard + admin pages — loaded on demand to keep the initial bundle small
@@ -33,7 +33,10 @@ const AdminFeatures = lazy(() => import('./pages/admin/website/features'));
 const AdminPrograms = lazy(() => import('./pages/admin/website/programs'));
 const AdminSettings = lazy(() => import('./pages/admin/website/settings'));
 const AdminExtracurricular = lazy(() => import('./pages/admin/website/ekstrakurikuler'));
+const AdminAgenda = lazy(() => import('./pages/admin/website/agenda'));
+const AdminPengumuman = lazy(() => import('./pages/admin/website/pengumuman'));
 const AdminQuotes = lazy(() => import('./pages/quotes'));
+const AdminTestimonials = lazy(() => import('./pages/admin/website/testimonials'));
 
 // Shared fallback while a lazy chunk is loading
 const RouteFallback = () => (
@@ -58,6 +61,16 @@ const Page = ({ children, slide = true }) => (
   </motion.div>
 );
 
+// External Redirect Component for root path
+const ExternalRedirect = () => {
+  useEffect(() => {
+    // Redirect to landing page base URL defined in .env
+    const landingUrl = import.meta.env.VITE_LANDING_PAGE_URL || 'http://localhost:5174';
+    window.location.href = landingUrl;
+  }, []);
+  return null;
+};
+
 const AnimatedRoutes = () => {
   const location = useLocation();
 
@@ -65,11 +78,11 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Suspense fallback={<RouteFallback />}>
         <Routes location={location} key={location.pathname}>
-          {/* Public Website - login via modal */}
-          <Route path="/" element={<Page slide={false}><LoginPage /></Page>} />
+          {/* Base URL redirects to Landing Pages */}
+          <Route path="/" element={<ExternalRedirect />} />
 
-          {/* Admin Login Portal - Redirect to homepage modal */}
-          <Route path="/login" element={<Navigate to="/" replace />} />
+          {/* Admin Login Portal - Redirected to Landing Pages */}
+          <Route path="/login" element={<ExternalRedirect />} />
 
           {/* Independent Public Alumni Tracking Page */}
           <Route path="/siswas/tracking" element={<Page slide={false}><PublicTracking /></Page>} />
@@ -100,7 +113,10 @@ const AnimatedRoutes = () => {
               <Route path="/admin/website/programs" element={<Page><AdminPrograms /></Page>} />
               <Route path="/admin/website/settings" element={<Page><AdminSettings /></Page>} />
               <Route path="/admin/website/ekstrakurikuler" element={<Page><AdminExtracurricular /></Page>} />
+              <Route path="/admin/website/agenda" element={<Page><AdminAgenda /></Page>} />
+              <Route path="/admin/website/pengumuman" element={<Page><AdminPengumuman /></Page>} />
               <Route path="/admin/website/quotes" element={<Page><AdminQuotes /></Page>} />
+              <Route path="/admin/website/testimonials" element={<Page><AdminTestimonials /></Page>} />
             </Route>
 
             {/* Admin Only */}

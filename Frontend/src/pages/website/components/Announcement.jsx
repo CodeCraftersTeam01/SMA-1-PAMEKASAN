@@ -23,7 +23,7 @@ export default function Announcement() {
     let active = true;
     const fetchNews = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/public/news`, {
+        const res = await fetch(`${API_BASE_URL}/api/public/announcements`, {
           headers: { "x-api-key": API_KEY },
         });
         if (res.ok) {
@@ -33,7 +33,7 @@ export default function Announcement() {
           }
         }
       } catch (error) {
-        console.error("Error fetching news:", error);
+        console.error("Error fetching announcements:", error);
       }
     };
     fetchNews();
@@ -61,12 +61,17 @@ export default function Announcement() {
           {items.map((item, index) => (
             <div className="py-4 border-bottom border-light d-flex flex-column flex-md-row justify-content-between align-items-md-center reveal" key={item.id || index} style={{ transitionDelay: `${index * 100}ms` }}>
               <div className="d-flex align-items-center gap-4 mb-3 mb-md-0">
-                <span className="small text-muted font-bold text-uppercase tracking-widest d-none d-md-block" style={{ minWidth: '100px' }}>{item.category || 'Info'}</span>
-                <h5 className="fw-bold mb-0 hover-text-primary cursor-pointer transition-all">{item.title}</h5>
+                <span className="small text-muted font-bold text-uppercase tracking-widest d-none d-md-block" style={{ minWidth: '100px' }}>{item.type || item.category || 'Info'}</span>
+                <div>
+                  <h5 className="fw-bold mb-1 hover-text-primary cursor-pointer transition-all">{item.title}</h5>
+                  {item.content && (
+                    <p className="text-muted small mb-0 mt-1" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: item.content }}></p>
+                  )}
+                </div>
               </div>
               <div className="text-muted small font-medium">
                 <i className="bi bi-calendar3 me-2"></i>
-                {formatDate(item.published_at || item.date)}
+                {formatDate(item.published_at || item.created_at || item.date)}
               </div>
             </div>
           ))}

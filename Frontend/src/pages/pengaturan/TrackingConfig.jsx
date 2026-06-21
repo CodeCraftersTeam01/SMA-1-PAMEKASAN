@@ -223,13 +223,13 @@ const TrackingConfig = () => {
                   <input
                     type="text"
                     readOnly
-                    value={`${window.location.origin}/siswas/tracking`}
+                    value={`${import.meta.env.VITE_LANDING_PAGE_URL || window.location.origin}/tracking-alumni`}
                     className="w-full bg-white border border-slate-200 text-slate-700 rounded-lg py-2 px-3 text-xs font-semibold focus:outline-none"
                   />
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(`${window.location.origin}/siswas/tracking`);
+                      navigator.clipboard.writeText(`${import.meta.env.VITE_LANDING_PAGE_URL || window.location.origin}/tracking-alumni`);
                       showToast('Link kuesioner berhasil disalin!', 'success');
                     }}
                     className="shrink-0 px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-900 transition-colors flex items-center gap-1.5"

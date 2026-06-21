@@ -58,7 +58,7 @@ $router->get('api/test-mail', ['middleware' => ['throttle:3,60', 'api.key'], fun
 // =====================================================
 // PUBLIC Routes untuk Landing Page (Tanpa Auth)
 // =====================================================
-$router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'api.key']], function () use ($router) {
+$router->group(['prefix' => 'api/public'], function () use ($router) {
     // New aggregated endpoint for maximum performance (solves 8s LCP on single-thread php built-in server)
     $router->get('landing-data', 'LandingPageController@getLandingData');
 
@@ -66,10 +66,12 @@ $router->group(['prefix' => 'api/public', 'middleware' => ['throttle:100,60', 'a
     $router->get('achievements', 'LandingPageController@getAchievements');
     $router->post('achievements/submit', 'LandingPageController@storeAchievement');
     $router->get('siswa/lookup', 'LandingPageController@lookupSiswa');
-    $router->get('testimonials', 'LandingPageController@getTestimonials');
+    $router->get('testimonials', 'TestimonialController@getPublicTestimonials');
+    $router->post('testimonials', ['middleware' => 'throttle:5,1', 'uses' => 'TestimonialController@submitPublicTestimonial']);
     $router->get('news', 'LandingPageController@getNews');
     $router->get('news/{id}', 'LandingPageController@getNewsDetail');
     $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');
+    $router->get('announcements', 'LandingPageController@getAnnouncements');
     $router->get('announcements/marquee', 'LandingPageController@getMarquee');
     $router->get('virtual-classroom', 'LandingPageController@getVirtualClassroom');
     $router->get('forum', 'LandingPageController@getForum');
@@ -97,6 +99,23 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     // Routes untuk Dashboard
     $router->get('dashboard', 'DashboardController@index');
 
+    // --- Bulk Delete Endpoints ---
+    $router->post('tahun-ajaran/bulk-delete', ['middleware' => 'permission:tahun_ajaran,delete', 'uses' => 'TahunAjaranController@bulkDelete']);
+    $router->post('kelas/bulk-delete', ['middleware' => 'permission:kelas,delete', 'uses' => 'KelasController@bulkDelete']);
+    $router->post('users/bulk-delete', ['middleware' => 'role:admin', 'uses' => 'UserController@bulkDelete']);
+    $router->post('alumni/bulk-delete', ['middleware' => 'permission:alumni,delete', 'uses' => 'AlumniController@bulkDelete']);
+    $router->post('admin/news/bulk-delete', ['middleware' => 'permission:berita,delete', 'uses' => 'AdminNewsController@bulkDelete']);
+    $router->post('admin/achievements/bulk-delete', ['middleware' => 'permission:prestasi,delete', 'uses' => 'AdminAchievementController@bulkDelete']);
+    $router->post('admin/facilities/bulk-delete', ['middleware' => 'permission:fasilitas,delete', 'uses' => 'AdminFacilityController@bulkDelete']);
+    $router->post('admin/pages/bulk-delete', ['middleware' => 'permission:halaman,delete', 'uses' => 'AdminPageController@bulkDelete']);
+    $router->post('admin/teachers/bulk-delete', ['middleware' => 'permission:teachers,delete', 'uses' => 'AdminTeacherController@bulkDelete']);
+    $router->post('admin/features/bulk-delete', ['middleware' => 'permission:features,delete', 'uses' => 'AdminFeatureController@bulkDelete']);
+    $router->post('admin/programs/bulk-delete', ['middleware' => 'permission:programs,delete', 'uses' => 'AdminProgramController@bulkDelete']);
+    $router->post('admin/extracurriculars/bulk-delete', ['middleware' => 'permission:ekstrakurikuler,delete', 'uses' => 'ExtracurricularController@bulkDelete']);
+    $router->post('admin/navbars/bulk-delete', ['middleware' => 'permission:navigasi,delete', 'uses' => 'AdminNavbarController@bulkDelete']);
+    $router->post('teacher-quotes/bulk-delete', 'TeacherQuoteController@bulkDelete');
+    $router->post('admin/agendas/bulk-delete', 'AcademicCalendarController@bulkDelete');
+    $router->post('admin/announcements/bulk-delete', 'AnnouncementController@bulkDelete');
     // Routes untuk Profile
     $router->post('profile', 'ProfileController@updateProfile');
     $router->put('profile/password', 'ProfileController@updatePassword');
@@ -241,6 +260,33 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->post('teacher-quotes', 'TeacherQuoteController@store');
     $router->put('teacher-quotes/{id}', 'TeacherQuoteController@update');
     $router->delete('teacher-quotes/{id}', 'TeacherQuoteController@destroy');
+
+    // ---------------------------------------------------
+    // AGENDA (Academic Calendars)
+    // ---------------------------------------------------
+    $router->get('admin/agendas', 'AcademicCalendarController@index');
+    $router->post('admin/agendas', 'AcademicCalendarController@store');
+    $router->get('admin/agendas/{id}', 'AcademicCalendarController@show');
+    $router->put('admin/agendas/{id}', 'AcademicCalendarController@update');
+    $router->delete('admin/agendas/{id}', 'AcademicCalendarController@destroy');
+
+    // ---------------------------------------------------
+    // PENGUMUMAN (Announcements)
+    // ---------------------------------------------------
+    $router->get('admin/announcements', 'AnnouncementController@index');
+    $router->post('admin/announcements', 'AnnouncementController@store');
+    $router->get('admin/announcements/{id}', 'AnnouncementController@show');
+    $router->put('admin/announcements/{id}', 'AnnouncementController@update');
+    $router->delete('admin/announcements/{id}', 'AnnouncementController@destroy');
+
+    // Admin Testimonials
+    $router->get('admin/testimonials', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@index']);
+    $router->post('admin/testimonials', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@store']);
+    $router->get('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@show']);
+    $router->put('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@update']);
+    $router->post('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@update']); // Spoofed PUT
+    $router->patch('admin/testimonials/{id}/status', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@toggleStatus']);
+    $router->delete('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@destroy']);
 });
 
 //hello 

@@ -101,6 +101,15 @@ class PendaftaranController extends Controller
             'asal_sekolah' => 'required',
             'kecamatan' => 'nullable|string|max:100',
             'alamat' => 'required',
+            'rt' => 'nullable|string|max:10',
+            'rw' => 'nullable|string|max:10',
+            'dusun' => 'nullable|string',
+            'kelurahan' => 'nullable|string',
+            'kode_pos' => 'nullable|string|max:10',
+            'jenis_tinggal' => 'nullable|string',
+            'alat_transportasi' => 'nullable|string',
+            'lintang' => 'nullable|numeric',
+            'bujur' => 'nullable|numeric',
             'email' => 'nullable|email|max:100',
             'nomor_hp' => 'nullable|string|max:20',
             'status' => 'nullable|in:pending,diterima,ditolak',
@@ -140,6 +149,12 @@ class PendaftaranController extends Controller
     {
         $this->autoCheckAndUpdateTahunAjaran();
 
+        if ($request->has('status') && $request->status === 'diterima') {
+            if (\App\Models\TahunAjaran::count() === 0) {
+                return response()->json(['message' => 'Tidak ada Tahun Ajaran yang diatur. Silakan buat Tahun Ajaran terlebih dahulu sebelum menerima siswa baru.'], 400);
+            }
+        }
+
         $data = Pendaftaran::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
@@ -172,6 +187,15 @@ class PendaftaranController extends Controller
             'asal_sekolah' => 'sometimes|required',
             'kecamatan' => 'nullable|string|max:100',
             'alamat' => 'sometimes|required',
+            'rt' => 'nullable|string|max:10',
+            'rw' => 'nullable|string|max:10',
+            'dusun' => 'nullable|string',
+            'kelurahan' => 'nullable|string',
+            'kode_pos' => 'nullable|string|max:10',
+            'jenis_tinggal' => 'nullable|string',
+            'alat_transportasi' => 'nullable|string',
+            'lintang' => 'nullable|numeric',
+            'bujur' => 'nullable|numeric',
             'email' => 'nullable|email|max:100',
             'nomor_hp' => 'nullable|string|max:20',
             'status' => 'sometimes|required|in:pending,diterima,ditolak',
@@ -246,12 +270,19 @@ class PendaftaranController extends Controller
             'nama_wali', 'pekerjaan_wali', 'no_hp_wali', 'alamat_wali', 'pendidikan_wali', 'penghasilan_wali',
             'tempat_lahir', 'tanggal_lahir', 'nik', 'agama',
             'asal_sekolah', 'kecamatan', 'status', 'alamat',
+            'rt', 'rw', 'dusun', 'kelurahan', 'kode_pos', 'jenis_tinggal', 'alat_transportasi', 'lintang', 'bujur',
             'email', 'nomor_hp', 'jalur',
         ];
         $updateData = array_intersect_key($request->data, array_flip($allowedFields));
 
         if (empty($updateData)) {
             return response()->json(['message' => 'Tidak ada field yang valid untuk diupdate'], 422);
+        }
+
+        if (isset($updateData['status']) && $updateData['status'] === 'diterima') {
+            if (\App\Models\TahunAjaran::count() === 0) {
+                return response()->json(['message' => 'Tidak ada Tahun Ajaran yang diatur. Silakan buat Tahun Ajaran terlebih dahulu sebelum menerima siswa baru.'], 400);
+            }
         }
 
         $count = Pendaftaran::whereIn('id', $request->ids)->update($updateData);
@@ -280,6 +311,18 @@ class PendaftaranController extends Controller
             return response()->json(['message' => 'Validasi gagal', 'errors' => $validator->errors()], 422);
         }
 
+        $hasDiterima = false;
+        foreach ($request->updates as $update) {
+            if (isset($update['data']['status']) && $update['data']['status'] === 'diterima') {
+                $hasDiterima = true;
+                break;
+            }
+        }
+
+        if ($hasDiterima && \App\Models\TahunAjaran::count() === 0) {
+            return response()->json(['message' => 'Tidak ada Tahun Ajaran yang diatur. Silakan buat Tahun Ajaran terlebih dahulu sebelum menerima siswa baru.'], 400);
+        }
+
         $allowedFields = [
             'no_pendaftaran', 'nisn', 'nama_lengkap', 'jenis_kelamin',
             'nama_ayah', 'pekerjaan_ayah', 'no_hp_ayah', 'alamat_ayah', 'pendidikan_ayah', 'penghasilan_ayah',
@@ -287,6 +330,7 @@ class PendaftaranController extends Controller
             'nama_wali', 'pekerjaan_wali', 'no_hp_wali', 'alamat_wali', 'pendidikan_wali', 'penghasilan_wali',
             'tempat_lahir', 'tanggal_lahir', 'nik', 'agama',
             'asal_sekolah', 'kecamatan', 'status', 'alamat',
+            'rt', 'rw', 'dusun', 'kelurahan', 'kode_pos', 'jenis_tinggal', 'alat_transportasi', 'lintang', 'bujur',
             'email', 'nomor_hp', 'jalur',
         ];
 
@@ -509,12 +553,22 @@ class PendaftaranController extends Controller
                     'pendaftar_id'    => $pendaftaran->id,
                     'tahun_ajaran_id' => $tahunAjaranAktif->id,
                     'nis'             => $nis,
+                    'nisn'            => $pendaftaran->nisn,
                     'nama_lengkap'    => $pendaftaran->nama_lengkap,
                     'jenis_kelamin'   => $pendaftaran->jenis_kelamin,
                     'tempat_lahir'    => $pendaftaran->tempat_lahir,
                     'tanggal_lahir'   => $pendaftaran->tanggal_lahir,
                     'agama'           => $pendaftaran->agama,
                     'alamat'          => $pendaftaran->alamat,
+                    'rt'              => $pendaftaran->rt,
+                    'rw'              => $pendaftaran->rw,
+                    'dusun'           => $pendaftaran->dusun,
+                    'kelurahan'       => $pendaftaran->kelurahan,
+                    'kode_pos'        => $pendaftaran->kode_pos,
+                    'jenis_tinggal'   => $pendaftaran->jenis_tinggal,
+                    'alat_transportasi'=> $pendaftaran->alat_transportasi,
+                    'lintang'         => $pendaftaran->lintang,
+                    'bujur'           => $pendaftaran->bujur,
                     'nomor_hp'        => $pendaftaran->nomor_hp,
                     'email'           => $pendaftaran->email,
                     'is_active'       => true,

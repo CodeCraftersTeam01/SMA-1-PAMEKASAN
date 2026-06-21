@@ -151,7 +151,7 @@ class PublicTrackingController extends Controller
                 'nama' => $siswa->nama_lengkap,
                 'nis' => $siswa->nis,
                 'nisn' => $nisn,
-                'tahun_lulus' => $siswa->tahun_lulus ?: ((int)substr($activeTahunAjaran->tahun ?? date('Y'), 0, 4)),
+                'tahun_lulus' => $siswa->tahun_lulus ?: ($siswa->tahun_masuk ? $siswa->tahun_masuk + 3 : ((int)substr($activeTahunAjaran->tahun ?? date('Y'), 0, 4))),
                 'kelas' => $siswa->kelas,
             ],
             'rencana_karir' => $rencanaKarir
@@ -273,7 +273,7 @@ class PublicTrackingController extends Controller
                 ['nisn' => $nisn],
                 [
                     'nama_lengkap' => $siswa->nama_lengkap,
-                    'tahun_lulus' => $siswa->tahun_lulus ?: ((int)substr($activeTahunAjaran->tahun ?? date('Y'), 0, 4)),
+                    'tahun_lulus' => $siswa->tahun_lulus ?: ($siswa->tahun_masuk ? $siswa->tahun_masuk + 3 : ((int)substr($activeTahunAjaran->tahun ?? date('Y'), 0, 4))),
                     'jurusan' => $siswa->kelas ?: 'MIPA',
                     'status_saat_ini' => $status_saat_ini,
                     'nama_instansi' => $nama_instansi,

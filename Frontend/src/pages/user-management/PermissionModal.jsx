@@ -1,28 +1,40 @@
 import React, { useState, useEffect } from 'react';
 
 const RESOURCES = [
-  // Utama
-  { key: 'dashboard', label: 'Dashboard Utama', group: 'Utama' },
-  // Data Akademik
-  { key: 'pendaftaran', label: 'Pendaftaran', group: 'Data Akademik' },
-  { key: 'siswa', label: 'Siswa', group: 'Data Akademik' },
-  { key: 'kelas', label: 'Kelas', group: 'Data Akademik' },
-  { key: 'tahun_ajaran', label: 'Tahun Ajaran', group: 'Data Akademik' },
-  { key: 'laporan', label: 'Laporan', group: 'Data Akademik' },
+  // Menu Utama
+  { key: 'dashboard', label: 'Dashboard Utama', group: 'Menu Utama' },
+  { key: 'tahun_ajaran', label: 'Tahun Ajaran', group: 'Menu Utama' },
+
+  // Data Sekolah
+  { key: 'pendaftaran', label: 'Pendaftar', group: 'Data Sekolah' },
+  { key: 'siswa', label: 'Siswa', group: 'Data Sekolah' },
+  { key: 'kelas', label: 'Kelas', group: 'Data Sekolah' },
+  { key: 'set_kelas', label: 'Pembagian Kelas', group: 'Data Sekolah' },
+  { key: 'laporan', label: 'Laporan', group: 'Data Sekolah' },
+
   // Alumni
-  { key: 'alumni', label: 'Alumni', group: 'Alumni' },
+  { key: 'alumni', label: 'Daftar Alumni', group: 'Alumni' },
   { key: 'alumni_tracking', label: 'Penelusuran Alumni', group: 'Alumni' },
-  // Website CMS
-  { key: 'berita', label: 'Berita Sekolah', group: 'Website CMS' },
-  { key: 'prestasi', label: 'Prestasi Siswa', group: 'Website CMS' },
-  { key: 'fasilitas', label: 'Fasilitas', group: 'Website CMS' },
-  { key: 'halaman', label: 'Halaman Kustom', group: 'Website CMS' },
-  { key: 'navigasi', label: 'Navigasi', group: 'Website CMS' },
-  { key: 'teachers', label: 'Data Guru (CMS)', group: 'Website CMS' },
-  { key: 'features', label: 'Keunggulan', group: 'Website CMS' },
-  { key: 'programs', label: 'Program Peminatan', group: 'Website CMS' },
-  // Sistem
-  { key: 'pengaturan', label: 'Pengaturan Sistem', group: 'Sistem' },
+
+  // Tampilan Website
+  { key: 'berita', label: 'Berita Sekolah', group: 'Tampilan Website' },
+  { key: 'prestasi', label: 'Prestasi Siswa', group: 'Tampilan Website' },
+  { key: 'fasilitas', label: 'Fasilitas Sekolah', group: 'Tampilan Website' },
+  { key: 'ekstrakurikuler', label: 'Ekstrakurikuler', group: 'Tampilan Website' },
+  { key: 'agenda', label: 'Agenda Sekolah', group: 'Tampilan Website' },
+  { key: 'pengumuman', label: 'Pengumuman', group: 'Tampilan Website' },
+  { key: 'halaman', label: 'Halaman Tambahan', group: 'Tampilan Website' },
+  { key: 'navigasi', label: 'Menu Navigasi', group: 'Tampilan Website' },
+  { key: 'teachers', label: 'Data Guru', group: 'Tampilan Website' },
+  { key: 'features', label: 'Keunggulan Sekolah', group: 'Tampilan Website' },
+  { key: 'programs', label: 'Program Jurusan', group: 'Tampilan Website' },
+  { key: 'quotes', label: 'Kata-kata Guru', group: 'Tampilan Website' },
+  { key: 'landing_settings', label: 'Sambutan & Kontak', group: 'Tampilan Website' },
+
+  // Pengaturan
+  { key: 'pengaturan_nis', label: 'Pengaturan NIS', group: 'Pengaturan' },
+  { key: 'pengaturan_tracking', label: 'Pengaturan Penelusuran', group: 'Pengaturan' },
+  { key: 'user_management', label: 'Pengguna & Akses', group: 'Pengaturan' },
 ];
 
 const ACTIONS = [
@@ -94,8 +106,26 @@ const PermissionModal = ({ user, isOpen, onClose, onSave, API_BASE_URL, token })
     });
   };
 
+  const handleSelectGroup = (groupName, checked) => {
+    const groupResources = RESOURCES.filter(r => r.group === groupName);
+    setPermissions(prev => {
+      const newPerms = { ...prev };
+      groupResources.forEach(r => {
+        const updated = { ...newPerms[r.key] };
+        ACTIONS.forEach(a => { updated[a.key] = checked; });
+        newPerms[r.key] = updated;
+      });
+      return newPerms;
+    });
+  };
+
   const isAllSelected = (resource) => {
     return ACTIONS.every(a => permissions[resource]?.[a.key]);
+  };
+
+  const isGroupSelected = (groupName) => {
+    const groupResources = RESOURCES.filter(r => r.group === groupName);
+    return groupResources.every(r => isAllSelected(r.key));
   };
 
   const handleSave = async () => {
@@ -166,8 +196,18 @@ const PermissionModal = ({ user, isOpen, onClose, onSave, API_BASE_URL, token })
                       <React.Fragment key={r.key}>
                         {showGroupHeader && (
                           <tr className="bg-slate-50/70">
-                            <td colSpan={ACTIONS.length + 2} className="py-2 px-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            <td colSpan={ACTIONS.length + 1} className="py-2 px-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                               {r.group}
+                            </td>
+                            <td className="py-2 pl-2 text-center">
+                              <label className="inline-flex items-center justify-center cursor-pointer p-1 hover:bg-slate-100 rounded-lg transition-colors">
+                                <input
+                                  type="checkbox"
+                                  checked={isGroupSelected(r.group)}
+                                  onChange={(e) => handleSelectGroup(r.group, e.target.checked)}
+                                  className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 focus:ring-offset-0 cursor-pointer"
+                                />
+                              </label>
                             </td>
                           </tr>
                         )}

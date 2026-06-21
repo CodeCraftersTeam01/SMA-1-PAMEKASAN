@@ -17,6 +17,7 @@ import {
   Coins 
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import TestimonialForm from '../components/TestimonialForm';
 
 const API_BASE = 'http://localhost:8000/api/public';
 
@@ -58,6 +59,7 @@ export default function TrackingAlumni() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [testimonialDone, setTestimonialDone] = useState(false);
 
   // Fetch Portal Status & Captcha on Mount
   useEffect(() => {
@@ -230,39 +232,104 @@ export default function TrackingAlumni() {
 
   // Success Screen
   if (submitSuccess) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 pt-32 pb-24 font-sans text-gray-800">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }} 
-          animate={{ opacity: 1, scale: 1 }} 
-          className="w-full max-w-lg bg-white border border-gray-100 rounded-[2.5rem] p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden"
-        >
-          <div className="absolute top-0 left-0 w-full h-[5px] bg-gradient-to-r from-green-400 to-emerald-500"></div>
-          
-          <div className="w-20 h-20 bg-green-50 border border-green-100 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
-            <CheckCircle className="w-10 h-10 text-green-500" />
+    if (!testimonialDone) {
+      // Determine default occupation string
+      let occ = '';
+      if (form.kategori_pilihan === 'kuliah') {
+        occ = form.univ_pilihan_1 ? form.univ_pilihan_1 + (form.jurusan_pilihan_1 ? ' - ' + form.jurusan_pilihan_1 : '') : '';
+      } else if (form.kategori_pilihan === 'kerja') {
+        occ = form.nama_perusahaan ? form.nama_perusahaan + (form.posisi_pekerjaan ? ' - ' + form.posisi_pekerjaan : '') : '';
+      } else if (form.kategori_pilihan === 'bisnis') {
+        occ = form.nama_bisnis ? form.nama_bisnis + (form.bidang_bisnis ? ' - ' + form.bidang_bisnis : '') : '';
+      }
+
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 pt-32 pb-24 font-sans text-gray-800">
+          <div className="w-full max-w-2xl">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} 
+              animate={{ opacity: 1, scale: 1 }} 
+              className="bg-white border border-gray-100 rounded-[2.5rem] p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden mb-8"
+            >
+              <div className="absolute top-0 left-0 w-full h-[5px] bg-gradient-to-r from-green-400 to-emerald-500"></div>
+              
+              <div className="w-16 h-16 bg-green-50 border border-green-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+              
+              <h2 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">Rencana Karir Tersimpan!</h2>
+              <p className="text-gray-500 leading-relaxed max-w-sm mx-auto text-sm">
+                Terima kasih <strong className="text-smansa-navy">{verifiedStudent?.nama}</strong>. Data rencana karir Anda berhasil terekam.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <TestimonialForm 
+                lockedRole="alumni"
+                defaultName={verifiedStudent?.nama || ""}
+                defaultGraduationYear={verifiedStudent?.tahun_lulus || ""}
+                defaultOccupation={occ}
+                onSuccessCallback={() => setTestimonialDone(true)}
+              />
+            </motion.div>
+            
+            <div className="mt-8 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setSubmitSuccess(false);
+                  setVerifiedStudent(null);
+                  setCredentials({ nis: '', tanggal_lahir: '', captcha_code: '' });
+                  fetchCaptcha();
+                }}
+                className="px-8 py-3 bg-white text-gray-500 border border-gray-200 hover:bg-gray-50 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
+              >
+                Lewati & Selesai
+              </button>
+            </div>
           </div>
-          
-          <h2 className="text-3xl font-bold text-smansa-navy mb-4 tracking-tight">Rencana Karir Tersimpan!</h2>
-          <p className="text-gray-500 leading-relaxed max-w-sm mx-auto mb-10 text-base">
-            Terima kasih <strong className="text-smansa-navy">{verifiedStudent?.nama}</strong>. Data rencana karir dan status alumni Anda berhasil terekam dan terhubung dalam sistem database sekolah.
-          </p>
-          
-          <button
-            type="button"
-            onClick={() => {
-              setSubmitSuccess(false);
-              setVerifiedStudent(null);
-              setCredentials({ nis: '', tanggal_lahir: '', captcha_code: '' });
-              fetchCaptcha();
-            }}
-            className="w-full py-4 bg-smansa-navy text-white hover:bg-blue-900 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl cursor-pointer"
+        </div>
+      );
+    } else {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 pt-32 pb-24 font-sans text-gray-800">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            className="w-full max-w-lg bg-white border border-gray-100 rounded-[2.5rem] p-10 text-center shadow-[0_20px_50px_rgba(0,0,0,0.05)] relative overflow-hidden"
           >
-            Selesai & Keluar
-          </button>
-        </motion.div>
-      </div>
-    );
+            <div className="absolute top-0 left-0 w-full h-[5px] bg-gradient-to-r from-blue-400 to-blue-600"></div>
+            
+            <div className="w-20 h-20 bg-blue-50 border border-blue-100 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
+              <CheckCircle className="w-10 h-10 text-blue-500" />
+            </div>
+            
+            <h2 className="text-3xl font-bold text-smansa-navy mb-4 tracking-tight">Selesai!</h2>
+            <p className="text-gray-500 leading-relaxed max-w-sm mx-auto mb-10 text-base">
+              Terima kasih <strong className="text-smansa-navy">{verifiedStudent?.nama}</strong>. Rencana karir dan Testimoni Anda telah berhasil dikirimkan.
+            </p>
+            
+            <button
+              type="button"
+              onClick={() => {
+                setSubmitSuccess(false);
+                setTestimonialDone(false);
+                setVerifiedStudent(null);
+                setCredentials({ nis: '', tanggal_lahir: '', captcha_code: '' });
+                fetchCaptcha();
+              }}
+              className="w-full py-4 bg-smansa-navy text-white hover:bg-blue-900 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-2xl cursor-pointer"
+            >
+              Kembali ke Halaman Awal
+            </button>
+          </motion.div>
+        </div>
+      );
+    }
   }
 
   // Main UI render

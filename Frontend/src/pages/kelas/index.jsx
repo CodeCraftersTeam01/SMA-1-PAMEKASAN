@@ -91,6 +91,9 @@ const Kelas = () => {
 
   const [confirmDelete, setConfirmDelete] = useState({ open: false, id: null, nama: '' });
 
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
@@ -232,6 +235,46 @@ const Kelas = () => {
     }
   };
 
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(data.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Yakin ingin menghapus ${selectedItems.length} data terpilih?`)) return;
+    setIsBulkDeleting(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/kelas/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ids: selectedItems }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        showToast(json.message || `${selectedItems.length} data berhasil dihapus`, 'success');
+        setSelectedItems([]);
+        fetchData();
+      } else {
+        showToast(json.message || 'Gagal menghapus data', 'error');
+      }
+    } catch {
+      showToast('Terjadi kesalahan koneksi', 'error');
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   const openCreateModal = () => {
     setModalMode('create');
     setCurrentItem(null);
@@ -326,7 +369,19 @@ const Kelas = () => {
 
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-[16px] font-bold text-[#1e293b]">Daftar Kelas</h3>
+          <div className="flex items-center gap-4">
+            <h3 className="text-[16px] font-bold text-[#1e293b]">Daftar Kelas</h3>
+            {selectedItems.length > 0 && can('kelas', 'delete') && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkDeleting}
+                className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                {isBulkDeleting ? 'Menghapus...' : `Hapus (${selectedItems.length})`}
+              </button>
+            )}
+          </div>
           <span className="text-xs text-slate-400">{data.length} kelas</span>
         </div>
 
@@ -345,6 +400,9 @@ const Kelas = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <th className="pb-3 pl-4 w-10">
+                    <input type="checkbox" className="rounded border-slate-300 text-slate-800 focus:ring-slate-800" checked={data.length > 0 && selectedItems.length === data.length} onChange={handleSelectAll} />
+                  </th>
                   <th className="pb-3 pl-2">#</th>
                   <th className="pb-3">Kelas</th>
                   <th className="pb-3">Tingkat</th>
@@ -359,6 +417,9 @@ const Kelas = () => {
               <tbody className="text-[13px] text-slate-600">
                 {data.map((item, index) => (
                   <tr key={item.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                    <td className="py-4 pl-4 w-10">
+                      <input type="checkbox" className="rounded border-slate-300 text-slate-800 focus:ring-slate-800" checked={selectedItems.includes(item.id)} onChange={() => handleSelectItem(item.id)} />
+                    </td>
                     <td className="py-4 pl-2 text-slate-400 font-medium">{index + 1}</td>
                     <td className="py-4">
                       <div className="flex items-center gap-2">
@@ -416,7 +477,7 @@ const Kelas = () => {
                 ))}
                 {data.length === 0 && (
                   <tr>
-                    <td colSpan="9" className="py-16 text-center">
+                    <td colSpan="10" className="py-16 text-center">
                       <div className="flex flex-col items-center gap-3 text-slate-400">
                         <svg className="w-12 h-12 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />

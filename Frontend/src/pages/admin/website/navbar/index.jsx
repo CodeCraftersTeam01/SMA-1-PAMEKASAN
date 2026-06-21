@@ -14,6 +14,9 @@ export default function AdminNavbar() {
   });
   const [urlType, setUrlType] = useState('page'); // 'page' or 'custom'
 
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
   const fetchNavbars = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/navbars`, {
@@ -50,6 +53,45 @@ export default function AdminNavbar() {
     fetchNavbars();
     fetchPages();
   }, []);
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedItems(navbars.map(item => item.id));
+    } else {
+      setSelectedItems([]);
+    }
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedItems(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Yakin ingin menghapus ${selectedItems.length} navigasi terpilih?`)) return;
+    setIsBulkDeleting(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/navbars/bulk-delete`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ids: selectedItems })
+      });
+      if (response.ok) {
+        setSelectedItems([]);
+        fetchNavbars();
+      } else {
+        alert("Gagal menghapus data terpilih.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan koneksi.");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -132,12 +174,27 @@ export default function AdminNavbar() {
 
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] animate-fade-up delay-100">
         <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
-          <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Menu Navigasi</h3>
+          <div className="flex items-center gap-4">
+            <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Menu Navigasi</h3>
+            {selectedItems.length > 0 && (
+              <button
+                onClick={handleBulkDelete}
+                disabled={isBulkDeleting}
+                className="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                {isBulkDeleting ? 'Menghapus...' : `Hapus (${selectedItems.length})`}
+              </button>
+            )}
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <th className="pb-3 pl-4 w-10">
+                  <input type="checkbox" className="rounded border-slate-300" checked={navbars.length > 0 && selectedItems.length === navbars.length} onChange={handleSelectAll} />
+                </th>
                 <th className="pb-3 pl-2 w-16">Urutan</th>
                 <th className="pb-3">Label Menu</th>
                 <th className="pb-3">URL Target</th>
@@ -149,6 +206,9 @@ export default function AdminNavbar() {
               {navbars.filter(n => !n.parent_id).map(item => (
                 <React.Fragment key={item.id}>
                   <tr className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors bg-white">
+                    <td className="py-4 pl-4 w-10">
+                      <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(item.id)} onChange={() => handleSelectItem(item.id)} />
+                    </td>
                     <td className="py-4 pl-2 font-medium"><span className="px-2 py-1 rounded-md text-[10px] font-bold border bg-slate-50 text-slate-600 border-slate-200">{item.order}</span></td>
                     <td className="py-4 font-bold text-slate-700">{item.label}</td>
                     <td className="py-4 text-blue-600">{item.url}</td>
@@ -171,6 +231,9 @@ export default function AdminNavbar() {
                   {/* Render children */}
                   {navbars.filter(child => child.parent_id === item.id).map(child => (
                     <tr key={child.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors bg-slate-50/30">
+                      <td className="py-3 pl-4 w-10">
+                        <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(child.id)} onChange={() => handleSelectItem(child.id)} />
+                      </td>
                       <td className="py-3 pl-8 font-medium"><span className="px-2 py-1 rounded-md text-[9px] font-bold border bg-white text-slate-500 border-slate-200">{child.order}</span></td>
                       <td className="py-3 text-slate-600 flex items-center gap-2">
                         <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -198,7 +261,7 @@ export default function AdminNavbar() {
               ))}
               {navbars.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="py-16 text-center">
+                  <td colSpan="6" className="py-16 text-center">
                     <p className="font-semibold text-slate-500">Belum ada menu navigasi</p>
                   </td>
                 </tr>
