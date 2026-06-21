@@ -16,6 +16,7 @@ import AnnouncementMarquee from './components/AnnouncementMarquee';
 import ExtracurricularSection from './components/ExtracurricularSection';
 import TestimonialSection from './components/TestimonialSection';
 import TestimonialForm from './components/TestimonialForm';
+import SpotlightCard from './components/SpotlightCard';
 
 const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
@@ -323,6 +324,12 @@ export default function App() {
 
   const categories = ['Semua', 'Berita Sekolah', 'Kegiatan Siswa', 'Pengumuman', 'Kemitraan & Kerja Sama'];
 
+  const getCategoryCount = (cat) => {
+    if (!data.news) return 0;
+    if (cat === 'Semua') return data.news.length;
+    return data.news.filter(n => n.category === cat).length;
+  };
+
   const filteredNews = activeCategory === 'Semua' 
     ? data.news 
     : data.news.filter(n => n.category === activeCategory);
@@ -577,21 +584,40 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-white p-8 rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 group"
+                  className={i === 0 ? 'md:col-span-2' : ''}
                 >
-                  <div className="w-14 h-14 bg-blue-50 text-smansa-navy rounded-2xl flex items-center justify-center mb-6 group-hover:bg-smansa-navy group-hover:text-white transition-colors duration-300">
-                    <i className={`bi ${item.icon || 'bi-star-fill'} text-2xl`}></i>
-                  </div>
-                  <h3 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">{item.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                  <SpotlightCard
+                    spotlightColor={i === 0 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(37, 99, 235, 0.08)'}
+                    className={`p-7 rounded-[1.75rem] border shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37, 99, 235, 0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] group flex flex-col justify-between h-full ${
+                      i === 0 
+                        ? 'bg-gradient-to-br from-smansa-navy to-blue-950 text-white border-transparent' 
+                        : 'bg-white text-slate-800 border-slate-200/50'
+                    }`}
+                  >
+                    <div>
+                      <div className={`w-12 h-12 rounded-[0.875rem] flex items-center justify-center mb-6 transition-all duration-300 ${
+                        i === 0
+                          ? 'bg-white/10 text-yellow-400 group-hover:bg-yellow-400 group-hover:text-smansa-navy'
+                          : 'bg-blue-50/70 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'
+                      }`}>
+                        <i className={`bi ${item.icon || 'bi-star-fill'} text-xl`}></i>
+                      </div>
+                      <h3 className={`text-xl font-bold mb-3 tracking-tight transition-colors ${
+                        i === 0 ? 'text-white' : 'text-smansa-navy group-hover:text-blue-600'
+                      }`}>{item.title}</h3>
+                      <p className={`leading-relaxed text-sm ${
+                        i === 0 ? 'text-blue-100/90' : 'text-slate-600'
+                      }`}>{item.description}</p>
+                    </div>
+                  </SpotlightCard>
                 </motion.div>
               )) : [
-                { icon: <Trophy/>, title: 'Akreditasi A - Unggul', desc: 'Diakui secara nasional dengan standar kualitas terbaik oleh BAN-S/M.' },
-                { icon: <Monitor/>, title: 'School of Digital Era', desc: 'Fokus pada pembelajaran interaktif dan keterampilan teknologi masa depan.' },
-                { icon: <BookOpen/>, title: 'Program SKS', desc: 'Sistem Kredit Semester memungkinkan siswa lulus lebih cepat dalam 2 tahun.' },
-                { icon: <Users/>, title: 'Pendidikan Berkarakter', desc: 'Membangun akhlak mulia melalui pembiasaan dan bimbingan komprehensif.' },
-                { icon: <Award/>, title: 'Prestasi Nasional', desc: 'Mendominasi berbagai olimpiade sains dan kompetisi non-akademik di Indonesia.' },
-                { icon: <Building/>, title: 'Fasilitas Modern', desc: 'Laboratorium, perpustakaan digital, dan ruang kelas ber-AC yang nyaman.' }
+                { icon: <Trophy/>, title: 'Akreditasi A - Unggul', desc: 'SMAN 1 Pamekasan diakui secara nasional dengan standar kualitas pendidikan terbaik tingkat A (Unggul) oleh BAN-S/M.' },
+                { icon: <Monitor/>, title: 'School of Digital Era', desc: 'Fokus pada pembelajaran berbasis teknologi, kelas digital, dan kesiapan keterampilan sains masa depan.' },
+                { icon: <BookOpen/>, title: 'Program SKS Fleksibel', desc: 'Sistem Kredit Semester (SKS) yang adaptif, memungkinkan siswa cerdas untuk lulus studi dalam waktu 2 tahun.' },
+                { icon: <Users/>, title: 'Pendidikan Karakter', desc: 'Menanamkan nilai akhlak mulia dan kepemimpinan berwawasan global melalui program pembinaan intensif.' },
+                { icon: <Award/>, title: 'Tradisi Prestasi Nasional', desc: 'Konsisten mendominasi podium juara pada ajang Olimpiade Sains Nasional (OSN) dan kompetisi akademik bergengsi.' },
+                { icon: <Building/>, title: 'Fasilitas Belajar Modern', desc: 'Lingkungan belajar representatif dilengkapi lab komputer canggih, perpustakaan digital, dan ruang kelas interaktif.' }
               ].map((item, i) => (
                 <motion.div 
                   key={i}
@@ -599,13 +625,32 @@ export default function App() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1 }}
-                  className="bg-white p-8 rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 group"
+                  className={i === 0 ? 'md:col-span-2' : ''}
                 >
-                  <div className="w-14 h-14 bg-blue-50 text-smansa-navy rounded-2xl flex items-center justify-center mb-6 group-hover:bg-smansa-navy group-hover:text-white transition-colors duration-300">
-                    {React.cloneElement(item.icon, { className: 'w-7 h-7' })}
-                  </div>
-                  <h3 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">{item.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{item.desc}</p>
+                  <SpotlightCard
+                    spotlightColor={i === 0 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(37, 99, 235, 0.08)'}
+                    className={`p-7 rounded-[1.75rem] border shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] group flex flex-col justify-between h-full ${
+                      i === 0 
+                        ? 'bg-gradient-to-br from-smansa-navy to-blue-950 text-white border-transparent' 
+                        : 'bg-white text-slate-800 border-slate-200/50'
+                    }`}
+                  >
+                    <div>
+                      <div className={`w-12 h-12 rounded-[0.875rem] flex items-center justify-center mb-6 transition-all duration-300 ${
+                        i === 0
+                          ? 'bg-white/10 text-yellow-400 group-hover:bg-yellow-400 group-hover:text-smansa-navy'
+                          : 'bg-blue-50/70 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'
+                      }`}>
+                        {React.cloneElement(item.icon, { className: 'w-6 h-6' })}
+                      </div>
+                      <h3 className={`text-xl font-bold mb-3 tracking-tight transition-colors ${
+                        i === 0 ? 'text-white' : 'text-smansa-navy group-hover:text-blue-600'
+                      }`}>{item.title}</h3>
+                      <p className={`leading-relaxed text-sm ${
+                        i === 0 ? 'text-blue-100/90' : 'text-slate-600'
+                      }`}>{item.desc}</p>
+                    </div>
+                  </SpotlightCard>
                 </motion.div>
               ))}
             </div>
@@ -626,47 +671,47 @@ export default function App() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-8 py-3.5 rounded-full text-sm lg:text-base font-bold transition-all duration-300 shadow-sm ${
+                  className={`px-7 py-3.5 rounded-full text-sm lg:text-base font-bold transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] shadow-[0_2px_10px_rgba(0,0,0,0.01)] ${
                     activeTab === tab 
-                      ? 'bg-smansa-navy text-white shadow-md scale-105' 
-                      : 'bg-white text-gray-600 hover:bg-blue-50 border border-gray-200 hover:text-smansa-navy'
+                      ? 'bg-blue-600 text-white shadow-[0_4px_20px_rgba(37,99,235,0.25)] scale-105' 
+                      : 'bg-white text-gray-600 hover:bg-blue-50 border border-slate-200 hover:text-blue-600'
                   }`}
                 >
                   {tab}
                 </button>
               ))}
             </div>
-
+ 
             {/* Tab Content */}
             <motion.div 
               key={activeTab}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="bg-white rounded-[3rem] p-10 lg:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100"
+              className="bg-white rounded-[2.25rem] p-10 lg:p-14 shadow-[0_12px_40px_rgba(0,0,0,0.03)] border border-slate-200/50"
             >
               <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
                 <div className="lg:w-1/2">
-                  <h3 className="text-4xl font-bold text-smansa-navy mb-6 tracking-tight">{activeTab}</h3>
-                  <p className="text-xl text-gray-600 mb-10 leading-relaxed">
+                  <h3 className="text-3xl font-bold text-smansa-navy mb-6 tracking-tight">{activeTab}</h3>
+                  <p className="text-lg text-slate-600 mb-10 leading-relaxed">
                     {programs[activeTab]?.desc || 'Program unggulan dengan kurikulum komprehensif untuk mempersiapkan siswa bersaing di kancah nasional maupun internasional.'}
                   </p>
                   <div className="space-y-6">
                     {(programs[activeTab]?.features || programs['MIPA'].features).map((feat, i) => (
                       <div key={i} className="flex gap-5 items-start">
-                        <div className="bg-blue-50 p-4 rounded-2xl">
+                        <div className="bg-blue-50/70 p-3.5 rounded-[1rem] text-blue-600">
                           {feat.icon}
                         </div>
                         <div>
-                          <h4 className="text-xl font-bold text-smansa-navy mb-1">{feat.title}</h4>
-                          <p className="text-gray-600">{feat.desc}</p>
+                          <h4 className="text-lg font-bold text-smansa-navy mb-1">{feat.title}</h4>
+                          <p className="text-slate-600 text-sm">{feat.desc}</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
                 <div className="lg:w-1/2 w-full">
-                  <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl relative">
+                  <div className="aspect-[4/3] rounded-[1.75rem] overflow-hidden shadow-lg relative">
                     <img 
                       src={`https://source.unsplash.com/random/800x600/?${activeTab === 'MIPA' ? 'laboratory' : activeTab === 'IPS' ? 'library' : 'students'}`} 
                       alt={activeTab}
@@ -701,18 +746,25 @@ export default function App() {
                     <button
                       key={cat}
                       onClick={() => { setActiveCategory(cat); setNewsPage(1); }}
-                      className={`w-full text-left px-5 py-3.5 rounded-2xl font-semibold transition-all duration-300 ${
+                      className={`w-full text-left px-5 py-3 rounded-xl font-bold transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] flex justify-between items-center group/cat ${
                         activeCategory === cat 
-                          ? 'bg-smansa-navy text-white shadow-lg scale-[1.02]' 
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-smansa-navy'
+                          ? 'bg-blue-600 text-white shadow-[0_4px_20px_rgba(37,99,235,0.2)] scale-[1.02]' 
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600'
                       }`}
                     >
-                      {cat}
+                      <span>{cat}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        activeCategory === cat 
+                          ? 'bg-white/20 text-white' 
+                          : 'bg-slate-100 text-slate-500 group-hover/cat:text-blue-600 transition-colors'
+                      }`}>
+                        {getCategoryCount(cat)}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
-
+ 
               {/* News Grid */}
               <div className="lg:w-3/4">
                 {filteredNews.length > 0 ? (
@@ -721,24 +773,24 @@ export default function App() {
                       <Link 
                         to={`/berita/${item.id}`}
                         key={i}
-                        className="group bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-[0_20px_50px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-2 flex flex-col"
+                        className="group bg-white rounded-[1.75rem] border border-slate-200/50 overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] flex flex-col"
                       >
                         <div className="aspect-[16/10] overflow-hidden relative">
                           <img 
                             src={item.image_url || "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=800&auto=format&fit=crop"} 
                             alt={item.title} 
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                           />
                           <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-smansa-navy">
                             {item.published_at?.split(' ')[0] || 'Baru'}
                           </div>
                         </div>
-                        <div className="p-8 flex-1 flex flex-col">
-                          <span className="text-smansa-gold font-bold text-xs uppercase tracking-wider mb-3">{item.category || 'Berita Sekolah'}</span>
-                          <h3 className="font-bold text-xl text-smansa-navy mb-4 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">
+                        <div className="p-7 flex-1 flex flex-col">
+                          <span className="text-blue-600 font-extrabold text-[10px] uppercase tracking-wider mb-2">{item.category || 'Berita Sekolah'}</span>
+                          <h3 className="font-bold text-lg text-smansa-navy mb-3 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">
                             {item.title}
                           </h3>
-                          <div className="text-gray-500 line-clamp-2 mt-auto text-sm" dangerouslySetInnerHTML={{ __html: item.content }} />
+                          <div className="text-slate-500 line-clamp-2 mt-auto text-xs sm:text-sm" dangerouslySetInnerHTML={{ __html: item.content }} />
                         </div>
                       </Link>
                     ))}
@@ -792,25 +844,28 @@ export default function App() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1, duration: 0.5 }}
-                    className="group bg-gray-50 rounded-3xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 flex flex-col"
+                    className="group bg-white rounded-[1.75rem] border border-slate-200/50 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] overflow-hidden flex flex-col"
                   >
                     <div className="aspect-[16/10] overflow-hidden relative">
                       {item.image_url ? (
                         <img 
                           src={`${STORAGE_BASE}/${item.image_url}`} 
                           alt={item.name} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         />
                       ) : (
                         <div className="w-full h-full bg-blue-100 flex items-center justify-center">
                           <svg className="w-12 h-12 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                         </div>
                       )}
+                      <div className="absolute top-4 right-4 bg-slate-900/60 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-widest text-white z-20 border border-white/10">
+                        Fasilitas {index + 1 < 10 ? `0${index + 1}` : index + 1}
+                      </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <div className="p-6 flex-1 flex flex-col">
-                      <h3 className="text-xl font-bold text-smansa-navy mb-2">{item.name}</h3>
-                      <p className="text-gray-600 text-sm leading-relaxed flex-1 line-clamp-3">
+                      <h3 className="text-[17px] font-bold text-smansa-navy mb-2 group-hover:text-blue-600 transition-colors">{item.name}</h3>
+                      <p className="text-slate-500 text-sm leading-relaxed flex-1 line-clamp-3">
                         {item.description}
                       </p>
                     </div>
@@ -836,7 +891,7 @@ export default function App() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {data.achievements.slice(0, 3).map((item, index) => (
-                <div key={index} className="group relative bg-gray-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 h-[400px] flex flex-col justify-end border border-gray-100">
+                <div key={index} className="group relative bg-slate-900 rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.12)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] h-[400px] flex flex-col justify-end">
                   {/* Background Image */}
                   {item.image_url ? (
                     <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
@@ -918,23 +973,26 @@ export default function App() {
             </motion.div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {data.teachers.length > 0 ? data.teachers.slice(0, 4).map((teacher, index) => (
-                <div key={index} className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-100 aspect-[3/4]">
-                  <img src={teacher.photo ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` : `https://source.unsplash.com/random/400x500/?portrait,teacher,${index}`} className="absolute inset-0 w-full h-full object-cover z-10" alt={teacher.name} />
-                  <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover -z-10" alt="fallback" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300 z-20"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 z-30">
-                    <h3 className="text-lg font-bold">{teacher.name}</h3>
-                    <p className="text-blue-200 text-xs">{teacher.subject || 'Guru Mata Pelajaran'}</p>
+                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-[3/4]">
+                  <img src={teacher.photo ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=128`} className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" alt={teacher.name} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30">
+                    <h3 className="text-[15px] font-bold">{teacher.name}</h3>
+                    <p className="text-blue-200 text-xs mt-0.5">{teacher.subject || 'Guru Mata Pelajaran'}</p>
                   </div>
                 </div>
-              )) : [1, 2, 3, 4].map((item) => (
-                <div key={item} className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-gray-100 aspect-[3/4]">
-                  <img src={`https://source.unsplash.com/random/400x500/?portrait,teacher,${item}`} className="absolute inset-0 w-full h-full object-cover" alt="Guru" />
-                  <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover -z-10" alt="fallback" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-lg font-bold">Nama Guru, S.Pd</h3>
-                    <p className="text-blue-200 text-xs">Guru Mata Pelajaran</p>
+              )) : [
+                { name: "Drs. H. Ahmad Sudrajat, M.Pd.", subject: "Kepala Sekolah & Guru Fisika", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" },
+                { name: "Siti Aminah, S.Pd.", subject: "Guru Matematika Peminatan", img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop" },
+                { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" },
+                { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop" }
+              ].map((teacher, index) => (
+                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-[3/4]">
+                  <img src={teacher.img} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={teacher.name} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30">
+                    <h3 className="text-[15px] font-bold">{teacher.name}</h3>
+                    <p className="text-blue-200 text-xs mt-0.5">{teacher.subject}</p>
                   </div>
                 </div>
               ))}

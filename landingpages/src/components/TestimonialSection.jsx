@@ -129,14 +129,14 @@ export default function TestimonialSection() {
   const renderCard = (item, uniqueKey) => (
     <div
       key={uniqueKey}
-      className="w-[22rem] sm:w-[26rem] bg-white rounded-[2rem] p-8 border border-slate-100/90 shadow-[0_8px_30px_rgb(0,0,0,0.015)] hover:shadow-[0_20px_50px_rgba(37,99,235,0.07)] hover:border-blue-200 hover:-translate-y-1.5 transition-all duration-300 flex flex-col shrink-0 relative overflow-hidden group/card cursor-default"
+      className="testimonial-card w-80 sm:w-[24rem] bg-white rounded-[1.75rem] p-7 border border-slate-200/50 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 flex flex-col shrink-0 relative overflow-hidden group/card cursor-default"
     >
       {/* Background Quote Icon for high visual design */}
-      <Quote className="absolute top-6 right-8 w-20 h-20 text-slate-100/70 group-hover/card:text-blue-50/50 transition-colors duration-500 pointer-events-none z-0" />
+      <Quote className="absolute top-6 right-6 w-16 h-16 text-slate-100/40 group-hover/card:text-blue-50/50 transition-colors duration-500 pointer-events-none z-0" />
 
       {/* Profile Header */}
-      <div className="flex items-center gap-4 mb-5 relative z-10">
-        <div className="w-14 h-14 rounded-full overflow-hidden bg-blue-50 shrink-0 border border-slate-100">
+      <div className="flex items-center gap-3.5 mb-4 relative z-10">
+        <div className="w-12 h-12 rounded-full overflow-hidden bg-blue-50 shrink-0 border-2 border-slate-100 shadow-sm">
           <img
             src={imageUrl(item)}
             alt={item.name}
@@ -148,13 +148,13 @@ export default function TestimonialSection() {
           />
         </div>
         <div>
-          <h3 className="text-base font-bold text-smansa-navy leading-tight line-clamp-1 group-hover/card:text-blue-600 transition-colors">
+          <h3 className="text-[15px] font-bold text-smansa-navy leading-tight line-clamp-1 group-hover/card:text-blue-600 transition-colors">
             {item.name}
           </h3>
           
-          <div className="flex flex-wrap items-center gap-2 mt-1">
+          <div className="flex flex-wrap items-center gap-1.5 mt-1">
             {/* Role Badge */}
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
               item.role === 'alumni' 
                 ? 'bg-blue-50 text-blue-600 border border-blue-100'
                 : item.role === 'siswa'
@@ -166,7 +166,7 @@ export default function TestimonialSection() {
             </span>
             
             {item.current_occupation && (
-              <span className="text-[11px] text-slate-400 font-medium">
+              <span className="text-[10.5px] text-slate-400 font-medium max-w-[120px] line-clamp-1">
                 • {item.current_occupation}
               </span>
             )}
@@ -175,8 +175,8 @@ export default function TestimonialSection() {
       </div>
       
       {/* Testimonial message */}
-      <div className="flex-1 relative z-10 mb-6">
-        <p className="text-slate-600 leading-relaxed italic text-sm sm:text-[14.5px] line-clamp-4">
+      <div className="flex-1 relative z-10 mb-5">
+        <p className="text-slate-600 leading-relaxed italic text-xs sm:text-[13.5px] line-clamp-4">
           "{item.message}"
         </p>
       </div>
@@ -184,18 +184,18 @@ export default function TestimonialSection() {
       {/* Bottom stars */}
       <div className="flex text-amber-400 gap-0.5 relative z-10 shrink-0">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Star key={star} className="w-4 h-4 fill-current text-amber-400" />
+          <Star key={star} className="w-3.5 h-3.5 fill-current text-amber-400" />
         ))}
       </div>
     </div>
   );
 
   return (
-    <div className="relative w-full overflow-hidden py-14 flex flex-col gap-8 bg-gradient-to-b from-gray-50/50 via-white to-gray-50/50">
+    <div className="relative w-full overflow-hidden py-4 flex flex-col gap-6 bg-transparent">
       
       {/* LANE 1: Move Left */}
       <div className="relative flex w-full overflow-hidden group">
-        <div className="flex w-max gap-8 animate-marquee-left group-hover:[animation-play-state:paused] py-4">
+        <div className="flex w-max gap-8 animate-marquee-left group-hover:[animation-play-state:paused] py-4 items-stretch">
           {/* Main set */}
           <div className="flex gap-8 px-4 shrink-0">
             {row1.map((item, i) => renderCard(item, `r1-${i}`))}
@@ -209,7 +209,7 @@ export default function TestimonialSection() {
 
       {/* LANE 2: Move Right */}
       <div className="relative flex w-full overflow-hidden group">
-        <div className="flex w-max gap-8 animate-marquee-right group-hover:[animation-play-state:paused] py-4">
+        <div className="flex w-max gap-8 animate-marquee-right group-hover:[animation-play-state:paused] py-4 items-stretch">
           {/* Main set */}
           <div className="flex gap-8 px-4 shrink-0">
             {row2.map((item, i) => renderCard(item, `r2-${i}`))}
@@ -221,7 +221,7 @@ export default function TestimonialSection() {
         </div>
       </div>
 
-      {/* Animations styling */}
+      {/* Animations & Custom physics styling */}
       <style>{`
         @keyframes marquee-left {
           0% { transform: translateX(0%); }
@@ -240,6 +240,12 @@ export default function TestimonialSection() {
           animation: marquee-right 45s linear infinite;
           will-change: transform;
           backface-visibility: hidden;
+        }
+        .testimonial-card {
+          transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .testimonial-card:hover {
+          transform: translateY(-6px) scale(1.015);
         }
       `}</style>
       
