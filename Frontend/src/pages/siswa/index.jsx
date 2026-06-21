@@ -1358,7 +1358,19 @@ const Siswa = () => {
       )}
 
       {/* ── Form Modal ───────────────────────────────────────────────────────── */}
-      {isFormModalOpen && formSiswa && (
+      {isFormModalOpen && formSiswa && (() => {
+        const activeTA = tahunAjaranList.find(t => t.is_active === 1 || t.is_active === true);
+        const selectedTA = tahunAjaranList.find(t => t.id === Number(formSiswa.tahun_ajaran_id));
+        let diff = -1;
+        let autoGradYear = '';
+        if (activeTA && selectedTA) {
+          const getStartYear = (str) => parseInt(str?.substring(0, 4) || "0", 10);
+          const startYear = getStartYear(selectedTA.tahun);
+          diff = getStartYear(activeTA.tahun) - startYear;
+          if (diff >= 3) autoGradYear = startYear + 3;
+        }
+
+        return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
@@ -1392,14 +1404,6 @@ const Siswa = () => {
                 {/* History Kelas (Dinamis berdasarkan Tahun Ajaran) */}
                 <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {(() => {
-                    const activeTA = tahunAjaranList.find(t => t.is_active === 1 || t.is_active === true);
-                    const selectedTA = tahunAjaranList.find(t => t.id === Number(formSiswa.tahun_ajaran_id));
-                    let diff = -1;
-                    if (activeTA && selectedTA) {
-                      const getStartYear = (str) => parseInt(str?.substring(0, 4) || "0", 10);
-                      diff = getStartYear(activeTA.tahun) - getStartYear(selectedTA.tahun);
-                    }
-
                     return (
                       <>
                         {diff >= 0 && (
@@ -1448,6 +1452,20 @@ const Siswa = () => {
                   <label className="block text-sm font-semibold text-slate-700 mb-1">NISN</label>
                   <input type="text" value={formSiswa.nisn || ''} onChange={e => setFormSiswa(prev => ({ ...prev, nisn: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
                 </div>
+
+                {/* Tahun Lulus (Otomatis Muncul) */}
+                {diff >= 3 && (
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Tahun Lulus</label>
+                    <input 
+                      type="number" 
+                      placeholder={autoGradYear ? String(autoGradYear) : ''}
+                      value={formSiswa.tahun_lulus || autoGradYear || ''} 
+                      onChange={e => setFormSiswa(prev => ({ ...prev, tahun_lulus: e.target.value }))} 
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" 
+                    />
+                  </div>
+                )}
 
                 {/* Nama Lengkap */}
                 <div className="sm:col-span-2">
@@ -1621,7 +1639,7 @@ const Siswa = () => {
             </div>
           </div>
         </div>
-      )}
+      })()}
 
       {/* ── View Detail Modal ──────────────────────────────────────────────────── */}
       {isViewModalOpen && viewSiswa && (

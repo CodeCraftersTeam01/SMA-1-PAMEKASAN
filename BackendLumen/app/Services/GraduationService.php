@@ -54,8 +54,10 @@ class GraduationService
             $selectedTa = $siswa->tahunAjaran;
             $selectedYear = $selectedTa ? (int) substr($selectedTa->tahun, 0, 4) : $activeYear;
 
-            if (abs($activeYear - $selectedYear) >= 3) {
-                $tahunLulus = $siswa->tahun_lulus ?: $selectedYear;
+            $tahunMasuk = $siswa->tahun_masuk ?: $selectedYear;
+
+            if (abs($activeYear - $tahunMasuk) >= 3) {
+                $tahunLulus = $siswa->tahun_lulus ?: ($tahunMasuk + 3);
 
                 // 1. Insert ke tabel alumnis
                 $alumni = Alumni::create([

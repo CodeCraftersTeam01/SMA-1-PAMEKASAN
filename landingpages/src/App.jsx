@@ -22,6 +22,7 @@ const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
 const PrestasiDetail = React.lazy(() => import('./pages/PrestasiDetail'));
 const FormPrestasi = React.lazy(() => import('./pages/FormPrestasi'));
 const TrackingAlumni = React.lazy(() => import('./pages/TrackingAlumni'));
+const TestimoniAlumni = React.lazy(() => import('./pages/TestimoniAlumni'));
 
 // Shared minimal loading fallback for dynamic routes
 const MinimalLoader = () => (
@@ -408,6 +409,13 @@ export default function App() {
             <React.Suspense fallback={<MinimalLoader />}>
               <PageTransition>
                 <TrackingAlumni />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/testimoni-alumni" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <TestimoniAlumni />
               </PageTransition>
             </React.Suspense>
           } />
@@ -977,16 +985,14 @@ export default function App() {
               <p className="text-gray-600 text-lg max-w-2xl mx-auto">Pengalaman belajar dan berkembang bersama SMAN 1 Pamekasan.</p>
             </motion.div>
 
-            <div className="max-w-2xl mx-auto bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-16">
-              <div className="mb-8 border-b border-gray-100 pb-4">
-                <h3 className="text-2xl font-bold text-smansa-navy text-center">Kirim Testimoni Anda</h3>
-                <p className="text-gray-500 text-sm mt-1 text-center">Bagikan kisah inspiratif Anda kepada dunia.</p>
-              </div>
-              <TestimonialForm />
+            <div className="text-center mb-10">
+              <Link to="/testimoni-alumni" className="inline-flex items-center gap-2 bg-smansa-navy text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-900 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+                <MessageSquare className="w-5 h-5" /> Beri Testimoni Alumni
+              </Link>
             </div>
 
             {/* BOTTOM SECTION: DISPLAY */}
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-[100vw] overflow-hidden -mx-6 lg:-mx-8">
               <TestimonialSection />
             </div>
           </div>

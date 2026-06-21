@@ -2,12 +2,18 @@ import { useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-export default function TestimonialForm() {
+export default function TestimonialForm({ 
+  lockedRole = null, 
+  defaultName = "", 
+  defaultGraduationYear = "", 
+  defaultOccupation = "",
+  onSuccessCallback = null 
+}) {
   const [formData, setFormData] = useState({
-    name: "",
-    role: "alumni",
-    graduation_year: "",
-    current_occupation: "",
+    name: defaultName,
+    role: lockedRole || "alumni",
+    graduation_year: defaultGraduationYear,
+    current_occupation: defaultOccupation,
     message: "",
     imageFile: null,
   });
@@ -56,15 +62,19 @@ export default function TestimonialForm() {
       if (response.status === 201 || response.data?.success) {
         setIsSuccess(true);
         setFormData({
-          name: "",
-          role: "alumni",
-          graduation_year: "",
-          current_occupation: "",
+          name: defaultName,
+          role: lockedRole || "alumni",
+          graduation_year: defaultGraduationYear,
+          current_occupation: defaultOccupation,
           message: "",
           imageFile: null,
         });
         const fileInput = document.getElementById('testimonial-image');
         if (fileInput) fileInput.value = '';
+        
+        if (onSuccessCallback) {
+          onSuccessCallback();
+        }
       }
     } catch (err) {
       console.error("Failed to submit testimonial:", err);
@@ -116,24 +126,31 @@ export default function TestimonialForm() {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all"
+                readOnly={!!lockedRole}
+                className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all ${!!lockedRole ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:bg-white'}`}
                 placeholder="Masukkan nama lengkap Anda"
               />
             </div>
             
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Peran *</label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all"
-              >
-                <option value="alumni">Alumni</option>
-                <option value="siswa">Siswa Aktif</option>
-                <option value="orangtua">Orang Tua / Wali</option>
-              </select>
+              {lockedRole ? (
+                <div className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed capitalize">
+                  {lockedRole}
+                </div>
+              ) : (
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all"
+                >
+                  <option value="alumni">Alumni</option>
+                  <option value="siswa">Siswa Aktif</option>
+                  <option value="orangtua">Orang Tua / Wali</option>
+                </select>
+              )}
             </div>
           </div>
 
@@ -146,7 +163,8 @@ export default function TestimonialForm() {
                   name="graduation_year"
                   value={formData.graduation_year}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all"
+                  readOnly={!!lockedRole && !!defaultGraduationYear}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all ${!!lockedRole && !!defaultGraduationYear ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:bg-white'}`}
                   placeholder="Contoh: 2024"
                 />
               </div>
@@ -158,7 +176,8 @@ export default function TestimonialForm() {
                   name="current_occupation"
                   value={formData.current_occupation}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all"
+                  readOnly={!!lockedRole && !!defaultOccupation}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all ${!!lockedRole && !!defaultOccupation ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-gray-50 focus:bg-white'}`}
                   placeholder="Contoh: Mahasiswa ITS / Software Engineer"
                 />
               </div>
