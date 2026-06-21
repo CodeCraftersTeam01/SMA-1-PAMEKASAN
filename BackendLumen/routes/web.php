@@ -67,7 +67,7 @@ $router->group(['prefix' => 'api/public'], function () use ($router) {
     $router->post('achievements/submit', 'LandingPageController@storeAchievement');
     $router->get('siswa/lookup', 'LandingPageController@lookupSiswa');
     $router->get('testimonials', 'TestimonialController@getPublicTestimonials');
-    $router->post('testimonials', 'TestimonialController@submitPublicTestimonial');
+    $router->post('testimonials', ['middleware' => 'throttle:5,1', 'uses' => 'TestimonialController@submitPublicTestimonial']);
     $router->get('news', 'LandingPageController@getNews');
     $router->get('news/{id}', 'LandingPageController@getNewsDetail');
     $router->get('academic-calendar', 'LandingPageController@getAcademicCalendar');

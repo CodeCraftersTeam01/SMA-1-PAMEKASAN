@@ -9,24 +9,30 @@ export default function AnnouncementMarquee({ isScrolled = false }) {
   const [footerVisibleHeight, setFooterVisibleHeight] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const footer = document.querySelector('footer');
-      if (footer) {
-        const rect = footer.getBoundingClientRect();
-        const visibleHeight = window.innerHeight - rect.top;
-        if (visibleHeight > 0) {
-          setFooterVisibleHeight(visibleHeight);
+    const footer = document.querySelector('footer');
+    if (!footer) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry && entry.isIntersecting) {
+          // Calculate visible height based on intersectionRect
+          setFooterVisibleHeight(entry.intersectionRect.height);
         } else {
           setFooterVisibleHeight(0);
         }
+      },
+      {
+        root: null,
+        // High density threshold array (1% increments) to calculate exact pixel intersection smoothly
+        threshold: Array.from({ length: 101 }, (_, i) => i / 100)
       }
+    );
+
+    observer.observe(footer);
+    return () => {
+      observer.disconnect();
     };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    // Initial check just in case
-    setTimeout(handleScroll, 100);
-    
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -134,6 +140,8 @@ export default function AnnouncementMarquee({ isScrolled = false }) {
         }
         .animate-marquee {
           animation: marquee 25s linear infinite;
+          will-change: transform;
+          backface-visibility: hidden;
         }
         .animate-marquee:hover {
           animation-play-state: paused;

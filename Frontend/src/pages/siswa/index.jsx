@@ -239,10 +239,16 @@ const Siswa = () => {
         const selectedTA = tahunAjaranList.find(t => t.id === Number(payload.tahun_ajaran_id));
         if (activeTA && selectedTA) {
           const getStartYear = (str) => parseInt(str?.substring(0, 4) || "0", 10);
-          const diff = getStartYear(activeTA.tahun) - getStartYear(selectedTA.tahun);
+          const startYear = getStartYear(selectedTA.tahun);
+          const diff = getStartYear(activeTA.tahun) - startYear;
+          
           if (diff === 0) payload.kelas = payload.kelas_10 || '';
           else if (diff === 1) payload.kelas = payload.kelas_11 || '';
           else if (diff >= 2) payload.kelas = payload.kelas_12 || '';
+          
+          if (!payload.tahun_lulus && diff >= 3) {
+            payload.tahun_lulus = startYear + 3;
+          }
         }
       }
 
@@ -1550,11 +1556,28 @@ const Siswa = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1">Jenis Tinggal</label>
-                      <input type="text" value={formSiswa.jenis_tinggal || ''} onChange={e => setFormSiswa(prev => ({ ...prev, jenis_tinggal: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                      <select value={formSiswa.jenis_tinggal || ''} onChange={e => setFormSiswa(prev => ({ ...prev, jenis_tinggal: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white">
+                        <option value="">— Pilih —</option>
+                        <option value="Bersama Orang Tua">Bersama Orang Tua</option>
+                        <option value="Bersama Wali">Bersama Wali</option>
+                        <option value="Kos">Kos</option>
+                        <option value="Asrama">Asrama</option>
+                        <option value="Panti Asuhan">Panti Asuhan</option>
+                        <option value="Lainnya">Lainnya</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1">Alat Transportasi</label>
-                      <input type="text" value={formSiswa.alat_transportasi || ''} onChange={e => setFormSiswa(prev => ({ ...prev, alat_transportasi: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600" />
+                      <select value={formSiswa.alat_transportasi || ''} onChange={e => setFormSiswa(prev => ({ ...prev, alat_transportasi: e.target.value }))} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-600 bg-white">
+                        <option value="">— Pilih —</option>
+                        <option value="Jalan Kaki">Jalan Kaki</option>
+                        <option value="Sepeda">Sepeda</option>
+                        <option value="Sepeda Motor">Sepeda Motor</option>
+                        <option value="Mobil Pribadi">Mobil Pribadi</option>
+                        <option value="Antar Jemput Sekolah">Antar Jemput Sekolah</option>
+                        <option value="Angkutan Umum">Angkutan Umum</option>
+                        <option value="Lainnya">Lainnya</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-slate-700 mb-1">Lintang (Latitude)</label>
@@ -1639,6 +1662,7 @@ const Siswa = () => {
             </div>
           </div>
         </div>
+        );
       })()}
 
       {/* ── View Detail Modal ──────────────────────────────────────────────────── */}

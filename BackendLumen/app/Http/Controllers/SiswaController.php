@@ -79,7 +79,7 @@ class SiswaController extends Controller
             'tanggal_lahir', 'agama', 'alamat', 'rt', 'rw', 'dusun', 'kelurahan', 'kode_pos',
             'jenis_tinggal', 'alat_transportasi', 'lintang', 'bujur', 'nomor_hp', 'email',
             'penerima_kps', 'nomor_kps', 'penerima_kip', 'nomor_kip',
-            'is_active', 'tahun_masuk', 'tahun_ajaran_id',
+            'is_active', 'tahun_masuk', 'tahun_ajaran_id', 'tahun_lulus',
             'kelas_10', 'kelas_11', 'kelas_12',
         ];
 

@@ -987,7 +987,7 @@ export default function App() {
 
             <div className="text-center mb-10">
               <Link to="/testimoni-alumni" className="inline-flex items-center gap-2 bg-smansa-navy text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-900 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
-                <MessageSquare className="w-5 h-5" /> Beri Testimoni Alumni
+                <MessageSquare className="w-5 h-5" /> Beri Testimoni Anda
               </Link>
             </div>
 

@@ -21,6 +21,9 @@ export default function TestimonialForm({
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [captchaNum1, setCaptchaNum1] = useState(Math.floor(Math.random() * 10) + 1);
+  const [captchaNum2, setCaptchaNum2] = useState(Math.floor(Math.random() * 10) + 1);
+  const [userCaptcha, setUserCaptcha] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,6 +41,15 @@ export default function TestimonialForm({
     setIsLoading(true);
     setErrorMsg("");
     setIsSuccess(false);
+
+    if (parseInt(userCaptcha) !== captchaNum1 + captchaNum2) {
+      setErrorMsg("Jawaban keamanan salah. Silakan coba lagi.");
+      setIsLoading(false);
+      setCaptchaNum1(Math.floor(Math.random() * 10) + 1);
+      setCaptchaNum2(Math.floor(Math.random() * 10) + 1);
+      setUserCaptcha("");
+      return;
+    }
 
     const rawApiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
     const API_BASE_URL = rawApiUrl.replace(/\/$/, "");
@@ -72,6 +84,10 @@ export default function TestimonialForm({
         const fileInput = document.getElementById('testimonial-image');
         if (fileInput) fileInput.value = '';
         
+        setCaptchaNum1(Math.floor(Math.random() * 10) + 1);
+        setCaptchaNum2(Math.floor(Math.random() * 10) + 1);
+        setUserCaptcha("");
+
         if (onSuccessCallback) {
           onSuccessCallback();
         }
@@ -211,6 +227,23 @@ export default function TestimonialForm({
                 accept="image/*"
                 onChange={handleFileChange}
                 className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 transition-all cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Verifikasi Keamanan (Anti-Spam) *</label>
+            <div className="flex items-center gap-4">
+              <div className="px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl font-bold text-gray-700 select-none whitespace-nowrap">
+                {captchaNum1} + {captchaNum2} =
+              </div>
+              <input
+                type="number"
+                value={userCaptcha}
+                onChange={(e) => setUserCaptcha(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-smansa-navy/20 focus:border-smansa-navy outline-none transition-all"
+                placeholder="Jawaban perhitungan"
               />
             </div>
           </div>
