@@ -50,6 +50,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'features'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
         'programs'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
         'ekstrakurikuler' => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
+        'testimonials'    => ['view' => false, 'create' => false, 'edit' => false, 'delete' => false],
         'pengaturan'  => ['view' => true, 'create' => false, 'edit' => false, 'delete' => false],
     ];
 

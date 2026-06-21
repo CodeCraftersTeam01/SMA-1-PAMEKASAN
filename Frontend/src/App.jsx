@@ -36,6 +36,7 @@ const AdminExtracurricular = lazy(() => import('./pages/admin/website/ekstrakuri
 const AdminAgenda = lazy(() => import('./pages/admin/website/agenda'));
 const AdminPengumuman = lazy(() => import('./pages/admin/website/pengumuman'));
 const AdminQuotes = lazy(() => import('./pages/quotes'));
+const AdminTestimonials = lazy(() => import('./pages/admin/website/testimonials'));
 
 // Shared fallback while a lazy chunk is loading
 const RouteFallback = () => (
@@ -115,6 +116,7 @@ const AnimatedRoutes = () => {
               <Route path="/admin/website/agenda" element={<Page><AdminAgenda /></Page>} />
               <Route path="/admin/website/pengumuman" element={<Page><AdminPengumuman /></Page>} />
               <Route path="/admin/website/quotes" element={<Page><AdminQuotes /></Page>} />
+              <Route path="/admin/website/testimonials" element={<Page><AdminTestimonials /></Page>} />
             </Route>
 
             {/* Admin Only */}
