@@ -63,23 +63,23 @@ export default function ExtracurricularSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
-              className="bg-white rounded-3xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgb(0,0,0,0.1)] transition-all duration-300 hover:-translate-y-2 overflow-hidden flex flex-col"
+              className="bg-white rounded-[1.75rem] border border-slate-200/50 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] overflow-hidden flex flex-col group"
             >
               <div className="aspect-[16/10] w-full overflow-hidden bg-gray-100">
                 <img
                   src={imageUrl(item.image_path)}
                   alt={item.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = "https://placehold.co/600x400?text=Ekstrakurikuler";
                   }}
                 />
               </div>
-              <div className="p-8 flex-1 flex flex-col">
-                <h3 className="text-2xl font-bold text-smansa-navy mb-3 tracking-tight">{item.name}</h3>
+              <div className="p-7 flex-1 flex flex-col">
+                <h3 className="text-xl font-bold text-smansa-navy mb-3 tracking-tight group-hover:text-blue-600 transition-colors">{item.name}</h3>
                 {item.description && (
-                  <p className="text-gray-600 leading-relaxed text-sm line-clamp-3">{item.description}</p>
+                  <p className="text-slate-600 leading-relaxed text-sm line-clamp-3">{item.description}</p>
                 )}
               </div>
             </motion.div>
