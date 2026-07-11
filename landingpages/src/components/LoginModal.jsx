@@ -9,7 +9,7 @@ export default function LoginModal({ isOpen, onClose }) {
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || (isLocalhost ? 'http://localhost:5173' : window.location.origin);
+  const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || (isLocalhost ? 'http://localhost:5173' : 'https://dashboard.smansa.m-tech.fun');
 
   const handleLogin = async (e) => {
     e.preventDefault();

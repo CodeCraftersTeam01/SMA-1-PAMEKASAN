@@ -64,8 +64,8 @@ const Page = ({ children, slide = true }) => (
 // External Redirect Component for root path
 const ExternalRedirect = () => {
   useEffect(() => {
-    // Redirect to landing page base URL defined in .env
-    const landingUrl = import.meta.env.VITE_LANDING_PAGE_URL || 'http://localhost:5174';
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const landingUrl = import.meta.env.VITE_LANDING_PAGE_URL || (isLocalhost ? 'http://localhost:5173' : 'https://smansa.m-tech.fun');
     window.location.href = landingUrl;
   }, []);
   return null;
