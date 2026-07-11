@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SEO from '../components/SEO';
 import { 
   GraduationCap, 
   Briefcase, 
@@ -335,6 +336,11 @@ export default function TrackingAlumni() {
   // Main UI render
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-24 font-sans text-gray-800">
+      <SEO 
+        title="Penelusuran Alumni (Tracer Study)"
+        description="Sistem Penelusuran Alumni (Tracer Study) Resmi SMAN 1 Pamekasan. Membantu memetakan sebaran alumni di perguruan tinggi dan dunia kerja."
+        keywords="tracer study SMAN 1 Pamekasan, alumni SMANSA, penelusuran alumni, SMAN 1 Pamekasan"
+      />
       <div className="max-w-3xl mx-auto px-6 lg:px-8">
         <Link to="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-bold mb-8 transition-colors">
           <ArrowLeft className="w-5 h-5" /> Kembali ke Beranda

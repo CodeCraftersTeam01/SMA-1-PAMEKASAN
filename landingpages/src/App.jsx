@@ -17,6 +17,7 @@ import ExtracurricularSection from './components/ExtracurricularSection';
 import TestimonialSection from './components/TestimonialSection';
 import TestimonialForm from './components/TestimonialForm';
 import SpotlightCard from './components/SpotlightCard';
+import SEO from './components/SEO';
 
 const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
@@ -436,6 +437,11 @@ export default function App() {
           } />
           <Route path="/" element={
             <PageTransition>
+              <SEO 
+                title="SMAN 1 Pamekasan - Unggul, Berkarakter, Berprestasi"
+                description={data.settings?.hero_subtitle || 'Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.'}
+                keywords="SMAN 1 Pamekasan, SMANSA Pamekasan, SMA Terbaik Madura, Pendaftaran SMAN 1 Pamekasan"
+              />
               <main>
         
         {/* HERO SECTION */}

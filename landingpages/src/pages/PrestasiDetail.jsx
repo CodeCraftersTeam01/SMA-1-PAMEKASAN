@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Search, Trophy, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
+import SEO from '../components/SEO';
 
 const API_BASE = 'http://localhost:8000/api/public';
 const STORAGE_BASE = 'http://localhost:8000/storage';
@@ -72,6 +73,11 @@ export default function PrestasiDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-24 font-sans text-gray-800">
+      <SEO 
+        title="Prestasi Gemilang SMANSA"
+        description="Jelajahi seluruh daftar penghargaan dan pencapaian luar biasa yang telah diraih oleh siswa-siswi SMAN 1 Pamekasan."
+        keywords="prestasi SMAN 1 Pamekasan, penghargaan SMANSA, olimpiade SMAN 1 Pamekasan"
+      />
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="mb-8">
           <Link to="/#prestasi" className="inline-flex items-center gap-2 text-smansa-navy font-bold hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Users, Trophy, BookOpen } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const API_KEY = import.meta.env.VITE_API_KEY || 'smansa123';
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '/api/public';
@@ -83,6 +84,11 @@ export default function DirektoriGuru() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-24">
+      <SEO 
+        title="Direktori Tenaga Pendidik"
+        description="Profil guru dan tenaga pendidik berdedikasi tinggi di SMAN 1 Pamekasan yang siap mendidik siswa-siswi terbaik bangsa."
+        keywords="daftar guru SMAN 1 Pamekasan, tenaga pendidik SMANSA, guru terbaik Pamekasan"
+      />
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="mb-8">
           <Link to="/" className="inline-flex items-center gap-2 text-smansa-navy font-bold hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
