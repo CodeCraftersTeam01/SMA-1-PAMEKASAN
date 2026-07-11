@@ -10,7 +10,14 @@ class AdminTeacherController extends Controller
 {
     public function index()
     {
-        return response()->json(Teacher::orderBy('order', 'asc')->orderBy('name', 'asc')->get());
+        // Custom order based on jabatan
+        $teachers = Teacher::all()->sortBy(function($teacher) {
+            $jabatan = strtolower($teacher->jabatan);
+            if (str_contains($jabatan, 'kepala sekolah') && !str_contains($jabatan, 'wakil')) return 1;
+            if (str_contains($jabatan, 'wakil kepala') || str_contains($jabatan, 'wakasek')) return 2;
+            return 3;
+        })->values();
+        return response()->json($teachers);
     }
 
     public function store(Request $request)
@@ -18,7 +25,7 @@ class AdminTeacherController extends Controller
         $this->validate($request, [
             'name' => 'required|string|max:255',
             'subject' => 'nullable|string|max:255',
-            'order' => 'nullable|integer',
+            'jabatan' => 'nullable|string|max:255',
             'photo' => 'nullable|image|max:2048'
         ]);
 
@@ -45,7 +52,7 @@ class AdminTeacherController extends Controller
         $this->validate($request, [
             'name' => 'required|string|max:255',
             'subject' => 'nullable|string|max:255',
-            'order' => 'nullable|integer',
+            'jabatan' => 'nullable|string|max:255',
             'photo' => 'nullable|image|max:2048'
         ]);
 

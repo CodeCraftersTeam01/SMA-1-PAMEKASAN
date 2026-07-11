@@ -29,7 +29,7 @@ const RESOURCES = [
   { key: 'features', label: 'Keunggulan Sekolah', group: 'Tampilan Website' },
   { key: 'programs', label: 'Program Jurusan', group: 'Tampilan Website' },
   { key: 'quotes', label: 'Kata-kata Guru', group: 'Tampilan Website' },
-  { key: 'landing_settings', label: 'Sambutan & Kontak', group: 'Tampilan Website' },
+  { key: 'landing_settings', label: 'Pengaturan Landing Page', group: 'Tampilan Website' },
 
   // Pengaturan
   { key: 'pengaturan_nis', label: 'Pengaturan NIS', group: 'Pengaturan' },

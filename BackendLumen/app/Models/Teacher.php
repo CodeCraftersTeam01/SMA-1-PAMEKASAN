@@ -10,6 +10,6 @@ class Teacher extends Model
         'name',
         'subject',
         'photo',
-        'order',
+        'jabatan',
     ];
 }

@@ -54,8 +54,11 @@ export default function TeachersSection() {
                 />
                 <div className="card-body p-3">
                   <h6 className="fw-900 text-dark mb-1" style={{ fontSize: '0.95rem' }}>{t.name}</h6>
+                  {t.jabatan && (
+                    <p className="text-primary fw-bold small mb-0" style={{ fontSize: '10px' }}>{t.jabatan}</p>
+                  )}
                   {t.subject && (
-                    <p className="text-muted small mb-0">{t.subject}</p>
+                    <p className="text-muted small mb-0" style={{ fontSize: '12px' }}>{t.subject}</p>
                   )}
                 </div>
               </div>

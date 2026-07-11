@@ -48,6 +48,7 @@ class LandingPageController extends Controller
             ->orderBy('published_at', 'desc')->limit(6)->get();
 
         $achievements = Achievement::with(['siswas:id,nama_lengkap,kelas,jenis_kelamin,tahun_masuk'])
+            ->where('status', 'approved')
             ->select('id', 'title', 'student_name', 'category', 'year', 'level', 'description', 'image_url')
             ->orderBy('year', 'desc')->limit(12)->get();
 
@@ -102,6 +103,7 @@ class LandingPageController extends Controller
     public function getAchievements()
     {
         $achievements = Achievement::with(['siswas:id,nama_lengkap,kelas,jenis_kelamin,tahun_masuk'])
+            ->where('status', 'approved')
             ->select('id', 'title', 'student_name', 'category', 'year', 'level', 'description', 'image_url')
             ->orderBy('year', 'desc')->limit(12)->get();
 
@@ -226,7 +228,7 @@ class LandingPageController extends Controller
         $settings->total_siswa = \App\Models\Siswa::where('is_active', 1)->count();
         $settings->total_alumni = \App\Models\Alumni::count();
 
-        return $this->cached($settings, 600);
+        return $this->cached($settings, 60);
     }
 
     /**
@@ -242,12 +244,13 @@ class LandingPageController extends Controller
             'level' => 'required|string',
             'description' => 'required|string',
             'siswa_id' => 'nullable|integer|exists:siswas,id',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $data = $request->only([
             'student_name', 'title', 'category', 'year', 'level', 'description'
         ]);
+        $data['status'] = 'pending';
 
         if ($request->hasFile('image')) {
             $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'achievements');
@@ -262,7 +265,7 @@ class LandingPageController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Prestasi berhasil dikirim! Terima kasih telah berpartisipasi.',
+            'message' => 'Prestasi berhasil dikirim dan sedang menunggu verifikasi Admin. Terima kasih telah berpartisipasi!',
             'data' => $achievement->load('siswas:id,nama_lengkap,kelas,jenis_kelamin')
         ], 201);
     }

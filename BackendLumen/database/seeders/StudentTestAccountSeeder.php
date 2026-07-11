@@ -22,11 +22,8 @@ class StudentTestAccountSeeder extends Seeder
         DB::table('users')->insert([
             'name'          => 'Siswa Test Alpha',
             'email'         => 'siswa@example.com',
-            'nis'           => '123456',
-            'nisn'          => '0012345678',
             'role'          => 'siswa',
             'password'      => Hash::make('12345678'),
-            'student_grade' => '12', // Atau '12-IPA-1' menyesuaikan schema
             'created_at'    => date('Y-m-d H:i:s'),
             'updated_at'    => date('Y-m-d H:i:s'),
         ]);

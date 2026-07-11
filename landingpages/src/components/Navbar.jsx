@@ -15,7 +15,7 @@ export default function Navbar({ isScrolled, navItems = [], onLoginClick }) {
 
   return (
     <div className={`fixed w-full z-50 transition-all duration-500 px-4 flex justify-center ${applyScrolledStyle ? 'top-4' : 'top-6'}`}>
-      <nav className={`relative w-full max-w-5xl transition-all duration-500 border rounded-2xl lg:rounded-full ${applyScrolledStyle ? 'bg-white/95 shadow-xl text-smansa-navy py-2 lg:py-2.5 border-gray-200 backdrop-blur-md' : 'bg-white/10 text-white py-2 lg:py-3 border-white/20 backdrop-blur-md shadow-2xl'}`}>
+      <nav className={`relative w-full max-w-7xl transition-all duration-500 border rounded-2xl lg:rounded-full ${applyScrolledStyle ? 'bg-white/95 shadow-xl text-smansa-navy py-2 lg:py-2.5 border-gray-200 backdrop-blur-md' : 'bg-white/10 text-white py-2 lg:py-3 border-white/20 backdrop-blur-md shadow-2xl'}`}>
         <div className="px-6 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img src="/logo-sma.png" alt="Logo SMAN 1" className="w-7 h-7 md:w-8 md:h-8 object-contain" />

@@ -17,6 +17,7 @@ export default function useLandingSettings() {
       try {
         const res = await fetch(`${API_BASE_URL}/api/public/landing-settings`, {
           headers: { "x-api-key": API_KEY },
+          cache: "no-cache" // Bypass browser cache so updates are instantly visible
         });
         if (res.ok) {
           const json = await res.json();
