@@ -31,7 +31,6 @@ jobs:
         env:
           VITE_API_BASE_URL: https://api.smansa.m-tech.fun
           VITE_LANDING_PAGE_URL: https://smansa.m-tech.fun
-          VITE_API_KEY: smansa123
 
       - name: 📦 Install Landing Page Dependencies
         working-directory: ./landingpages
@@ -44,7 +43,6 @@ jobs:
           VITE_API_BASE_URL: https://api.smansa.m-tech.fun
           VITE_API_URL: https://api.smansa.m-tech.fun
           VITE_DASHBOARD_URL: https://dashboard.smansa.m-tech.fun
-          VITE_API_KEY: smansa123
 
       - name: 🛠️ Prepare and Clean Directories on VPS
         uses: appleboy/ssh-action@v1.0.3
