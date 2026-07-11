@@ -13,8 +13,10 @@ export default function AdminPrograms() {
 
   const [selectedItems, setSelectedItems] = useState([]);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchPrograms = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/admin/programs`, {
         headers: {
@@ -27,6 +29,8 @@ export default function AdminPrograms() {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,7 +178,13 @@ export default function AdminPrograms() {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
+              <div className="w-10 h-10 border-4 border-slate-100 border-t-slate-800 rounded-full animate-spin"></div>
+              <p className="text-sm font-medium">Memuat data...</p>
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                 <th className="pb-3 pl-4 w-10">
@@ -216,6 +226,7 @@ export default function AdminPrograms() {
               )}
             </tbody>
           </table>
+          )}
         </div>
       </div>
 
