@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Send, CheckCircle, AlertCircle, ArrowLeft, Search, User, Upload, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const API_BASE = 'http://localhost:8000/api/public';
 const STORAGE_BASE = 'http://localhost:8000/storage';
@@ -92,6 +93,12 @@ export default function FormPrestasi() {
     setStatus(null);
 
     try {
+      if (!imageFile) {
+        setStatus({ type: 'error', message: 'Dokumentasi / Foto Prestasi wajib diupload.' });
+        setLoading(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('student_name', form.student_name);
       formData.append('title', form.title);
@@ -112,7 +119,7 @@ export default function FormPrestasi() {
       });
       const data = await res.json();
       if (res.ok) {
-        setStatus({ type: 'success', message: data.message || 'Prestasi berhasil dikirim!' });
+        setStatus({ type: 'success', message: data.message || 'Prestasi berhasil dikirim dan sedang menunggu verifikasi Admin!' });
         setForm({
           siswa_id: '',
           student_name: '',
@@ -161,10 +168,17 @@ export default function FormPrestasi() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-24 font-sans text-gray-800">
+      <SEO 
+        title="Kirim Prestasi Siswa"
+        description="Formulir pelaporan prestasi siswa SMAN 1 Pamekasan. Laporkan prestasi akademik, non-akademik, seni, atau olahraga Anda untuk dipublikasikan di website sekolah."
+        keywords="lapor prestasi SMANSA, submit prestasi SMAN 1 Pamekasan, formulir prestasi SMANSA"
+      />
       <div className="max-w-3xl mx-auto px-6 lg:px-8">
-        <Link to="/#prestasi" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-bold mb-8 transition-colors">
-          <ArrowLeft className="w-5 h-5" /> Kembali
-        </Link>
+        <div className="mb-8">
+          <Link to="/#prestasi" className="inline-flex items-center gap-2 text-smansa-navy font-bold hover:text-blue-600 transition-colors bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+            <ArrowLeft className="w-4 h-4" /> Kembali ke Beranda
+          </Link>
+        </div>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className="text-center mb-12">
@@ -319,9 +333,8 @@ export default function FormPrestasi() {
                 ></textarea>
               </div>
 
-              {/* Image Upload */}
               <div>
-                <label className={labelClass}>Dokumentasi / Foto Prestasi</label>
+                <label className={labelClass}>Dokumentasi / Foto Prestasi <span className="text-red-500">*</span></label>
                 <div className="border-2 border-dashed border-gray-200 rounded-3xl p-6 text-center hover:border-blue-300 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                   {imagePreview ? (
                     <div className="relative inline-block">

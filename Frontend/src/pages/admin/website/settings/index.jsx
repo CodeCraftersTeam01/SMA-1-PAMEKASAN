@@ -1,5 +1,46 @@
 import React, { useState, useEffect } from 'react';
 
+// ─── Toast Notification ──────────────────────────────────────────────────────
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const t = setTimeout(onClose, 4000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+
+  const colors = {
+    success: 'bg-emerald-500',
+    error: 'bg-red-500',
+    info: 'bg-blue-500',
+    warning: 'bg-amber-500',
+  };
+
+  return (
+    <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
+      {type === 'success' && (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+      {type === 'error' && (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      )}
+      {type === 'warning' && (
+        <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        </svg>
+      )}
+      <span className="text-sm font-semibold">{message}</span>
+      <button onClick={onClose} className="ml-1 opacity-70 hover:opacity-100">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
 export default function AdminSettings() {
   const [formData, setFormData] = useState({
     hero_title: '',
@@ -24,6 +65,8 @@ export default function AdminSettings() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+  const showToast = (message, type = 'info') => setToast({ message, type });
 
   const fetchSettings = async () => {
     try {
@@ -128,14 +171,14 @@ export default function AdminSettings() {
       });
 
       if (response.ok) {
-        alert("Pengaturan berhasil disimpan!");
+        showToast("Pengaturan berhasil disimpan!", "success");
         fetchSettings();
       } else {
-        alert("Gagal menyimpan pengaturan.");
+        showToast("Gagal menyimpan pengaturan.", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan sistem.");
+      showToast("Terjadi kesalahan sistem.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -260,6 +303,11 @@ export default function AdminSettings() {
           </div>
         </form>
       </div>
+      
+      {/* ── Toast ── */}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
     </div>
   );
 }

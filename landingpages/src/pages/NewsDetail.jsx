@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import SEO from '../components/SEO';
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  const text = html.replace(/<[^>]*>/g, '');
+  return text.length > 155 ? text.substring(0, 155) + '...' : text;
+};
 
 const SkeletonLoader = () => (
   <div className="pt-24 pb-20 bg-gray-50 min-h-screen animate-pulse">
@@ -113,6 +120,12 @@ export default function NewsDetail() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="pt-24 pb-20 bg-gray-50 min-h-screen">
+      <SEO 
+        title={news.title}
+        description={stripHtml(news.content)}
+        keywords={`berita SMAN 1 Pamekasan, SMANSA Pamekasan, ${news.category || 'Berita'}, ${news.title}`}
+        image={imgUrl}
+      />
       <div className="bg-white py-10 mb-8 border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <Link to="/#berita" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-semibold mb-4 transition-colors">

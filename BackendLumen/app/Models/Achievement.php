@@ -9,7 +9,7 @@ class Achievement extends Model
     protected $table = 'achievements';
 
     protected $fillable = [
-        'title', 'student_name', 'description', 'category', 'year', 'level', 'image_url', 'siswa_id',
+        'title', 'student_name', 'description', 'category', 'year', 'level', 'image_url', 'siswa_id', 'status'
     ];
 
     public function siswas()

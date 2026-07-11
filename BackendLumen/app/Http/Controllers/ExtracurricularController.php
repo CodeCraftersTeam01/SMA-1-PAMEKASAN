@@ -12,7 +12,9 @@ class ExtracurricularController extends Controller
      */
     public function index()
     {
-        $items = Extracurricular::orderBy('name', 'asc')->get();
+        $items = \Illuminate\Support\Facades\Cache::remember('public_extracurriculars', 60, function () {
+            return Extracurricular::orderBy('name', 'asc')->get();
+        });
         return response()->json($items);
     }
 
@@ -29,7 +31,7 @@ class ExtracurricularController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('extracurriculars', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'extracurriculars');
             $imagePath = url('storage/' . $path);
         } elseif ($request->input('image_path')) {
             $imagePath = $request->input('image_path');
@@ -68,7 +70,7 @@ class ExtracurricularController extends Controller
 
         $imagePath = $item->image_path;
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('extracurriculars', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'extracurriculars');
             $imagePath = url('storage/' . $path);
         } elseif ($request->has('image_path')) {
             $imagePath = $request->input('image_path');

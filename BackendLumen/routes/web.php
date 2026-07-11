@@ -58,7 +58,7 @@ $router->get('api/test-mail', ['middleware' => ['throttle:3,60', 'api.key'], fun
 // =====================================================
 // PUBLIC Routes untuk Landing Page (Tanpa Auth)
 // =====================================================
-$router->group(['prefix' => 'api/public'], function () use ($router) {
+$router->group(['prefix' => 'api/public', 'middleware' => 'throttle:150,60'], function () use ($router) {
     // New aggregated endpoint for maximum performance (solves 8s LCP on single-thread php built-in server)
     $router->get('landing-data', 'LandingPageController@getLandingData');
 

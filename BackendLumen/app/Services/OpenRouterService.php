@@ -292,4 +292,39 @@ PROMPT;
             return "Pemberitahuan kepada seluruh warga SMAN 1 Pamekasan, bahwa akan diadakan kegiatan {$title} yang dijadwalkan pada tanggal {$date}.{$descText} Mohon perhatian dan partisipasinya. Terima kasih.";
         }
     }
+
+    /**
+     * Generate a short and to-the-point announcement for a new Achievement using AI.
+     */
+    public function generateAchievementAnnouncement(string $title, string $studentName, string $level, string $category): string
+    {
+        if (empty($this->apiKey)) {
+            $studentStr = $studentName ?: 'Siswa/Tim';
+            return "Selamat dan sukses kepada {$studentStr} dari SMAN 1 Pamekasan yang telah meraih prestasi {$title} di tingkat {$level}. Terus berkarya dan menginspirasi!";
+        }
+
+        $prompt = <<<PROMPT
+Kamu adalah sistem humas SMAN 1 Pamekasan.
+Ada prestasi baru yang diraih oleh siswa:
+- Judul Prestasi: {$title}
+- Nama Siswa/Tim: {$studentName}
+- Tingkat: {$level}
+- Kategori: {$category}
+
+Buatkan 1 kalimat pemberitahuan ucapan selamat yang singkat, membanggakan, dan komunikatif untuk teks berjalan (marquee).
+PENTING:
+- JANGAN buat judul atau headline.
+- JANGAN mengulang poin-poin di atas secara kaku.
+- Berikan ucapan selamat secara langsung (contoh: "Selamat dan sukses kepada... yang telah meraih juara...").
+- JANGAN gunakan markdown.
+PROMPT;
+
+        try {
+            $response = $this->callApi($prompt);
+            return trim($response);
+        } catch (\Throwable $e) {
+            $studentStr = $studentName ?: 'Siswa/Tim';
+            return "Selamat dan sukses kepada {$studentStr} dari SMAN 1 Pamekasan yang telah meraih prestasi {$title} di tingkat {$level}. Terus berkarya dan menginspirasi!";
+        }
+    }
 }

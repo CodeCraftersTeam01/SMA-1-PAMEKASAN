@@ -17,6 +17,7 @@ import ExtracurricularSection from './components/ExtracurricularSection';
 import TestimonialSection from './components/TestimonialSection';
 import TestimonialForm from './components/TestimonialForm';
 import SpotlightCard from './components/SpotlightCard';
+import SEO from './components/SEO';
 
 const DynamicPage = React.lazy(() => import('./pages/DynamicPage'));
 const NewsDetail = React.lazy(() => import('./pages/NewsDetail'));
@@ -24,6 +25,7 @@ const PrestasiDetail = React.lazy(() => import('./pages/PrestasiDetail'));
 const FormPrestasi = React.lazy(() => import('./pages/FormPrestasi'));
 const TrackingAlumni = React.lazy(() => import('./pages/TrackingAlumni'));
 const TestimoniAlumni = React.lazy(() => import('./pages/TestimoniAlumni'));
+const DirektoriGuru = React.lazy(() => import('./pages/DirektoriGuru'));
 
 // Shared minimal loading fallback for dynamic routes
 const MinimalLoader = () => (
@@ -426,8 +428,20 @@ export default function App() {
               </PageTransition>
             </React.Suspense>
           } />
+          <Route path="/direktori-guru" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <DirektoriGuru />
+              </PageTransition>
+            </React.Suspense>
+          } />
           <Route path="/" element={
             <PageTransition>
+              <SEO 
+                title="SMAN 1 Pamekasan - Unggul, Berkarakter, Berprestasi"
+                description={data.settings?.hero_subtitle || 'Selamat Datang di SMAN 1 Pamekasan! Sekolah Tangguh, Berakhlak, dan Berwawasan Digital dengan kurikulum unggulan dan fasilitas modern.'}
+                keywords="SMAN 1 Pamekasan, SMANSA Pamekasan, SMA Terbaik Madura, Pendaftaran SMAN 1 Pamekasan"
+              />
               <main>
         
         {/* HERO SECTION */}
@@ -967,9 +981,9 @@ export default function App() {
                 <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>Tenaga Pendidik</h2>
                 <p className="text-gray-600 text-lg">Guru-guru berdedikasi tinggi pembimbing generasi cerdas.</p>
               </div>
-              <a href="#" className="hidden md:inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800">
+              <Link to="/direktori-guru" className="hidden md:inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800">
                 Lihat Semua <ArrowRight className="w-4 h-4" />
-              </a>
+              </Link>
             </motion.div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {data.teachers.length > 0 ? data.teachers.slice(0, 4).map((teacher, index) => (
@@ -978,7 +992,8 @@ export default function App() {
                   <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30">
                     <h3 className="text-[15px] font-bold">{teacher.name}</h3>
-                    <p className="text-blue-200 text-xs mt-0.5">{teacher.subject || 'Guru Mata Pelajaran'}</p>
+                    <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
+                    <p className="text-blue-200 text-xs mt-0.5">{teacher.subject || 'Mata Pelajaran'}</p>
                   </div>
                 </div>
               )) : [

@@ -42,7 +42,7 @@ const RESOURCE_GROUPS = [
       { key: 'features', label: 'Keunggulan Sekolah' },
       { key: 'programs', label: 'Program Jurusan' },
       { key: 'quotes', label: 'Kata-kata Guru' },
-      { key: 'landing_settings', label: 'Sambutan & Kontak' },
+      { key: 'landing_settings', label: 'Pengaturan Landing Page' },
     ]
   },
   {

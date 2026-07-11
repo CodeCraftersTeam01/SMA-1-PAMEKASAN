@@ -21,6 +21,7 @@ return new class extends Migration
             $table->year('year');
             $table->string('level')->nullable(); // Tingkat kota/provinsi/nasional
             $table->string('image_url')->nullable();
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('approved');
             $table->timestamps();
 
             $table->foreign('siswa_id')->references('id')->on('siswas')->onDelete('set null');

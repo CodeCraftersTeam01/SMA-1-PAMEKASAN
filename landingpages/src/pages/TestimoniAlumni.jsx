@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TestimonialForm from '../components/TestimonialForm';
+import SEO from '../components/SEO';
 
 export default function TestimoniAlumni() {
   const [testimonialDone, setTestimonialDone] = useState(false);
@@ -17,6 +18,11 @@ export default function TestimoniAlumni() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-32 pb-24 font-sans text-gray-800">
+      <SEO 
+        title="Kirim Testimoni Alumni"
+        description="Berikan kesan dan pesan Anda selama menuntut ilmu di SMAN 1 Pamekasan. Testimoni Anda sangat berarti bagi pengembangan sekolah."
+        keywords="testimoni alumni SMAN 1 Pamekasan, alumni SMANSA, kesan pesan SMANSA"
+      />
       <div className="max-w-3xl mx-auto px-6 lg:px-8">
         <Link to="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-bold mb-8 transition-colors">
           <ArrowLeft className="w-5 h-5" /> Kembali ke Beranda

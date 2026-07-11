@@ -42,6 +42,7 @@ class AcademicCalendarController extends Controller
             \App\Models\News::create([
                 'title' => $agenda->title,
                 'slug' => \Illuminate\Support\Str::slug($agenda->title . ' ' . time()),
+                'excerpt' => 'Pemberitahuan agenda sekolah SMAN 1 Pamekasan.',
                 'content' => $content,
                 'category' => 'Pengumuman',
                 'author' => 'Sistem AI',

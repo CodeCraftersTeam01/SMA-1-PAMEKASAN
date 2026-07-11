@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('subject')->nullable();
             $table->string('photo')->nullable();
-            $table->integer('order')->default(0);
+            $table->string('jabatan')->nullable();
             $table->timestamps();
         });
     }

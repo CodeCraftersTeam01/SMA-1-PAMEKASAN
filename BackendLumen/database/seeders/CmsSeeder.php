@@ -53,9 +53,9 @@ class CmsSeeder extends Seeder
         ]);
 
         // 3. Seed Teachers
-        \App\Models\Teacher::create(['name' => 'Dr. H. Muhammad Budi, M.Pd.', 'subject' => 'Kepala Sekolah', 'order' => 1]);
-        \App\Models\Teacher::create(['name' => 'Siti Aminah, S.Pd., M.Si.', 'subject' => 'Guru Biologi', 'order' => 2]);
-        \App\Models\Teacher::create(['name' => 'Drs. Supriyanto, M.M.', 'subject' => 'Guru Matematika', 'order' => 3]);
-        \App\Models\Teacher::create(['name' => 'Rina Kusumawati, S.S., M.A.', 'subject' => 'Guru Bahasa Inggris', 'order' => 4]);
+        \App\Models\Teacher::create(['name' => 'Dr. H. Muhammad Budi, M.Pd.', 'subject' => 'Fisika', 'jabatan' => 'Kepala Sekolah']);
+        \App\Models\Teacher::create(['name' => 'Drs. Supriyanto, M.M.', 'subject' => 'Matematika', 'jabatan' => 'Wakil Kepala Sekolah Bidang Kurikulum']);
+        \App\Models\Teacher::create(['name' => 'Siti Aminah, S.Pd., M.Si.', 'subject' => 'Biologi', 'jabatan' => 'Guru Mata Pelajaran']);
+        \App\Models\Teacher::create(['name' => 'Rina Kusumawati, S.S., M.A.', 'subject' => 'Bahasa Inggris', 'jabatan' => 'Guru Mata Pelajaran']);
     }
 }

@@ -1,4 +1,4 @@
-name: Auto Build & Deploy Smansa (Frontend & Backend)
+name: Auto Build & Deploy Smansa (Frontend, Landing Page, & Backend)
 
 on:
   pull_request:
@@ -21,19 +21,31 @@ jobs:
         with:
           node-version: 24
           cache: 'npm'
-          cache-dependency-path: './Frontend/package-lock.json'
+          cache-dependency-path: |
+            Frontend/package-lock.json
+            landingpages/package-lock.json
 
-      - name: 📦 Install Frontend Dependencies
+      - name: 📦 Install Frontend (Dashboard) Dependencies
         working-directory: ./Frontend
         run: npm install --legacy-peer-deps
 
-      - name: 🏗️ Build Frontend Project
+      - name: 🏗️ Build Frontend (Dashboard) Project
         working-directory: ./Frontend
         run: npm run build
         env:
           VITE_API_BASE_URL: https://api.smansa.m-tech.fun
 
-      - name: 🛠️ Prepare and Clean Frontend Directory on VPS
+      - name: 📦 Install Landing Page Dependencies
+        working-directory: ./landingpages
+        run: npm install --legacy-peer-deps
+
+      - name: 🏗️ Build Landing Page Project
+        working-directory: ./landingpages
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://api.smansa.m-tech.fun
+
+      - name: 🛠️ Prepare and Clean Directories on VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -41,10 +53,12 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
+            mkdir -p ~/dashboard/dist
+            rm -rf ~/dashboard/dist/*
             mkdir -p ~/frontend/dist
             rm -rf ~/frontend/dist/*
 
-      - name: 🚀 Upload Frontend Dist to VPS via SCP
+      - name: 🚀 Upload Frontend (Dashboard) Dist to VPS via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -52,6 +66,18 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "Frontend/dist/*"
+          target: "dashboard/dist/"
+          strip_components: 2
+          rm: false
+
+      - name: 🚀 Upload Landing Page (Frontend) Dist to VPS via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "landingpages/dist/*"
           target: "frontend/dist/"
           strip_components: 2
           rm: false

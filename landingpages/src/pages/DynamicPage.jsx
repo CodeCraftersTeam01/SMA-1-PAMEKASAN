@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import SEO from '../components/SEO';
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  const text = html.replace(/<[^>]*>/g, '');
+  return text.length > 155 ? text.substring(0, 155) + '...' : text;
+};
 
 const SkeletonLoader = () => (
   <div className="pt-24 pb-20 bg-gray-50 min-h-screen animate-pulse">
@@ -95,6 +102,11 @@ export default function DynamicPage() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="pt-24 pb-20 bg-gray-50 min-h-screen">
+      <SEO 
+        title={pageData.title}
+        description={stripHtml(pageData.content)}
+        keywords={`${pageData.title}, halaman SMAN 1 Pamekasan, SMANSA`}
+      />
       {/* Header */}
       <div className="bg-gradient-to-br from-smansa-navy via-blue-900 to-indigo-900 text-white py-16 mb-12 relative overflow-hidden shadow-lg border-b-4 border-smansa-gold">
         <div className="absolute inset-0 opacity-10">
