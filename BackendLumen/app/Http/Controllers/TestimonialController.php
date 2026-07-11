@@ -9,6 +9,7 @@ use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class TestimonialController extends Controller
 {
@@ -17,11 +18,13 @@ class TestimonialController extends Controller
      */
     public function getPublicTestimonials()
     {
-        $testimonials = Testimonial::select('id', 'name', 'message', 'role', 'avatar_url', 'graduation_year', 'current_occupation')
-            ->where('status', 'approved')
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get();
+        $testimonials = Cache::remember('public_testimonials', 300, function () {
+            return Testimonial::select('id', 'name', 'message', 'role', 'avatar_url', 'graduation_year', 'current_occupation')
+                ->where('status', 'approved')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+        });
             
         return response()->json([
             'success' => true,
@@ -205,10 +208,8 @@ Output harus HANYA format JSON murni:
         // ==========================================
 
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(base_path('public/uploads/testimonials'), $filename);
-            $data['avatar_url'] = '/uploads/testimonials/' . $filename;
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'testimonials');
+            $data['avatar_url'] = 'storage/' . $path;
         }
 
         $testimonial = Testimonial::create($data);
@@ -256,10 +257,8 @@ Output harus HANYA format JSON murni:
         $data = $request->except('image');
 
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(base_path('public/uploads/testimonials'), $filename);
-            $data['avatar_url'] = '/uploads/testimonials/' . $filename;
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'testimonials');
+            $data['avatar_url'] = 'storage/' . $path;
         }
 
         $testimonial = Testimonial::create($data);
@@ -287,10 +286,8 @@ Output harus HANYA format JSON murni:
         $data = $request->except('image');
 
         if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(base_path('public/uploads/testimonials'), $filename);
-            $data['avatar_url'] = '/uploads/testimonials/' . $filename;
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'testimonials');
+            $data['avatar_url'] = 'storage/' . $path;
         }
 
         $testimonial->update($data);
