@@ -26,6 +26,7 @@ class AdminTeacherController extends Controller
             'name' => 'required|string|max:255',
             'subject' => 'nullable|string|max:255',
             'jabatan' => 'nullable|string|max:255',
+            'kelas' => 'nullable|string|max:50',
             'photo' => 'nullable|image|max:2048'
         ]);
 
@@ -53,6 +54,7 @@ class AdminTeacherController extends Controller
             'name' => 'required|string|max:255',
             'subject' => 'nullable|string|max:255',
             'jabatan' => 'nullable|string|max:255',
+            'kelas' => 'nullable|string|max:50',
             'photo' => 'nullable|image|max:2048'
         ]);
 
@@ -93,6 +95,28 @@ class AdminTeacherController extends Controller
             }
         }
         return response()->json(['message' => "$deleted data berhasil dihapus"]);
+    }
+
+    public function bulkUpdatePerUser(Request $request)
+    {
+        $this->validate($request, [
+            'updates' => 'required|array',
+            'updates.*.id' => 'required|integer|exists:teachers,id',
+            'updates.*.data' => 'required|array',
+        ]);
+
+        $count = 0;
+        foreach ($request->updates as $update) {
+            $teacher = Teacher::find($update['id']);
+            if ($teacher) {
+                $teacher->update([
+                    'kelas' => isset($update['data']['kelas']) ? ($update['data']['kelas'] ?: null) : $teacher->kelas
+                ]);
+                $count++;
+            }
+        }
+
+        return response()->json(['message' => "{$count} data guru berhasil diperbarui"]);
     }
 
 }

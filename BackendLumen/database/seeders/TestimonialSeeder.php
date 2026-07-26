@@ -22,6 +22,8 @@ class TestimonialSeeder extends Seeder
         foreach ($testimonials as $testimonial) {
             DB::table('testimonials')->insert(array_merge($testimonial, [
                 'avatar_url' => null,
+                'status' => 'approved',
+                'rating' => 5,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]));

@@ -23,7 +23,6 @@ export default function AdminExtracurricular() {
 
   const fetchItems = async () => {
     setIsLoading(true);
-    setErrorMessage('');
     const rawApiUrl = import.meta.env.VITE_API_BASE_URL || '';
     const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');

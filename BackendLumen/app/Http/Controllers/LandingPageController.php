@@ -10,6 +10,7 @@ use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class LandingPageController extends Controller
 {
@@ -301,6 +302,17 @@ class LandingPageController extends Controller
 
         if ($request->siswa_id) {
             $achievement->siswas()->sync([$request->siswa_id]);
+        }
+
+        try {
+            \App\Models\DashboardNotification::create([
+                'type' => 'prestasi',
+                'title' => 'Pengajuan Prestasi Baru',
+                'message' => "Pengajuan prestasi baru oleh {$achievement->student_name} dengan judul \"{$achievement->title}\".",
+                'is_read' => false
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to create notification: ' . $e->getMessage());
         }
 
         return response()->json([

@@ -222,6 +222,7 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
 
     $router->get('admin/teachers', ['middleware' => 'permission:teachers,view', 'uses' => 'AdminTeacherController@index']);
     $router->post('admin/teachers', ['middleware' => 'permission:teachers,create', 'uses' => 'AdminTeacherController@store']);
+    $router->put('admin/teachers/bulk-update-per-user', ['middleware' => 'permission:teachers,edit', 'uses' => 'AdminTeacherController@bulkUpdatePerUser']);
     $router->get('admin/teachers/{id}', ['middleware' => 'permission:teachers,view', 'uses' => 'AdminTeacherController@show']);
     $router->post('admin/teachers/{id}', ['middleware' => 'permission:teachers,edit', 'uses' => 'AdminTeacherController@update']); // Use POST with _method=PUT for file upload
     $router->delete('admin/teachers/{id}', ['middleware' => 'permission:teachers,delete', 'uses' => 'AdminTeacherController@destroy']);
@@ -282,11 +283,17 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     // Admin Testimonials
     $router->get('admin/testimonials', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@index']);
     $router->post('admin/testimonials', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@store']);
+    $router->post('admin/testimonials/bulk-delete', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@bulkDelete']);
     $router->get('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@show']);
     $router->put('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@update']);
     $router->post('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@update']); // Spoofed PUT
     $router->patch('admin/testimonials/{id}/status', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@toggleStatus']);
-    $router->delete('admin/testimonials/{id}', ['middleware' => 'role:admin', 'uses' => 'TestimonialController@destroy']);
+    // Dashboard Notifications
+    $router->get('admin/notifications', 'NotificationController@index');
+    $router->get('admin/notifications/unread-count', 'NotificationController@unreadCount');
+    $router->post('admin/notifications/read-all', 'NotificationController@readAll');
+    $router->post('admin/notifications/{id}/read', 'NotificationController@read');
+    $router->delete('admin/notifications/clear', 'NotificationController@clear');
 });
 
 //hello 

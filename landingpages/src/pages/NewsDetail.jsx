@@ -116,7 +116,11 @@ export default function NewsDetail() {
   }
 
   const STORAGE_BASE = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace('/api/public', '') + '/storage';
-  const imgUrl = news.image_url ? `${STORAGE_BASE}/${news.image_url}` : "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=1200&auto=format&fit=crop";
+  const imgUrl = news.image_url 
+    ? (news.image_url.startsWith('http://') || news.image_url.startsWith('https://') 
+        ? news.image_url 
+        : `${STORAGE_BASE}/${news.image_url}`) 
+    : "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=1200&auto=format&fit=crop";
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }} className="pt-24 pb-20 bg-gray-50 min-h-screen">
@@ -164,7 +168,11 @@ export default function NewsDetail() {
                 
                 <div className="space-y-6">
                   {recentNews.map((item, idx) => {
-                    const itemImg = item.image_url ? `${STORAGE_BASE}/${item.image_url}` : "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=300&auto=format&fit=crop";
+                    const itemImg = item.image_url 
+                      ? (item.image_url.startsWith('http://') || item.image_url.startsWith('https://') 
+                          ? item.image_url 
+                          : `${STORAGE_BASE}/${item.image_url}`) 
+                      : "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=300&auto=format&fit=crop";
                     return (
                       <Link to={`/berita/${item.id}`} key={idx} className="group flex gap-4 items-start">
                         <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative shadow-sm">

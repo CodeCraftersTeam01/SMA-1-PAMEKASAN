@@ -12,9 +12,9 @@ const DashboardLayout = () => {
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(() => {
     return localStorage.getItem('settings_menu_open') !== 'false';
   });
-  const [isWebSettingsMenuOpen, setIsWebSettingsMenuOpen] = useState(() => {
-    return localStorage.getItem('web_settings_menu_open') !== 'false';
-  });
+  // const [isWebSettingsMenuOpen, setIsWebSettingsMenuOpen] = useState(() => {
+  //   return localStorage.getItem('web_settings_menu_open') !== 'false';
+  // });
 
   const toggleSidebarCollapse = () => {
     setIsSidebarCollapsed(prev => {
@@ -32,13 +32,13 @@ const DashboardLayout = () => {
     });
   };
 
-  const toggleWebSettingsMenu = () => {
-    setIsWebSettingsMenuOpen(prev => {
-      const next = !prev;
-      localStorage.setItem('web_settings_menu_open', String(next));
-      return next;
-    });
-  };
+  // const toggleWebSettingsMenu = () => {
+  //   setIsWebSettingsMenuOpen(prev => {
+  //     const next = !prev;
+  //     localStorage.setItem('web_settings_menu_open', String(next));
+  //     return next;
+  //   });
+  // };
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -46,6 +46,91 @@ const DashboardLayout = () => {
   const { user, logout, can } = useAuth();
 
   const [activeTahunAjaran, setActiveTahunAjaran] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+  const fetchNotifications = async () => {
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/api/admin/notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+
+      const countRes = await fetch(`${API_BASE_URL}/api/admin/notifications/unread-count`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (countRes.ok) {
+        const countData = await countRes.json();
+        setUnreadCount(countData.count);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchNotifications();
+    }, 0);
+    const interval = setInterval(fetchNotifications, 12000); // Poll every 12 seconds
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const markAsRead = async (id, type) => {
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      await fetch(`${API_BASE_URL}/api/admin/notifications/${id}/read`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchNotifications();
+      
+      // Navigate to correct page
+      setIsNotifOpen(false);
+      if (type === 'pendaftaran') navigate('/pendaftar');
+      else if (type === 'testimonial') navigate('/admin/website/testimonials');
+      else if (type === 'alumni_tracking') navigate('/alumni-tracking');
+      else if (type === 'prestasi') navigate('/admin/website/prestasi');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      await fetch(`${API_BASE_URL}/api/admin/notifications/read-all`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchNotifications();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const clearAllNotifications = async () => {
+    if (!window.confirm("Hapus semua riwayat notifikasi?")) return;
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      await fetch(`${API_BASE_URL}/api/admin/notifications/clear`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchNotifications();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const fetchActiveTahunAjaran = async () => {
@@ -57,9 +142,12 @@ const DashboardLayout = () => {
           const data = await res.json();
           setActiveTahunAjaran(data.tahun);
         }
-      } catch {}
+      } catch (err) {
+        console.error(err);
+      }
     };
     fetchActiveTahunAjaran();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const getAvatarUrl = () => {
     if (user?.photo) return `${API_BASE_URL}/storage/${user.photo}`;
@@ -226,7 +314,7 @@ const DashboardLayout = () => {
   const [openCategories, setOpenCategories] = useState(() => {
     const saved = localStorage.getItem('sidebar_cat_open');
     if (saved) {
-      try { return JSON.parse(saved); } catch {}
+      try { return JSON.parse(saved); } catch { /* ignore invalid json */ }
     }
     return { utama: true, akademik: true, alumni: true, website: false };
   });
@@ -486,12 +574,125 @@ const DashboardLayout = () => {
 
           <div className="flex items-center gap-3.5">
             {/* Quick Actions / Notifications */}
-            <button className="relative p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-colors">
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-red-500 border-2 border-white rounded-full"></span>
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className="relative p-1.5 text-slate-400 hover:text-[#1e293b] hover:bg-slate-50 rounded-full transition-all cursor-pointer focus:outline-none flex items-center justify-center"
+                title="Notifikasi"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white ring-2 ring-white animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {isNotifOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsNotifOpen(false)}></div>
+                  <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+                    {/* Dropdown Header */}
+                    <div className="p-4 border-b border-slate-50 flex items-center justify-between">
+                      <h4 className="font-bold text-slate-800 text-sm">Notifikasi</h4>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-[11px] text-blue-600 hover:text-blue-700 font-semibold cursor-pointer"
+                        >
+                          Tandai semua dibaca
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Dropdown Body */}
+                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-slate-400">
+                          <p className="text-xs font-medium">Tidak ada notifikasi</p>
+                        </div>
+                      ) : (
+                        notifications.map((item) => {
+                          let iconBg = 'bg-blue-50 text-blue-500';
+                          let iconSvg = (
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                          );
+
+                          if (item.type === 'testimonial') {
+                            iconBg = 'bg-emerald-50 text-emerald-500';
+                            iconSvg = (
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.907c.961 0 1.36 1.246.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.77-.564-.37-1.81.588-1.81h4.907a1 1 0 00.95-.69l1.519-4.674z" />
+                              </svg>
+                            );
+                          } else if (item.type === 'alumni_tracking') {
+                            iconBg = 'bg-orange-50 text-orange-500';
+                            iconSvg = (
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                            );
+                          } else if (item.type === 'prestasi') {
+                            iconBg = 'bg-amber-50 text-amber-500';
+                            iconSvg = (
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                              </svg>
+                            );
+                          }
+
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => markAsRead(item.id, item.type)}
+                              className={`p-4 flex gap-3 hover:bg-slate-50 transition-colors cursor-pointer text-left relative ${
+                                !item.is_read ? 'bg-slate-50/30' : ''
+                              }`}
+                            >
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${iconBg}`}>
+                                {iconSvg}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <p className={`text-xs truncate ${!item.is_read ? 'font-bold text-slate-800' : 'text-slate-600'}`}>
+                                    {item.title}
+                                  </p>
+                                  <span className="text-[9px] text-slate-400">
+                                    {new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#64748b] mt-0.5 line-clamp-2 leading-relaxed">
+                                  {item.message}
+                                </p>
+                              </div>
+                              {!item.is_read && (
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-blue-600 rounded-full shrink-0"></span>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+
+                    {/* Dropdown Footer */}
+                    {notifications.length > 0 && (
+                      <div className="p-3 bg-slate-50/50 border-t border-slate-50 text-center">
+                        <button
+                          onClick={clearAllNotifications}
+                          className="text-[10px] text-red-500 hover:text-red-600 font-bold tracking-wide uppercase cursor-pointer"
+                        >
+                          Bersihkan Semua Notifikasi
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Active Tahun Ajaran */}
             {activeTahunAjaran && (

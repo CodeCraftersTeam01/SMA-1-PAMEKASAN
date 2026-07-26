@@ -44,8 +44,8 @@ class DatabaseSeeder extends Seeder
 
         // 3. Transactions / Main Data
         $this->call([
-            PendaftaranSeeder::class,
-            SiswaSeeder::class,
+            // PendaftaranSeeder::class,
+            // SiswaSeeder::class,
             AlumniSeeder::class,
         ]);
 
