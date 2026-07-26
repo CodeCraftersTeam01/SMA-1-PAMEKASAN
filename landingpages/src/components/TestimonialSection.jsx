@@ -80,7 +80,7 @@ export default function TestimonialSection() {
         const rawApiUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
         const API_BASE_URL = rawApiUrl.replace(/\/$/, "");
         const res = await axios.get(`${API_BASE_URL}/api/public/testimonials`, {
-          headers: { "x-api-key": import.meta.env.VITE_API_KEY },
+          headers: { "x-api-key": import.meta.env.VITE_API_KEY || "smansa123" },
         });
         if (res.data && active) {
           const data = Array.isArray(res.data) ? res.data : (Array.isArray(res.data.data) ? res.data.data : []);
@@ -183,8 +183,11 @@ export default function TestimonialSection() {
       
       {/* Bottom stars */}
       <div className="flex text-amber-400 gap-0.5 relative z-10 shrink-0">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star key={star} className="w-3.5 h-3.5 fill-current text-amber-400" />
+        {Array.from({ length: Number(item.rating) || 5 }).map((_, i) => (
+          <Star key={`active-${i}`} className="w-3.5 h-3.5 fill-current text-amber-400" />
+        ))}
+        {Array.from({ length: 5 - (Number(item.rating) || 5) }).map((_, i) => (
+          <Star key={`inactive-${i}`} className="w-3.5 h-3.5 text-slate-200" />
         ))}
       </div>
     </div>

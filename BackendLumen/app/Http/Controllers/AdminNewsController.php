@@ -23,7 +23,7 @@ class AdminNewsController extends Controller
 
         $imageUrl = null;
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('news', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'news');
             $imageUrl = url('storage/' . $path);
         }
 
@@ -58,7 +58,7 @@ class AdminNewsController extends Controller
 
         $imageUrl = $news->image_url;
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('news', 'public');
+            $path = \App\Helpers\ImageHelper::compressAndStore($request->file('image'), 'news');
             $imageUrl = url('storage/' . $path);
         }
 

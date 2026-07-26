@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { Star } from "lucide-react";
 
 export default function TestimonialForm({ 
   lockedRole = null, 
@@ -16,6 +17,7 @@ export default function TestimonialForm({
     current_occupation: defaultOccupation,
     message: "",
     imageFile: null,
+    rating: 5,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -62,11 +64,12 @@ export default function TestimonialForm({
     if (formData.graduation_year) payload.append("graduation_year", formData.graduation_year);
     if (formData.current_occupation) payload.append("current_occupation", formData.current_occupation);
     if (formData.imageFile) payload.append("image", formData.imageFile);
+    payload.append("rating", formData.rating);
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/public/testimonials`, payload, {
         headers: {
-          "x-api-key": import.meta.env.VITE_API_KEY,
+          "x-api-key": import.meta.env.VITE_API_KEY || "smansa123",
           "Content-Type": "multipart/form-data",
         },
       });
@@ -80,6 +83,7 @@ export default function TestimonialForm({
           current_occupation: defaultOccupation,
           message: "",
           imageFile: null,
+          rating: 5,
         });
         const fileInput = document.getElementById('testimonial-image');
         if (fileInput) fileInput.value = '';
@@ -199,6 +203,28 @@ export default function TestimonialForm({
               </div>
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Penilaian (Rating) *</label>
+            <div className="flex items-center gap-1.5 py-1 mb-3">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                  className="text-amber-400 hover:scale-110 transition-transform cursor-pointer focus:outline-none"
+                >
+                  <Star
+                    className={`w-7 h-7 ${
+                      star <= formData.rating 
+                        ? 'fill-current text-amber-400' 
+                        : 'text-gray-300 hover:text-amber-300'
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">Pesan Testimoni *</label>

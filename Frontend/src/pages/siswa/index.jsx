@@ -91,7 +91,7 @@ const Siswa = () => {
 
   // Pagination & Filters
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterTahunMasuk, setFilterTahunMasuk] = useState('');
   const [filterTahunAjaran, setFilterTahunAjaran] = useState('');
 
@@ -159,12 +159,21 @@ const Siswa = () => {
   };
 
   useEffect(() => {
-    fetchSiswa();
-    fetchKelas();
-    fetchTahunAjaran();
+    const timer = setTimeout(() => {
+      fetchSiswa();
+      fetchKelas();
+      fetchTahunAjaran();
+    }, 0);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, filterTahunMasuk, filterTahunAjaran]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [searchQuery, filterTahunMasuk, filterTahunAjaran, itemsPerPage]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Yakin ingin menghapus data siswa ini?')) return;
@@ -544,7 +553,9 @@ const Siswa = () => {
                 } else if (data.type === 'complete') {
                   finalData = data;
                 }
-              } catch (e) {}
+              } catch {
+                // ignore parsing error
+              }
             }
           }
         }
@@ -638,6 +649,21 @@ const Siswa = () => {
         <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
           <h3 className="text-[16px] font-bold text-[#1e293b] shrink-0">Daftar Siswa</h3>
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Filter Limit */}
+            <select 
+              value={itemsPerPage} 
+              onChange={e => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }} 
+              className="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 text-slate-600 bg-white"
+            >
+              <option value={10}>10 Data</option>
+              <option value={50}>50 Data</option>
+              <option value={100}>100 Data</option>
+              <option value={500}>500 Data</option>
+              <option value={1000}>1000 Data</option>
+            </select>
             {/* Filter Tahun Masuk */}
             <select value={filterTahunMasuk} onChange={e => setFilterTahunMasuk(e.target.value)} className="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 text-slate-600 bg-white">
               <option value="">Semua Tahun Masuk</option>

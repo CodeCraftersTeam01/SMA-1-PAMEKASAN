@@ -19,7 +19,7 @@ class TestimonialController extends Controller
     public function getPublicTestimonials()
     {
         $testimonials = Cache::remember('public_testimonials', 300, function () {
-            return Testimonial::select('id', 'name', 'message', 'role', 'avatar_url', 'graduation_year', 'current_occupation')
+            return Testimonial::select('id', 'name', 'message', 'role', 'avatar_url', 'graduation_year', 'current_occupation', 'rating')
                 ->where('status', 'approved')
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
@@ -45,7 +45,8 @@ class TestimonialController extends Controller
             'message' => 'required|string',
             'graduation_year' => 'nullable|integer',
             'current_occupation' => 'nullable|string|max:255',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:2048',
+            'rating' => 'required|integer|min:1|max:5'
         ]);
 
         $data = $request->except(['image', 'status']);
@@ -214,6 +215,17 @@ Output harus HANYA format JSON murni:
 
         $testimonial = Testimonial::create($data);
 
+        try {
+            \App\Models\DashboardNotification::create([
+                'type' => 'testimonial',
+                'title' => 'Testimoni Baru',
+                'message' => "Testimoni baru dari {$testimonial->name} ({$testimonial->role}) memerlukan persetujuan.",
+                'is_read' => false
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to create notification: ' . $e->getMessage());
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Testimonial berhasil dikirim! Menunggu persetujuan admin.',
@@ -251,7 +263,8 @@ Output harus HANYA format JSON murni:
             'status' => 'required|in:pending,approved',
             'graduation_year' => 'nullable|integer',
             'current_occupation' => 'nullable|string|max:255',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:2048',
+            'rating' => 'required|integer|min:1|max:5'
         ]);
 
         $data = $request->except('image');
@@ -262,6 +275,7 @@ Output harus HANYA format JSON murni:
         }
 
         $testimonial = Testimonial::create($data);
+        Cache::forget('public_testimonials');
 
         return response()->json($testimonial, 201);
     }
@@ -280,7 +294,8 @@ Output harus HANYA format JSON murni:
             'status' => 'sometimes|required|in:pending,approved',
             'graduation_year' => 'nullable|integer',
             'current_occupation' => 'nullable|string|max:255',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:2048',
+            'rating' => 'sometimes|required|integer|min:1|max:5'
         ]);
 
         $data = $request->except('image');
@@ -291,6 +306,7 @@ Output harus HANYA format JSON murni:
         }
 
         $testimonial->update($data);
+        Cache::forget('public_testimonials');
 
         return response()->json($testimonial);
     }
@@ -302,6 +318,7 @@ Output harus HANYA format JSON murni:
     {
         $testimonial = Testimonial::findOrFail($id);
         $testimonial->delete();
+        Cache::forget('public_testimonials');
 
         return response()->json(['message' => 'Testimonial deleted successfully']);
     }
@@ -314,11 +331,31 @@ Output harus HANYA format JSON murni:
         $testimonial = Testimonial::findOrFail($id);
         $testimonial->status = $testimonial->status === 'approved' ? 'pending' : 'approved';
         $testimonial->save();
+        Cache::forget('public_testimonials');
 
         return response()->json([
             'success' => true,
             'message' => 'Status updated successfully',
             'status' => $testimonial->status
+        ], 200);
+    }
+
+    /**
+     * ADMIN: Bulk delete testimonials
+     */
+    public function bulkDelete(Request $request)
+    {
+        $this->validate($request, [
+            'ids' => 'required|array',
+            'ids.*' => 'exists:testimonials,id'
+        ]);
+
+        Testimonial::whereIn('id', $request->ids)->delete();
+        Cache::forget('public_testimonials');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Testimoni terpilih berhasil dihapus.'
         ], 200);
     }
 }

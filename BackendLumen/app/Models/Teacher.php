@@ -11,5 +11,6 @@ class Teacher extends Model
         'subject',
         'photo',
         'jabatan',
+        'kelas',
     ];
 }

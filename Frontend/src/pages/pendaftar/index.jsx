@@ -67,13 +67,16 @@ const Pendaftar = () => {
   // Parent form logic
   const [parentType, setParentType] = useState('none');
   useEffect(() => {
-    if (currentCandidate) {
-      if (currentCandidate.nama_ayah || currentCandidate.nama_ibu) setParentType('ayah_ibu');
-      else if (currentCandidate.nama_wali) setParentType('wali');
-      else setParentType('none');
-    } else {
-      setParentType('none');
-    }
+    const timer = setTimeout(() => {
+      if (currentCandidate) {
+        if (currentCandidate.nama_ayah || currentCandidate.nama_ibu) setParentType('ayah_ibu');
+        else if (currentCandidate.nama_wali) setParentType('wali');
+        else setParentType('none');
+      } else {
+        setParentType('none');
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [currentCandidate]);
 
   const checkParentMode = (e) => {
@@ -109,7 +112,7 @@ const Pendaftar = () => {
 
   // Pagination & Filters
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filterStatus, setFilterStatus] = useState('');
   const [filterJalur, setFilterJalur] = useState('');
 
@@ -133,8 +136,20 @@ const Pendaftar = () => {
     finally { setIsLoading(false); }
   };
 
-  useEffect(() => { fetchCandidates(); }, []);
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, filterStatus, filterJalur]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchCandidates();
+    }, 0);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [searchQuery, filterStatus, filterJalur, itemsPerPage]);
 
   const filteredCandidates = candidates.filter(c => {
     const matchSearch = !searchQuery ||
@@ -310,7 +325,7 @@ const Pendaftar = () => {
                 } else if (data.type === 'complete') {
                   finalData = data;
                 }
-              } catch (e) {
+              } catch {
                 // ignore JSON parse error for incomplete chunks
               }
             }
@@ -510,6 +525,21 @@ const Pendaftar = () => {
         <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
           <h3 className="text-[16px] font-bold text-slate-800 shrink-0">Daftar Calon Siswa</h3>
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Filter Limit */}
+            <select 
+              value={itemsPerPage} 
+              onChange={e => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }} 
+              className="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 text-slate-600 bg-white"
+            >
+              <option value={10}>10 Data</option>
+              <option value={50}>50 Data</option>
+              <option value={100}>100 Data</option>
+              <option value={500}>500 Data</option>
+              <option value={1000}>1000 Data</option>
+            </select>
             {/* Filter Status */}
             <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 text-slate-600 bg-white">
               <option value="">Semua Status</option>
@@ -574,8 +604,8 @@ const Pendaftar = () => {
           ) : (
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="pb-3 pl-2 w-10">
+                <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="py-3.5 pl-2 w-10">
                     <input
                       type="checkbox"
                       checked={paginatedCandidates.length > 0 && paginatedCandidates.every(c => selectedIds.has(c.id))}
@@ -583,21 +613,21 @@ const Pendaftar = () => {
                       className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 cursor-pointer"
                     />
                   </th>
-                  <th className="pb-3 pl-2">No. Pendaftaran</th>
-                  <th className="pb-3">NISN</th>
-                  <th className="pb-3">Nama Lengkap</th>
-                  <th className="pb-3">JK</th>
-                  <th className="pb-3">Asal Sekolah</th>
-                  <th className="pb-3">Kecamatan</th>
-                  <th className="pb-3">Jalur</th>
-                  <th className="pb-3">Tgl Daftar</th>
-                  <th className="pb-3">Status</th>
-                  <th className="pb-3 text-right pr-2">Aksi</th>
+                  <th className="py-3.5 pl-2">No. Pendaftaran</th>
+                  <th className="py-3.5">NISN</th>
+                  <th className="py-3.5">Nama Lengkap</th>
+                  <th className="py-3.5 text-center">JK</th>
+                  <th className="py-3.5">Asal Sekolah</th>
+                  <th className="py-3.5">Kecamatan</th>
+                  <th className="py-3.5">Jalur</th>
+                  <th className="py-3.5">Tgl Daftar</th>
+                  <th className="py-3.5">Status</th>
+                  <th className="py-3.5 text-right pr-4">Aksi</th>
                 </tr>
               </thead>
               <tbody className="text-[13px] text-slate-600">
                 {paginatedCandidates.map(item => (
-                  <tr key={item.id} className={`border-b border-slate-50 hover:bg-slate-50/50 transition-colors ${selectedIds.has(item.id) ? 'bg-slate-50' : ''}`}>
+                  <tr key={item.id} className={`border-b border-slate-100 hover:bg-slate-50/40 transition-colors ${selectedIds.has(item.id) ? 'bg-slate-50/80' : ''}`}>
                     <td className="py-4 pl-2 w-10">
                       <input
                         type="checkbox"
@@ -606,30 +636,44 @@ const Pendaftar = () => {
                         className="w-4 h-4 rounded border-slate-300 text-slate-800 focus:ring-slate-500/20 cursor-pointer"
                       />
                     </td>
-                    <td className="py-4 pl-2 font-medium text-slate-400">{item.no_pendaftaran || '-'}</td>
-                    <td className="py-4">{item.nisn || '-'}</td>
-                    <td className="py-4 font-bold text-slate-700">{item.nama_lengkap}</td>
-                    <td className="py-4 text-slate-500">
+                    <td className="py-4 pl-2">
+                      <span className="font-mono text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-1 rounded-md border border-slate-200/50">
+                        {item.no_pendaftaran || '-'}
+                      </span>
+                    </td>
+                    <td className="py-4 font-mono font-medium text-slate-500 text-[12px]">{item.nisn || '-'}</td>
+                    <td className="py-4 pr-3 font-semibold text-slate-800">
+                      <div className="text-slate-800 font-bold">{item.nama_lengkap}</div>
+                      {item.siswa && (
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 mt-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/50 shadow-sm">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          Siswa: {item.siswa.kelas || 'Aktif'} ({item.siswa.nis})
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-4 text-center">
                       {item.jenis_kelamin ? (
                         <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold border ${item.jenis_kelamin === 'L' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-pink-50 text-pink-600 border-pink-200'}`}>
                           {item.jenis_kelamin}
                         </span>
                       ) : '-'}
                     </td>
-                    <td className="py-4">{item.asal_sekolah}</td>
-                    <td className="py-4 text-slate-500">{item.kecamatan || '-'}</td>
+                    <td className="py-4 text-slate-600 font-semibold">{item.asal_sekolah}</td>
+                    <td className="py-4 text-slate-500 font-medium">{item.kecamatan || '-'}</td>
                     <td className="py-4">
                       {item.jalur
                         ? <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getJalurClass(item.jalur)}`}>{item.jalur.replace('_', ' ')}</span>
                         : '-'}
                     </td>
-                    <td className="py-4 text-slate-500">{new Date(item.created_at).toLocaleDateString('id-ID')}</td>
+                    <td className="py-4 text-slate-500 font-medium">
+                      {new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </td>
                     <td className="py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(item.status || 'pending')}`}>
                         {getStatusText(item.status || 'pending')}
                       </span>
                     </td>
-                    <td className="py-4 text-right pr-2">
+                    <td className="py-4 text-right pr-4">
                       <div className="flex items-center justify-end gap-2">
                         {can('pendaftaran', 'view') && (
                           <button onClick={() => openViewModal(item)} className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Lihat Detail">
@@ -1203,6 +1247,26 @@ const Pendaftar = () => {
                 <DetailField label="Jalur Pendaftaran" value={viewCandidate.jalur ? viewCandidate.jalur.replace('_', ' ') : '-'} />
                 <DetailField label="Status" value={getStatusText(viewCandidate.status)} />
                 <DetailField label="Tanggal Daftar" value={viewCandidate.created_at ? new Date(viewCandidate.created_at).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '-'} />
+                
+                {viewCandidate.siswa && (
+                  <div className="sm:col-span-2 mt-4 p-4 rounded-2xl bg-emerald-50 border border-emerald-100/70 flex items-start gap-3">
+                    <svg className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <h4 className="text-sm font-bold text-emerald-800">Telah Terelasi dengan Siswa Aktif</h4>
+                      <p className="text-xs text-emerald-700 mt-1 font-medium leading-relaxed">
+                        Data pendaftaran ini otomatis terhubung dengan data siswa aktif di sekolah:
+                      </p>
+                      <ul className="text-xs text-emerald-800 mt-2 space-y-1 font-bold">
+                        <li>• Nama Lengkap: {viewCandidate.siswa.nama_lengkap}</li>
+                        <li>• NIS / NISN: {viewCandidate.siswa.nis} / {viewCandidate.siswa.nisn || '-'}</li>
+                        <li>• Kelas Saat Ini: {viewCandidate.siswa.kelas || '(Belum masuk kelas)'}</li>
+                        <li>• Tahun Masuk: {viewCandidate.siswa.tahun_masuk}</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button onClick={() => { setIsViewModalOpen(false); setViewCandidate(null); }} className="px-5 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors">Tutup</button>

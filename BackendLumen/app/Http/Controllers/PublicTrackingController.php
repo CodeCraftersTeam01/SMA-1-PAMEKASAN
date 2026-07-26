@@ -10,6 +10,7 @@ use App\Models\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class PublicTrackingController extends Controller
 {
@@ -310,6 +311,17 @@ class PublicTrackingController extends Controller
                     'modal_awal'        => $kategori_pilihan === 'bisnis' ? $request->modal_awal : null,
                 ]
             );
+
+            try {
+                \App\Models\DashboardNotification::create([
+                    'type' => 'alumni_tracking',
+                    'title' => 'Pengisian Tracking Alumni',
+                    'message' => "Alumni {$siswa->nama_lengkap} telah mengisi data penelusuran/tracking karir ({$kategori_pilihan}).",
+                    'is_read' => false
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to create notification: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'status' => 'success',

@@ -8,6 +8,7 @@ use App\Models\TahunAjaran;
 use App\Services\NisGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class PendaftaranController extends Controller
 {
@@ -16,7 +17,7 @@ class PendaftaranController extends Controller
     {
         $this->autoCheckAndUpdateTahunAjaran();
 
-        $query = Pendaftaran::query();
+        $query = Pendaftaran::with('siswa');
 
         $search = trim((string) $request->query('search', ''));
         if ($search !== '') {
@@ -122,6 +123,17 @@ class PendaftaranController extends Controller
         $data = Pendaftaran::create($request->all());
 
         try {
+            \App\Models\DashboardNotification::create([
+                'type' => 'pendaftaran',
+                'title' => 'Pendaftaran Baru',
+                'message' => "Pendaftaran siswa baru atas nama {$data->nama_lengkap} dari {$data->asal_sekolah}.",
+                'is_read' => false
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to create notification: ' . $e->getMessage());
+        }
+
+        try {
             $this->syncSiswaStatus($data);
         } catch (\Throwable $th) {
             $data->delete();
@@ -139,7 +151,7 @@ class PendaftaranController extends Controller
     // READ satu data
     public function show($id)
     {
-        $data = Pendaftaran::findOrFail($id);
+        $data = Pendaftaran::with('siswa')->findOrFail($id);
 
         return response()->json($data);
     }
@@ -532,6 +544,9 @@ class PendaftaranController extends Controller
     private function syncSiswaStatus(Pendaftaran $pendaftaran)
     {
         if ($pendaftaran->status === 'diterima') {
+            // Try to link matching pre-existing student if not already linked
+            Pendaftaran::linkMatchingSiswa($pendaftaran);
+
             // Check if student already exists for this registration
             $sudahAda = Siswa::where('pendaftar_id', $pendaftaran->id)->exists();
             if (!$sudahAda) {
@@ -576,8 +591,17 @@ class PendaftaranController extends Controller
                 ]);
             }
         } else {
-            // Delete student record if status is not 'diterima'
-            Siswa::where('pendaftar_id', $pendaftaran->id)->delete();
+            // Conditionally delete student record if status is not 'diterima'
+            $siswa = Siswa::where('pendaftar_id', $pendaftaran->id)->first();
+            if ($siswa) {
+                $hasRelations = $siswa->achievements()->exists() || $siswa->rencanaKarir()->exists() || !empty($siswa->kelas);
+                $preExisting = $siswa->created_at < $pendaftaran->created_at;
+
+                if (!$hasRelations && !$preExisting) {
+                    // Only delete if the student was auto-created and has no dependencies
+                    $siswa->delete();
+                }
+            }
         }
     }
 

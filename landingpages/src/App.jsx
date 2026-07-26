@@ -727,15 +727,15 @@ export default function App() {
                 <div className="lg:w-1/2 w-full">
                   <div className="aspect-[4/3] rounded-[1.75rem] overflow-hidden shadow-lg relative">
                     <img 
-                      src={`https://source.unsplash.com/random/800x600/?${activeTab === 'MIPA' ? 'laboratory' : activeTab === 'IPS' ? 'library' : 'students'}`} 
+                      src={
+                        activeTab === 'MIPA' 
+                          ? "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop" 
+                          : activeTab === 'IPS' 
+                          ? "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=800&auto=format&fit=crop" 
+                          : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop"
+                      } 
                       alt={activeTab}
                       className="w-full h-full object-cover"
-                    />
-                    {/* Fallback image incase unsplash source fails */}
-                    <img 
-                      src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=2070&auto=format&fit=crop" 
-                      className="absolute inset-0 w-full h-full object-cover -z-10" 
-                      alt="fallback"
                     />
                   </div>
                 </div>
@@ -791,7 +791,13 @@ export default function App() {
                       >
                         <div className="aspect-[16/10] overflow-hidden relative">
                           <img 
-                            src={item.image_url || "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=800&auto=format&fit=crop"} 
+                            src={
+                              item.image_url 
+                                ? (item.image_url.startsWith('http://') || item.image_url.startsWith('https://') 
+                                    ? item.image_url 
+                                    : `${STORAGE_BASE}/${item.image_url}`) 
+                                : "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=800&auto=format&fit=crop"
+                            } 
                             alt={item.title} 
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                           />
