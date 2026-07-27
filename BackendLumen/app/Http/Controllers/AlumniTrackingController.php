@@ -130,8 +130,57 @@ class AlumniTrackingController extends Controller
                 return ($activeYear - $siswaYear) >= 3;
             })->values();
 
+            // Auto-sync all filtered student alumni to the alumnis table
+            foreach ($alumni as $siswa) {
+                $nisn = $siswa->nisn ?: ($siswa->pendaftaran ? $siswa->pendaftaran->nisn : '');
+                if (!$nisn) {
+                    $nisn = 'ALUMNI-' . $siswa->nis;
+                }
+
+                // Determine estimated graduation year if not filled
+                $tahunLulus = $siswa->tahun_lulus;
+                if (!$tahunLulus && $siswa->tahunAjaran) {
+                    $parts = explode('/', $siswa->tahunAjaran->tahun);
+                    $startYear = (int)$parts[0];
+                    $tahunLulus = $startYear + 3;
+                }
+                if (!$tahunLulus) {
+                    $tahunLulus = $activeYear;
+                }
+
+                $alumniRecord = \App\Models\Alumni::where('nisn', $nisn)->first();
+
+                $alumniData = [
+                    'nisn' => $nisn,
+                    'nama_lengkap' => $siswa->nama_lengkap,
+                    'tahun_lulus' => $tahunLulus,
+                    'jurusan' => $siswa->kelas ?: 'MIPA',
+                    'no_telepon' => $siswa->nomor_hp,
+                    'email' => $siswa->email,
+                    'alamat_domisili' => $siswa->alamat,
+                    'latitude' => $siswa->lintang,
+                    'longitude' => $siswa->bujur,
+                ];
+
+                if (!$alumniRecord) {
+                    $alumniRecord = \App\Models\Alumni::create($alumniData);
+                } else {
+                    $alumniRecord->update($alumniData);
+                }
+
+                if ($siswa->rencanaKarir && !$siswa->rencanaKarir->alumni_id) {
+                    $siswa->rencanaKarir->update(['alumni_id' => $alumniRecord->id]);
+                }
+            }
+
             $formatted = $alumni->map(function ($siswa) {
                 $rk = $siswa->rencanaKarir;
+                
+                $nisn = $siswa->nisn ?: ($siswa->pendaftaran ? $siswa->pendaftaran->nisn : '');
+                if (!$nisn) {
+                    $nisn = 'ALUMNI-' . $siswa->nis;
+                }
+                $alumniRec = \App\Models\Alumni::where('nisn', $nisn)->first();
                 
                 $pilihan1 = null;
                 if ($rk) {
@@ -163,6 +212,7 @@ class AlumniTrackingController extends Controller
 
                 return [
                     'id' => $siswa->id,
+                    'alumni_id' => $alumniRec ? $alumniRec->id : null,
                     'nama' => $siswa->nama_lengkap,
                     'nis' => $siswa->nis,
                     'kelas_asal' => $siswa->pendaftaran->jalur ?? '-',

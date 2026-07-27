@@ -15,7 +15,7 @@ const Toast = ({ message, type, onClose }) => {
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
+    <div className={`fixed bottom-6 right-6 z-100 flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
       <span className="text-sm font-semibold">{message}</span>
       <button onClick={onClose} className="ml-1 opacity-70 hover:opacity-100">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -276,7 +276,7 @@ export default function SetKelas() {
 
   return (
     <div className="space-y-6 h-[calc(100vh-8rem)] flex flex-col">
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex-shrink-0 animate-fade-up">
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 shrink-0 animate-fade-up">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-2xl font-bold mb-1 text-[#1e293b]">Rombak & Pembagian Set Kelas</h2>

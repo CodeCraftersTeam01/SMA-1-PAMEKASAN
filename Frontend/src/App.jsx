@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
@@ -21,7 +22,6 @@ const Kelas = lazy(() => import('./pages/kelas'));
 const SetKelas = lazy(() => import('./pages/set-kelas'));
 const Laporan = lazy(() => import('./pages/laporan'));
 const UserManagement = lazy(() => import('./pages/user-management'));
-const AdminTrackingDashboard = lazy(() => import('./pages/admin/alumni-tracking/AdminTrackingDashboard'));
 const AlumniList = lazy(() => import('./pages/admin/alumni/AlumniList'));
 const AdminNews = lazy(() => import('./pages/admin/website/news'));
 const AdminPrestasi = lazy(() => import('./pages/admin/website/prestasi'));
@@ -40,7 +40,7 @@ const AdminTestimonials = lazy(() => import('./pages/admin/website/testimonials'
 
 // Shared fallback while a lazy chunk is loading
 const RouteFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-slate-100">
+  <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-white to-slate-100">
     <div className="flex flex-col items-center gap-3 text-slate-400">
       <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin"></div>
       <p className="text-sm font-medium">Memuat halaman...</p>
@@ -100,7 +100,6 @@ const AnimatedRoutes = () => {
               <Route path="/kelas" element={<Page><Kelas /></Page>} />
               <Route path="/set-kelas" element={<Page><SetKelas /></Page>} />
               <Route path="/laporan" element={<Page><Laporan /></Page>} />
-              <Route path="/admin/alumni-tracking" element={<Page><AdminTrackingDashboard /></Page>} />
               <Route path="/admin/alumni" element={<Page><AlumniList /></Page>} />
               {/* Website CMS — gated per-user via permissions in the sidebar */}
               <Route path="/admin/website/news" element={<Page><AdminNews /></Page>} />

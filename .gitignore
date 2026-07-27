@@ -27,3 +27,7 @@ agents.md
 design.md
 rules.md
 tasks.md
+
+# Manual book conversion
+convert_to_docx.py
+MANUAL_BOOK_USER.docx

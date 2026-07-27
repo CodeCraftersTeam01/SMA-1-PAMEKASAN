@@ -11,7 +11,7 @@ const stripHtml = (html) => {
 
 const SkeletonLoader = () => (
   <div className="pt-24 pb-20 bg-gray-50 min-h-screen animate-pulse">
-    <div className="bg-gradient-to-br from-blue-900 to-blue-800 py-16 mb-12">
+    <div className="bg-linear-to-br from-blue-900 to-blue-800 py-16 mb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="h-10 bg-white/20 rounded-xl w-2/3 mb-5"></div>
         <div className="h-1.5 bg-blue-500/50 rounded-full w-20"></div>
@@ -38,7 +38,7 @@ const SkeletonLoader = () => (
   </div>
 );
 
-export default function DynamicPage() {
+export default function DynamicPage({ settings }) {
   const { slug } = useParams();
   const [pageData, setPageData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -94,7 +94,7 @@ export default function DynamicPage() {
   }
 
   const quickLinks = [
-    { title: 'Informasi PPDB', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', url: '/p/ppdb' },
+    { title: 'Informasi PPDB', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', url: settings?.ppdb_link || '/p/ppdb' },
     { title: 'E-Rapor Siswa', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', url: '#' },
     { title: 'Portal Admin', icon: 'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z', url: '/dashboard' },
     { title: 'Hubungi Kami', icon: 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z', url: '#kontak' }
@@ -108,7 +108,7 @@ export default function DynamicPage() {
         keywords={`${pageData.title}, halaman SMAN 1 Pamekasan, SMANSA`}
       />
       {/* Header */}
-      <div className="bg-gradient-to-br from-smansa-navy via-blue-900 to-indigo-900 text-white py-16 mb-12 relative overflow-hidden shadow-lg border-b-4 border-smansa-gold">
+      <div className="bg-linear-to-br from-smansa-navy via-blue-900 to-indigo-900 text-white py-16 mb-12 relative overflow-hidden shadow-lg border-b-4 border-smansa-gold">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 right-0 w-80 h-80 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
@@ -158,7 +158,7 @@ export default function DynamicPage() {
               </div>
 
               {/* Info Widget */}
-              <div className="bg-gradient-to-br from-smansa-navy to-blue-900 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
+              <div className="bg-linear-to-br from-smansa-navy to-blue-900 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
                 <h4 className="text-2xl font-bold mb-3 relative z-10 text-smansa-gold">Butuh Bantuan?</h4>
                 <p className="text-blue-100 text-sm mb-6 relative z-10 leading-relaxed">Jika Anda memiliki pertanyaan terkait sistem akademik atau pendaftaran, tim layanan kami siap membantu Anda.</p>

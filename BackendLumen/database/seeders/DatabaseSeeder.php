@@ -17,8 +17,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PengaturanNisSeeder::class,
             PengaturanTrackingSeeder::class,
-            TahunAjaranSeeder::class,
-            KelasSeeder::class,
         ]);
 
         // 2. Default Users & Accounts
@@ -42,12 +40,6 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->call(StudentTestAccountSeeder::class);
 
-        // 3. Transactions / Main Data
-        $this->call([
-            // PendaftaranSeeder::class,
-            // SiswaSeeder::class,
-            AlumniSeeder::class,
-        ]);
 
         // 4. CMS & Landing Page Data
         $this->call([

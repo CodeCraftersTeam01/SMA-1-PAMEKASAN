@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const Toast = ({ message, type, onClose }) => {
@@ -14,7 +14,7 @@ const Toast = ({ message, type, onClose }) => {
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
+    <div className={`fixed bottom-6 right-6 z-100 flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
       {type === 'success' && (
         <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -44,27 +44,14 @@ const TrackingConfig = () => {
     tahun_ajaran_id: '',
   });
 
-  const [tahunAjaranList, setTahunAjaranList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = 'info') => setToast({ message, type });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
-      // Fetch Tahun Ajaran
-      const taResponse = await fetch(`${API_BASE_URL}/api/tahun-ajaran`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        }
-      });
-      if (taResponse.ok) {
-        const taData = await taResponse.json();
-        setTahunAjaranList(taData);
-      }
-
       // Fetch Tracking Config
       const configResponse = await fetch(`${API_BASE_URL}/api/pengaturan-tracking`, {
         headers: {
@@ -87,11 +74,14 @@ const TrackingConfig = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token, API_BASE_URL]);
 
   useEffect(() => {
-    fetchData();
-  }, [token, API_BASE_URL]);
+    const t = setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => clearTimeout(t);
+  }, [fetchData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -118,6 +108,7 @@ const TrackingConfig = () => {
         showToast(data.message || 'Gagal menyimpan', 'error');
       }
     } catch (err) {
+      console.error(err);
       showToast('Terjadi kesalahan jaringan', 'error');
     } finally {
       setIsSaving(false);
@@ -135,7 +126,7 @@ const TrackingConfig = () => {
         <div className="relative z-10">
           <h2 className="text-2xl sm:text-3xl font-bold mb-1 text-[#1e293b]">Pengaturan Akses Tracking</h2>
           <p className="text-slate-500 text-sm max-w-xl">
-            Tentukan apakah halaman web tracking siswa dibuka untuk publik, dan atur batasan Tahun Ajaran mana yang data siswanya dapat diakses melalui web tracking tersebut.
+            Tentukan apakah halaman kuesioner penelusuran alumni dibuka untuk publik agar alumni dapat mengisi data rencana karir.
           </p>
         </div>
       </div>
@@ -156,7 +147,7 @@ const TrackingConfig = () => {
                 <label className="flex items-center justify-between cursor-pointer p-5 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
                   <div className="pr-4">
                     <div className="text-base font-bold text-slate-800">Status Akses Tracking</div>
-                    <div className="text-sm text-slate-500 mt-1">Buka jika Anda ingin calon siswa dapat melacak status mereka di web publik.</div>
+                    <div className="text-sm text-slate-500 mt-1">Buka jika Anda ingin kuesioner penelusuran alumni mandiri dibuka untuk diakses oleh alumni di web publik.</div>
                   </div>
                   <div className="relative shrink-0">
                     <input 
@@ -169,25 +160,6 @@ const TrackingConfig = () => {
                     <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${formData.is_open ? 'transform translate-x-6' : ''}`}></div>
                   </div>
                 </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">
-                  Tahun Ajaran Aktif (Filter Data)
-                </label>
-                <select
-                  value={formData.tahun_ajaran_id}
-                  onChange={(e) => setFormData({...formData, tahun_ajaran_id: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 transition-all text-slate-700 font-medium bg-slate-50"
-                >
-                  <option value="">-- Pilih Tahun Ajaran --</option>
-                  {tahunAjaranList.map((ta) => (
-                    <option key={ta.id} value={ta.id}>
-                      {ta.tahun} {ta.is_active ? '(Aktif)' : ''}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-2 text-xs text-slate-500">Hanya siswa/pendaftar pada tahun ajaran ini yang datanya dapat dicek melalui halaman tracking.</p>
               </div>
 
               <div className="pt-6 mt-4 border-t border-slate-100 flex justify-end">
@@ -214,7 +186,7 @@ const TrackingConfig = () => {
 
             <div className="p-6 space-y-6">
               <p className="text-sm text-slate-500 leading-relaxed">
-                Bagikan link rahasia ini kepada siswa/alumni pada tahun ajaran aktif agar mereka dapat mengisi kuesioner rencana karir mandiri tanpa perlu masuk ke dashboard utama.
+                Bagikan link mandiri ini kepada para alumni agar mereka dapat mengisi kuesioner rencana karir tanpa perlu memiliki akun login dashboard utama.
               </p>
 
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/60 relative">
@@ -247,7 +219,7 @@ const TrackingConfig = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div className="leading-relaxed">
-                  <strong className="font-bold">Penting:</strong> Hanya siswa yang datanya terdaftar di bawah Tahun Ajaran aktif dan memiliki NIS & NISN yang sah yang dapat mengisi melalui link ini.
+                  <strong className="font-bold">Penting:</strong> Hanya alumni yang telah lulus (tahun masuk minimal 3 tahun lebih awal dari tahun ajaran aktif) serta memiliki NIS dan data yang valid yang dapat mengakses kuesioner ini.
                 </div>
               </div>
             </div>

@@ -98,7 +98,7 @@ const DashboardLayout = () => {
       setIsNotifOpen(false);
       if (type === 'pendaftaran') navigate('/pendaftar');
       else if (type === 'testimonial') navigate('/admin/website/testimonials');
-      else if (type === 'alumni_tracking') navigate('/alumni-tracking');
+      else if (type === 'alumni_tracking') navigate('/admin/alumni');
       else if (type === 'prestasi') navigate('/admin/website/prestasi');
     } catch (e) {
       console.error(e);
@@ -230,15 +230,9 @@ const DashboardLayout = () => {
       items: [
         {
           path: '/admin/alumni',
-          label: 'Daftar Alumni',
+          label: 'Penelusuran Alumni',
           icon: 'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
           permission: { resource: 'alumni', action: 'view' },
-        },
-        {
-          path: '/admin/alumni-tracking',
-          label: 'Penelusuran Alumni',
-          icon: 'M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z',
-          permission: { resource: 'alumni_tracking', action: 'view' },
         },
       ],
     },
@@ -328,21 +322,21 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-white to-slate-100 font-sans text-slate-800">
-      <div className="fixed top-0 left-0 z-[2] w-full h-[100px] 
-            bg-gradient-to-b from-black/20 to-transparent 
+    <div className="min-h-screen flex bg-linear-to-br from-white to-slate-100 font-sans text-slate-800">
+      <div className="fixed top-0 left-0 z-2 w-full h-25 
+            bg-linear-to-b from-black/20 to-transparent 
             backdrop-blur-sm 
-            [mask-image:linear-gradient(to_bottom,black,transparent)]">
+            mask-[linear-gradient(to_bottom,black,transparent)]">
       </div>
 
       {/* Sidebar - Desktop */}
       <aside
         className={`fixed inset-y-0 left-0 z-20 transition-all duration-300 ease-in-out bg-white/60 lg:translate-x-0 ${
-          isSidebarCollapsed ? 'w-[72px]' : 'w-[240px]'
+          isSidebarCollapsed ? 'w-18' : 'w-60'
         } ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ borderTopRightRadius: '24px', borderBottomRightRadius: '24px' }}
       >
-        <div className="h-full flex flex-col pt-5 pb-6 rounded-r-[24px] shadow-[4px_0_24px_rgba(0,0,0,0.02)] border-r border-slate-100">
+        <div className="h-full flex flex-col pt-5 pb-6 rounded-r-3xl shadow-[4px_0_24px_rgba(0,0,0,0.02)] border-r border-slate-100">
 
           {/* Logo & Branding */}
           <div className={`pb-4 mb-2 border-b border-slate-100/60 ${isSidebarCollapsed ? 'px-2 flex justify-center' : 'px-6'}`}>
@@ -395,7 +389,7 @@ const DashboardLayout = () => {
                   <div
                     className={`space-y-0.5 transition-all duration-300 ease-in-out overflow-hidden ${
                       (!isSidebarCollapsed ? isOpen : true)
-                        ? 'max-h-[500px] opacity-100'
+                        ? 'max-h-125 opacity-100'
                         : 'max-h-0 opacity-0 pointer-events-none'
                     }`}
                   >
@@ -464,7 +458,7 @@ const DashboardLayout = () => {
               <div
                 className={`space-y-0.5 transition-all duration-300 ease-in-out overflow-hidden ${
                   (!isSidebarCollapsed ? isSettingsMenuOpen : true)
-                    ? 'max-h-[300px] opacity-100'
+                    ? 'max-h-75 opacity-100'
                     : 'max-h-0 opacity-0 pointer-events-none'
                 }`}
               >
@@ -543,11 +537,11 @@ const DashboardLayout = () => {
 
       {/* Main Content Area */}
       <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out min-h-screen ${
-        isSidebarCollapsed ? 'lg:pl-[80px]' : 'lg:pl-[260px]'
+        isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-65'
       }`}>
 
         {/* Header */}
-        <header className="sticky top-4 z-30 bg-white/40 backdrop-blur-2xl backdrop-saturate-[1.5] border border-white/60 shadow-[0_8px_32px_rgba(30,41,59,0.04)] h-[60px] flex items-center px-4 lg:px-6 justify-between mx-4 mb-5 rounded-2xl">
+        <header className="sticky top-4 z-30 bg-white/40 backdrop-blur-2xl backdrop-saturate-[1.5] border border-white/60 shadow-[0_8px_32px_rgba(30,41,59,0.04)] h-15 flex items-center px-4 lg:px-6 justify-between mx-4 mb-5 rounded-2xl">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
