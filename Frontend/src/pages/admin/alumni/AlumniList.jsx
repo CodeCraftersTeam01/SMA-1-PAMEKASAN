@@ -483,7 +483,11 @@ const AlumniList = () => {
             onClick={fetchAlumniData}
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
           >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 6.571L17.5 10" /></svg>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20 20v-5h-5" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 9a9 9 0 0 1 14.9-3.4L20 7M4 15l1.1 1.4A9 9 0 0 0 20 15" />
+            </svg>
             Segarkan
           </button>
         </div>
