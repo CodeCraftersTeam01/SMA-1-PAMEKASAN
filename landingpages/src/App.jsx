@@ -403,14 +403,14 @@ export default function App() {
           <Route path="/p/:slug" element={
             <React.Suspense fallback={<MinimalLoader />}>
               <PageTransition>
-                <DynamicPage />
+                <DynamicPage settings={data.settings} />
               </PageTransition>
             </React.Suspense>
           } />
           <Route path="/berita/:id" element={
             <React.Suspense fallback={<MinimalLoader />}>
               <PageTransition>
-                <NewsDetail />
+                <NewsDetail settings={data.settings} />
               </PageTransition>
             </React.Suspense>
           } />
@@ -1171,7 +1171,7 @@ export default function App() {
                 <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Beranda</a></li>
                 <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Profil Sekolah</a></li>
                 <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Program Peminatan</a></li>
-                <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Info PPDB</a></li>
+                <li><a href={data.settings?.ppdb_link || FRONTEND_URL} className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Info PPDB</a></li>
               </ul>
               
               <h4 className="font-bold text-xl mb-6 tracking-tight">Aplikasi Siswa</h4>

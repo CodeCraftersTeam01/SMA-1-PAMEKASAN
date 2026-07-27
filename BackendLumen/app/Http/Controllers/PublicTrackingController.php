@@ -138,6 +138,35 @@ class PublicTrackingController extends Controller
             $activeTahunAjaran = TahunAjaran::orderBy('tahun', 'desc')->first();
         }
 
+        // Restrict access for students who are still in the active class period (<= 3 years from starting academic year)
+        if ($activeTahunAjaran) {
+            $activeParts = explode('/', $activeTahunAjaran->tahun);
+            $activeYear = (int)$activeParts[0];
+
+            $isAlumni = false;
+            if ($siswa->tahun_lulus) {
+                $isAlumni = true;
+            } elseif ($siswa->tahunAjaran) {
+                $siswaParts = explode('/', $siswa->tahunAjaran->tahun);
+                $siswaYear = (int)$siswaParts[0];
+
+                if (($activeYear - $siswaYear) >= 3) {
+                    $isAlumni = true;
+                }
+            } elseif ($siswa->tahun_masuk) {
+                if (($activeYear - (int)$siswa->tahun_masuk) >= 3) {
+                    $isAlumni = true;
+                }
+            }
+
+            if (!$isAlumni) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Akses Ditolak: Anda terdeteksi masih dalam masa kelas/aktif. Pengisian penelusuran ini hanya diperbolehkan untuk alumni yang telah lulus (tahun ajaran masuk minimal 3 tahun lebih awal dari tahun ajaran aktif).'
+                ], 403);
+            }
+        }
+
         // 5. Muat data rencana karir jika sudah ada
         $rencanaKarir = RencanaKarir::where('siswa_id', $siswa->id)->first();
 
@@ -154,6 +183,8 @@ class PublicTrackingController extends Controller
                 'nisn' => $nisn,
                 'tahun_lulus' => $siswa->tahun_lulus ?: ($siswa->tahun_masuk ? $siswa->tahun_masuk + 3 : ((int)substr($activeTahunAjaran->tahun ?? date('Y'), 0, 4))),
                 'kelas' => $siswa->kelas,
+                'latitude' => $siswa->lintang,
+                'longitude' => $siswa->bujur,
             ],
             'rencana_karir' => $rencanaKarir
         ]);
@@ -164,9 +195,9 @@ class PublicTrackingController extends Controller
      */
     public function submit(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'nis'  => 'required|string',
-            'tanggal_lahir' => 'required|date_format:Y-m-d',
+        $isManual = (bool)$request->input('is_manual', false);
+
+        $rules = [
             'kategori_pilihan'  => 'required|string|in:kuliah,kerja,bisnis',
             
             // Kuliah fields
@@ -186,7 +217,20 @@ class PublicTrackingController extends Controller
             'bidang_bisnis'     => 'required_if:kategori_pilihan,bisnis|string|nullable',
             'nama_bisnis'       => 'required_if:kategori_pilihan,bisnis|string|nullable',
             'modal_awal'        => 'nullable|string',
-        ]);
+        ];
+
+        if ($isManual) {
+            $rules['nama_lengkap'] = 'required|string';
+            $rules['tahun_lulus'] = 'required|integer';
+            $rules['jurusan'] = 'required|string';
+            $rules['captcha_key'] = 'required|string';
+            $rules['captcha_code'] = 'required|string';
+        } else {
+            $rules['nis'] = 'required|string';
+            $rules['tanggal_lahir'] = 'required|date_format:Y-m-d';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -206,31 +250,80 @@ class PublicTrackingController extends Controller
             ], 403);
         }
 
-        // 2. Cari Siswa
-        $siswa = Siswa::where('nis', $request->nis)
-            ->where('tanggal_lahir', $request->tanggal_lahir)
-            ->first();
-
-        if (!$siswa) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Siswa tidak ditemukan.'
-            ], 404);
-        }
-
-        // 3. Verifikasi batasan tahun ajaran berdasarkan pengaturan tracking
-        if ($config && $config->tahun_ajaran_id) {
-            if ($siswa->tahun_ajaran_id != $config->tahun_ajaran_id) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Akses Ditolak: Tahun Ajaran Anda tidak memiliki akses.'
-                ], 403);
-            }
-        }
-
         $activeTahunAjaran = TahunAjaran::where('is_active', true)->first();
         if (!$activeTahunAjaran) {
             $activeTahunAjaran = TahunAjaran::orderBy('tahun', 'desc')->first();
+        }
+        $activeYear = $activeTahunAjaran ? (int)explode('/', $activeTahunAjaran->tahun)[0] : (int)date('Y');
+
+        if ($isManual) {
+            // Validate Captcha for manual path
+            $cachedCode = Cache::get('captcha_'.$request->captcha_key);
+            if (!$cachedCode || $cachedCode !== $request->captcha_code) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kode CAPTCHA tidak valid atau sudah kedaluwarsa.'
+                ], 422);
+            }
+
+            // Restrict manual entry to graduated students (tahun_lulus <= activeYear)
+            $tahunLulus = (int)$request->tahun_lulus;
+            if ($tahunLulus > $activeYear) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Akses Ditolak: Tahun Kelulusan Anda menunjukkan Anda masih dalam masa kelas/aktif.'
+                ], 403);
+            }
+
+            $siswa = null;
+        } else {
+            // 2. Cari Siswa
+            $siswa = Siswa::where('nis', $request->nis)
+                ->where('tanggal_lahir', $request->tanggal_lahir)
+                ->first();
+
+            if (!$siswa) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Siswa tidak ditemukan.'
+                ], 404);
+            }
+
+            // 3. Verifikasi batasan tahun ajaran berdasarkan pengaturan tracking
+            if ($config && $config->tahun_ajaran_id) {
+                if ($siswa->tahun_ajaran_id != $config->tahun_ajaran_id) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Akses Ditolak: Tahun Ajaran Anda tidak memiliki akses.'
+                    ], 403);
+                }
+            }
+
+            // Restrict access for students who are still in the active class period (<= 3 years from starting academic year)
+            if ($activeTahunAjaran) {
+                $isAlumni = false;
+                if ($siswa->tahun_lulus) {
+                    $isAlumni = true;
+                } elseif ($siswa->tahunAjaran) {
+                    $siswaParts = explode('/', $siswa->tahunAjaran->tahun);
+                    $siswaYear = (int)$siswaParts[0];
+
+                    if (($activeYear - $siswaYear) >= 3) {
+                        $isAlumni = true;
+                    }
+                } elseif ($siswa->tahun_masuk) {
+                    if (($activeYear - (int)$siswa->tahun_masuk) >= 3) {
+                        $isAlumni = true;
+                    }
+                }
+
+                if (!$isAlumni) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Akses Ditolak: Anda terdeteksi masih dalam masa kelas/aktif. Pengisian penelusuran ini hanya diperbolehkan untuk alumni yang telah lulus (tahun ajaran masuk minimal 3 tahun lebih awal dari tahun ajaran aktif).'
+                    ], 403);
+                }
+            }
         }
 
         try {
@@ -254,41 +347,37 @@ class PublicTrackingController extends Controller
                 $posisi_jurusan = $request->bidang_bisnis;
             }
 
-            // Tentukan NISN unik (alumni table constraint)
-            $nisn = $siswa->nisn ?: ($siswa->pendaftaran ? $siswa->pendaftaran->nisn : '');
-            if (!$nisn) {
-                $nisn = 'ALUMNI-' . $siswa->nis; // Fallback jika nisn kosong
-            }
-
-            // Atur email dengan menghindari duplikat error jika email sama dimiliki siswa lain
-            $email = $siswa->email;
-            if ($email) {
-                $existingEmail = Alumni::where('email', $email)->where('nisn', '!=', $nisn)->exists();
-                if ($existingEmail) {
-                    $email = null;
+            if ($isManual) {
+                $nisn = $request->nisn ?: 'MANUAL-' . uniqid();
+                $email = $request->email;
+                if ($email) {
+                    $existingEmail = Alumni::where('email', $email)->where('nisn', '!=', $nisn)->exists();
+                    if ($existingEmail) {
+                        $email = null;
+                    }
                 }
-            }
 
-            // 5. Update atau buat record di tabel alumnis
-            $alumni = Alumni::updateOrCreate(
-                ['nisn' => $nisn],
-                [
-                    'nama_lengkap' => $siswa->nama_lengkap,
-                    'tahun_lulus' => $siswa->tahun_lulus ?: ($siswa->tahun_masuk ? $siswa->tahun_masuk + 3 : ((int)substr($activeTahunAjaran->tahun ?? date('Y'), 0, 4))),
-                    'jurusan' => $siswa->kelas ?: 'MIPA',
-                    'status_saat_ini' => $status_saat_ini,
-                    'nama_instansi' => $nama_instansi,
-                    'posisi_jurusan' => $posisi_jurusan,
-                    'no_telepon' => $siswa->nomor_hp,
-                    'email' => $email,
-                    'alamat_domisili' => $siswa->alamat,
-                ]
-            );
+                // 5. Update atau buat record di tabel alumnis
+                $alumni = Alumni::updateOrCreate(
+                    ['nisn' => $nisn],
+                    [
+                        'nama_lengkap' => $request->nama_lengkap,
+                        'tahun_lulus' => $tahunLulus,
+                        'jurusan' => $request->jurusan,
+                        'status_saat_ini' => $status_saat_ini,
+                        'nama_instansi' => $nama_instansi,
+                        'posisi_jurusan' => $posisi_jurusan,
+                        'no_telepon' => $request->nomor_hp,
+                        'email' => $email,
+                        'alamat_domisili' => $request->alamat_domisili,
+                        'latitude' => $request->latitude ? (float)$request->latitude : null,
+                        'longitude' => $request->longitude ? (float)$request->longitude : null,
+                    ]
+                );
 
-            // 6. Update atau buat record di tabel rencana_karirs (relasi ke alumni)
-            $tracking = RencanaKarir::updateOrCreate(
-                ['siswa_id' => $siswa->id],
-                [
+                // 6. Update atau buat record di tabel rencana_karirs
+                $tracking = RencanaKarir::create([
+                    'siswa_id' => null,
                     'alumni_id' => $alumni->id,
                     'kategori_pilihan'  => $kategori_pilihan,
                     
@@ -309,14 +398,78 @@ class PublicTrackingController extends Controller
                     'bidang_bisnis'     => $kategori_pilihan === 'bisnis' ? $request->bidang_bisnis : null,
                     'nama_bisnis'       => $kategori_pilihan === 'bisnis' ? $request->nama_bisnis : null,
                     'modal_awal'        => $kategori_pilihan === 'bisnis' ? $request->modal_awal : null,
-                ]
-            );
+                ]);
+
+                $namaSiswa = $request->nama_lengkap;
+            } else {
+                // Tentukan NISN unik (alumni table constraint)
+                $nisn = $siswa->nisn ?: ($siswa->pendaftaran ? $siswa->pendaftaran->nisn : '');
+                if (!$nisn) {
+                    $nisn = 'ALUMNI-' . $siswa->nis; // Fallback jika nisn kosong
+                }
+
+                // Atur email dengan menghindari duplikat error jika email sama dimiliki siswa lain
+                $email = $siswa->email;
+                if ($email) {
+                    $existingEmail = Alumni::where('email', $email)->where('nisn', '!=', $nisn)->exists();
+                    if ($existingEmail) {
+                        $email = null;
+                    }
+                }
+
+                // 5. Update atau buat record di tabel alumnis
+                $alumni = Alumni::updateOrCreate(
+                    ['nisn' => $nisn],
+                    [
+                        'nama_lengkap' => $siswa->nama_lengkap,
+                        'tahun_lulus' => $siswa->tahun_lulus ?: ($siswa->tahun_masuk ? $siswa->tahun_masuk + 3 : ((int)substr($activeTahunAjaran->tahun ?? date('Y'), 0, 4))),
+                        'jurusan' => $siswa->kelas ?: 'MIPA',
+                        'status_saat_ini' => $status_saat_ini,
+                        'nama_instansi' => $nama_instansi,
+                        'posisi_jurusan' => $posisi_jurusan,
+                        'no_telepon' => $siswa->nomor_hp,
+                        'email' => $email,
+                        'alamat_domisili' => $siswa->alamat,
+                        'latitude' => $request->latitude ? (float)$request->latitude : ($siswa->lintang ? (float)$siswa->lintang : null),
+                        'longitude' => $request->longitude ? (float)$request->longitude : ($siswa->bujur ? (float)$siswa->bujur : null),
+                    ]
+                );
+
+                // 6. Update atau buat record di tabel rencana_karirs (relasi ke alumni)
+                $tracking = RencanaKarir::updateOrCreate(
+                    ['siswa_id' => $siswa->id],
+                    [
+                        'alumni_id' => $alumni->id,
+                        'kategori_pilihan'  => $kategori_pilihan,
+                        
+                        // Kuliah fields
+                        'univ_pilihan_1'    => $kategori_pilihan === 'kuliah' ? $request->univ_pilihan_1 : null,
+                        'jurusan_pilihan_1' => $kategori_pilihan === 'kuliah' ? $request->jurusan_pilihan_1 : null,
+                        'univ_pilihan_2'    => $kategori_pilihan === 'kuliah' ? $request->univ_pilihan_2 : null,
+                        'jurusan_pilihan_2' => $kategori_pilihan === 'kuliah' ? $request->jurusan_pilihan_2 : null,
+                        'jalur_seleksi'     => $kategori_pilihan === 'kuliah' ? $request->jalur_seleksi : null,
+                        'status_seleksi'    => $kategori_pilihan === 'kuliah' ? $request->status_seleksi : null,
+
+                        // Kerja fields
+                        'nama_perusahaan'   => $kategori_pilihan === 'kerja' ? $request->nama_perusahaan : null,
+                        'posisi_pekerjaan'  => $kategori_pilihan === 'kerja' ? $request->posisi_pekerjaan : null,
+                        'estimasi_gaji'     => $kategori_pilihan === 'kerja' ? $request->estimasi_gaji : null,
+
+                        // Bisnis fields
+                        'bidang_bisnis'     => $kategori_pilihan === 'bisnis' ? $request->bidang_bisnis : null,
+                        'nama_bisnis'       => $kategori_pilihan === 'bisnis' ? $request->nama_bisnis : null,
+                        'modal_awal'        => $kategori_pilihan === 'bisnis' ? $request->modal_awal : null,
+                    ]
+                );
+
+                $namaSiswa = $siswa->nama_lengkap;
+            }
 
             try {
                 \App\Models\DashboardNotification::create([
                     'type' => 'alumni_tracking',
                     'title' => 'Pengisian Tracking Alumni',
-                    'message' => "Alumni {$siswa->nama_lengkap} telah mengisi data penelusuran/tracking karir ({$kategori_pilihan}).",
+                    'message' => "Alumni {$namaSiswa} telah mengisi data penelusuran/tracking karir ({$kategori_pilihan}).",
                     'is_read' => false
                 ]);
             } catch (\Exception $e) {
@@ -334,5 +487,54 @@ class PublicTrackingController extends Controller
                 'message' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function mapData()
+    {
+        $alumni = Alumni::whereHas('rencanaKarir', function($query) {
+            $query->whereNotNull('kategori_pilihan');
+        })->with('rencanaKarir')->get()->map(function($al) {
+            if (is_null($al->latitude) || is_null($al->longitude)) {
+                $siswa = Siswa::where('nisn', $al->nisn)->first();
+                if ($siswa && $siswa->lintang && $siswa->bujur) {
+                    $al->latitude = (float)$siswa->lintang;
+                    $al->longitude = (float)$siswa->bujur;
+                } else {
+                    $al->latitude = null;
+                    $al->longitude = null;
+                }
+            } else {
+                $al->latitude = (float)$al->latitude;
+                $al->longitude = (float)$al->longitude;
+            }
+
+            // Map plans properties to match frontend structure dynamically
+            $rk = $al->rencanaKarir;
+            if ($rk) {
+                $al->status_saat_ini = $rk->kategori_pilihan === 'bisnis' ? 'wirausaha' : $rk->kategori_pilihan;
+                
+                if ($rk->kategori_pilihan === 'kuliah') {
+                    $al->nama_instansi = $rk->univ_pilihan_1;
+                    $al->posisi_jurusan = $rk->jurusan_pilihan_1;
+                } elseif ($rk->kategori_pilihan === 'kerja') {
+                    $al->nama_instansi = $rk->nama_perusahaan;
+                    $al->posisi_jurusan = $rk->posisi_pekerjaan;
+                } elseif ($rk->kategori_pilihan === 'bisnis') {
+                    $al->nama_instansi = $rk->nama_bisnis;
+                    $al->posisi_jurusan = $rk->bidang_bisnis;
+                }
+            } else {
+                $al->status_saat_ini = 'belum';
+                $al->nama_instansi = null;
+                $al->posisi_jurusan = null;
+            }
+
+            return $al;
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $alumni
+        ]);
     }
 }

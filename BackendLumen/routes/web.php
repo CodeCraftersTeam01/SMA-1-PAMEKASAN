@@ -35,6 +35,7 @@ $router->post('api/public/alumni-tracking/verify', ['middleware' => 'throttle:20
 $router->post('api/public/alumni-tracking/submit', ['middleware' => 'throttle:20,60', 'uses' => 'PublicTrackingController@submit']);
 $router->get('api/public/alumni-tracking/status', ['middleware' => 'throttle:60,60', 'uses' => 'PublicTrackingController@status']);
 $router->get('api/public/alumni-tracking/captcha', ['middleware' => 'throttle:60,60', 'uses' => 'PublicTrackingController@captcha']);
+$router->get('api/public/alumni-tracking/map-data', ['middleware' => 'throttle:100,60', 'uses' => 'PublicTrackingController@mapData']);
 
 $router->get('api/test-mail', ['middleware' => ['throttle:3,60', 'api.key'], function() {
     $to = request('to', 'wardilanang46@gmail.com');
@@ -194,6 +195,8 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     // Routes untuk Alumni Management
     $router->get('alumni', ['middleware' => 'permission:alumni,view', 'uses' => 'AlumniController@index']);
     $router->post('alumni', ['middleware' => 'permission:alumni,create', 'uses' => 'AlumniController@store']);
+    $router->put('alumni/{id}', ['middleware' => 'permission:alumni,edit', 'uses' => 'AlumniController@update']);
+    $router->delete('alumni/{id}', ['middleware' => 'permission:alumni,delete', 'uses' => 'AlumniController@destroy']);
 
     // Routes untuk Website Content Management (CMS)
     $router->get('admin/news', ['middleware' => 'permission:berita,view', 'uses' => 'AdminNewsController@index']);

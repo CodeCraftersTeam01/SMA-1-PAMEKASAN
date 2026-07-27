@@ -11,7 +11,7 @@ const Toast = ({ message, type, onClose }) => {
 
   const colors = { success: 'bg-emerald-500', error: 'bg-red-500', info: 'bg-blue-500' };
   return (
-    <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
+    <div className={`fixed bottom-6 right-6 z-100 flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
       {type === 'success' && <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
       {type === 'error' && <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>}
       <span className="text-sm font-semibold">{message}</span>
@@ -779,7 +779,7 @@ const Pendaftar = () => {
               </button>
               {/* AI Import */}
               <button onClick={openAiWizard} className="flex flex-col items-center p-6 border-2 border-violet-100 rounded-2xl hover:border-violet-500 hover:bg-violet-50/40 transition-all group">
-                <div className="w-14 h-14 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-14 h-14 bg-linear-to-br from-violet-100 to-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <svg className="w-7 h-7 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-2" /></svg>
                 </div>
                 <h4 className="text-base font-bold text-slate-800 mb-1">Import + AI</h4>
@@ -1072,7 +1072,7 @@ const Pendaftar = () => {
                               const mapData = aiMapping[s.column];
                               const val = mapData.type === 'fixed' ? mapData.value : (row[mapData.value] || <span className="text-slate-300">—</span>);
                               return (
-                                <td key={s.column} className="px-3 py-3 text-slate-600 whitespace-nowrap max-w-[140px] truncate font-medium">
+                                <td key={s.column} className="px-3 py-3 text-slate-600 whitespace-nowrap max-w-35 truncate font-medium">
                                   {val}
                                 </td>
                               );

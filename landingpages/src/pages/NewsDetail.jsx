@@ -31,7 +31,7 @@ const SkeletonLoader = () => (
           <div className="h-8 bg-gray-200 rounded-lg w-1/2 mb-6"></div>
           {[1,2,3].map(i => (
             <div key={i} className="flex gap-4">
-              <div className="w-24 h-24 bg-gray-200 rounded-xl flex-shrink-0"></div>
+              <div className="w-24 h-24 bg-gray-200 rounded-xl shrink-0"></div>
               <div className="flex-1 space-y-2">
                 <div className="h-4 bg-gray-200 rounded w-full"></div>
                 <div className="h-4 bg-gray-200 rounded w-4/5"></div>
@@ -44,7 +44,7 @@ const SkeletonLoader = () => (
   </div>
 );
 
-export default function NewsDetail() {
+export default function NewsDetail({ settings }) {
   const { id } = useParams();
   const [news, setNews] = useState(null);
   const [recentNews, setRecentNews] = useState([]);
@@ -151,7 +151,7 @@ export default function NewsDetail() {
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Main Article Section */}
           <div className="lg:w-2/3">
-            <div className="w-full aspect-[16/9] rounded-2xl overflow-hidden mb-8 shadow-md relative group">
+            <div className="w-full aspect-video rounded-2xl overflow-hidden mb-8 shadow-md relative group">
               <img src={imgUrl} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
             </div>
             <div className="bg-white rounded-2xl p-6 sm:p-10 shadow-sm border border-gray-100 prose prose-lg prose-blue max-w-none text-gray-700 prose-img:rounded-xl prose-headings:text-gray-900" dangerouslySetInnerHTML={{ __html: news.content }} />
@@ -175,7 +175,7 @@ export default function NewsDetail() {
                       : "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=300&auto=format&fit=crop";
                     return (
                       <Link to={`/berita/${item.id}`} key={idx} className="group flex gap-4 items-start">
-                        <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 relative shadow-sm">
+                        <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 relative shadow-sm">
                           <img src={itemImg} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                         </div>
                         <div className="flex-1">
@@ -197,11 +197,11 @@ export default function NewsDetail() {
               </div>
 
               {/* Promo / Banner in Sidebar */}
-              <div className="mt-8 bg-gradient-to-br from-smansa-navy to-blue-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+              <div className="mt-8 bg-linear-to-br from-smansa-navy to-blue-900 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
                 <h4 className="text-xl font-bold mb-2 relative z-10">Penerimaan Siswa Baru</h4>
                 <p className="text-blue-100 text-sm mb-4 relative z-10">Daftarkan diri Anda sekarang dan jadilah bagian dari generasi cerdas SMAN 1 Pamekasan.</p>
-                <a href={`${import.meta.env.VITE_FRONTEND_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5173' : window.location.origin)}/dashboard`} className="inline-block bg-smansa-gold text-smansa-navy font-bold text-sm px-5 py-2.5 rounded-full hover:bg-yellow-400 transition-colors relative z-10">Daftar Sekarang</a>
+                <a href={settings?.ppdb_link || `${import.meta.env.VITE_FRONTEND_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5173' : window.location.origin)}/dashboard`} className="inline-block bg-smansa-gold text-smansa-navy font-bold text-sm px-5 py-2.5 rounded-full hover:bg-yellow-400 transition-colors relative z-10">Daftar Sekarang</a>
               </div>
             </div>
           </div>

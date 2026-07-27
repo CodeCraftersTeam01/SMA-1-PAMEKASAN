@@ -16,6 +16,8 @@ class Alumni extends Model
         'no_telepon',
         'email',
         'alamat_domisili',
+        'latitude',
+        'longitude',
     ];
 
     /**
