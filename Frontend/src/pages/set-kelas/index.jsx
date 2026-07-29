@@ -97,6 +97,29 @@ export default function SetKelas() {
     return filtered.sort((a, b) => a.nama_lengkap.localeCompare(b.nama_lengkap));
   }, [siswaList, sourceClass, stagedMoves, searchSource]);
 
+  // Determine if source class or student is Grade 12 / Tingkat Akhir
+  const isGrade12 = useMemo(() => {
+    if (!sourceClass || sourceClass === '_NEW_STUDENTS_') return false;
+    const cls = kelasList.find(k => k.nama_kelas === sourceClass);
+    if (cls) {
+      const tingkatNum = parseInt(cls.tingkat, 10);
+      if (tingkatNum === 12) return true;
+      if (cls.nama_kelas?.toUpperCase().startsWith('XII') || cls.nama_kelas?.toUpperCase().startsWith('12')) return true;
+    }
+    const cleanClass = sourceClass.trim().toUpperCase();
+    if (cleanClass.startsWith('XII') || cleanClass.startsWith('12')) return true;
+    return false;
+  }, [sourceClass, kelasList]);
+
+  const isStudentGrade12 = (siswa) => {
+    if (isGrade12) return true;
+    if (siswa.kelas) {
+      const cleanClass = siswa.kelas.trim().toUpperCase();
+      if (cleanClass.startsWith('XII') || cleanClass.startsWith('12')) return true;
+    }
+    return false;
+  };
+
   // Panel Kanan Siswa: Group staged moves by target class
   const stagedGroups = useMemo(() => {
     const groups = {};
@@ -259,29 +282,34 @@ export default function SetKelas() {
                             exit={{ height: 0, opacity: 0 }}
                             className="bg-indigo-50/50 border-t border-indigo-100 px-3 py-3"
                           >
-                            <p className="text-[10px] font-bold text-indigo-400 uppercase mb-2">Pindahkan ke Kelas:</p>
-                            <div className="flex flex-wrap gap-1.5">
-                              {kelasList.map(k => (
-                                <button
-                                  key={k.id}
-                                  onClick={() => selectTarget(siswa.id, k.nama_kelas)}
-                                  className="bg-white border border-indigo-200 hover:border-indigo-500 hover:bg-indigo-50 text-indigo-700 px-2.5 py-1.5 rounded-full text-[11px] font-bold transition-all shadow-sm"
-                                >
-                                  {k.nama_kelas}
-                                </button>
-                              ))}
-
-                              {sourceClass !== '_NEW_STUDENTS_' && (() => {
-                                return (
+                            {isStudentGrade12(siswa) ? (
+                              <>
+                                <p className="text-[10px] font-bold text-emerald-600 uppercase mb-2">Tindakan Kelulusan (Kelas 12):</p>
+                                <div className="flex flex-wrap gap-1.5">
                                   <button
                                     onClick={() => selectTarget(siswa.id, '_ALUMNI_')}
-                                    className="bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600 border px-2.5 py-1.5 rounded-full text-[11px] font-bold transition-all shadow-sm ml-auto"
+                                    className="bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600 border px-3 py-1.5 rounded-full text-[11px] font-bold transition-all shadow-sm cursor-pointer"
                                   >
                                     🎓 Luluskan
                                   </button>
-                                );
-                              })()}
-                            </div>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-[10px] font-bold text-indigo-400 uppercase mb-2">Pindahkan ke Kelas:</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {kelasList.map(k => (
+                                    <button
+                                      key={k.id}
+                                      onClick={() => selectTarget(siswa.id, k.nama_kelas)}
+                                      className="bg-white border border-indigo-200 hover:border-indigo-500 hover:bg-indigo-50 text-indigo-700 px-2.5 py-1.5 rounded-full text-[11px] font-bold transition-all shadow-sm cursor-pointer"
+                                    >
+                                      {k.nama_kelas}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
                           </motion.div>
                         )}
                       </AnimatePresence>

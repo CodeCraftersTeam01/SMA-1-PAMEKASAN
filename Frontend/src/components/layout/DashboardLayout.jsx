@@ -556,7 +556,7 @@ const DashboardLayout = () => {
               className="hidden lg:flex p-1.5 text-slate-500 hover:bg-slate-100 rounded-xl transition-all active:scale-95 cursor-pointer"
               title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
-              <svg className="w-4 h-4 transition-transform duration-300 animate-in fade-in duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isSidebarCollapsed ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7"} />
               </svg>
             </button>

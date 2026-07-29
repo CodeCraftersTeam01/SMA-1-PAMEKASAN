@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\ImageHelper;
 
 class PublicTrackingController extends Controller
 {
@@ -349,6 +350,7 @@ class PublicTrackingController extends Controller
 
             if ($isManual) {
                 $nisn = $request->nisn ?: 'MANUAL-' . uniqid();
+                $tahunLulus = (int)$request->tahun_lulus;
                 $email = $request->email;
                 if ($email) {
                     $existingEmail = Alumni::where('email', $email)->where('nisn', '!=', $nisn)->exists();
@@ -376,29 +378,31 @@ class PublicTrackingController extends Controller
                 );
 
                 // 6. Update atau buat record di tabel rencana_karirs
-                $tracking = RencanaKarir::create([
-                    'siswa_id' => null,
-                    'alumni_id' => $alumni->id,
-                    'kategori_pilihan'  => $kategori_pilihan,
-                    
-                    // Kuliah fields
-                    'univ_pilihan_1'    => $kategori_pilihan === 'kuliah' ? $request->univ_pilihan_1 : null,
-                    'jurusan_pilihan_1' => $kategori_pilihan === 'kuliah' ? $request->jurusan_pilihan_1 : null,
-                    'univ_pilihan_2'    => $kategori_pilihan === 'kuliah' ? $request->univ_pilihan_2 : null,
-                    'jurusan_pilihan_2' => $kategori_pilihan === 'kuliah' ? $request->jurusan_pilihan_2 : null,
-                    'jalur_seleksi'     => $kategori_pilihan === 'kuliah' ? $request->jalur_seleksi : null,
-                    'status_seleksi'    => $kategori_pilihan === 'kuliah' ? $request->status_seleksi : null,
+                $tracking = RencanaKarir::updateOrCreate(
+                    ['alumni_id' => $alumni->id],
+                    [
+                        'siswa_id' => null,
+                        'kategori_pilihan'  => $kategori_pilihan,
+                        
+                        // Kuliah fields
+                        'univ_pilihan_1'    => $kategori_pilihan === 'kuliah' ? $request->univ_pilihan_1 : null,
+                        'jurusan_pilihan_1' => $kategori_pilihan === 'kuliah' ? $request->jurusan_pilihan_1 : null,
+                        'univ_pilihan_2'    => $kategori_pilihan === 'kuliah' ? $request->univ_pilihan_2 : null,
+                        'jurusan_pilihan_2' => $kategori_pilihan === 'kuliah' ? $request->jurusan_pilihan_2 : null,
+                        'jalur_seleksi'     => $kategori_pilihan === 'kuliah' ? $request->jalur_seleksi : null,
+                        'status_seleksi'    => $kategori_pilihan === 'kuliah' ? $request->status_seleksi : null,
 
-                    // Kerja fields
-                    'nama_perusahaan'   => $kategori_pilihan === 'kerja' ? $request->nama_perusahaan : null,
-                    'posisi_pekerjaan'  => $kategori_pilihan === 'kerja' ? $request->posisi_pekerjaan : null,
-                    'estimasi_gaji'     => $kategori_pilihan === 'kerja' ? $request->estimasi_gaji : null,
+                        // Kerja fields
+                        'nama_perusahaan'   => $kategori_pilihan === 'kerja' ? $request->nama_perusahaan : null,
+                        'posisi_pekerjaan'  => $kategori_pilihan === 'kerja' ? $request->posisi_pekerjaan : null,
+                        'estimasi_gaji'     => $kategori_pilihan === 'kerja' ? $request->estimasi_gaji : null,
 
-                    // Bisnis fields
-                    'bidang_bisnis'     => $kategori_pilihan === 'bisnis' ? $request->bidang_bisnis : null,
-                    'nama_bisnis'       => $kategori_pilihan === 'bisnis' ? $request->nama_bisnis : null,
-                    'modal_awal'        => $kategori_pilihan === 'bisnis' ? $request->modal_awal : null,
-                ]);
+                        // Bisnis fields
+                        'bidang_bisnis'     => $kategori_pilihan === 'bisnis' ? $request->bidang_bisnis : null,
+                        'nama_bisnis'       => $kategori_pilihan === 'bisnis' ? $request->nama_bisnis : null,
+                        'modal_awal'        => $kategori_pilihan === 'bisnis' ? $request->modal_awal : null,
+                    ]
+                );
 
                 $namaSiswa = $request->nama_lengkap;
             } else {
@@ -463,6 +467,11 @@ class PublicTrackingController extends Controller
                 );
 
                 $namaSiswa = $siswa->nama_lengkap;
+            }
+
+            if ($request->hasFile('foto')) {
+                $alumni->foto = ImageHelper::compressAndStore($request->file('foto'), 'alumni_photos', 75);
+                $alumni->save();
             }
 
             try {

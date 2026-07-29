@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 
 // Simple Toast notification component
 const Toast = ({ message, type, onClose }) => {
@@ -474,7 +475,7 @@ const Laporan = () => {
     setToast({ message, type });
   };
 
-  const fetchReportData = async () => {
+  const fetchReportData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
@@ -502,16 +503,25 @@ const Laporan = () => {
           setError(responseData.message || 'Gagal mengambil data laporan');
         }
       }
-    } catch (err) {
+    } catch {
       setError('Terjadi kesalahan koneksi saat memuat laporan');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [API_BASE_URL, reportType, startDate, endDate, token]);
 
   useEffect(() => {
-    fetchReportData();
-  }, [reportType]); // Refetch when type changes
+    let isSubscribed = true;
+    const load = async () => {
+      if (isSubscribed) {
+        await fetchReportData();
+      }
+    };
+    load();
+    return () => {
+      isSubscribed = false;
+    };
+  }, [fetchReportData]); // Refetch when type changes
 
   const handleFilter = (e) => {
     e.preventDefault();
@@ -590,6 +600,41 @@ const Laporan = () => {
   const handleExport = async (format) => {
     setIsExporting(true);
     try {
+      if (format === 'excel' || format === 'xlsx') {
+        const exportData = (data || []).map(item => {
+          if (reportType === 'pendaftaran') {
+            return {
+              'No Pendaftaran': item.no_pendaftaran || '-',
+              'NISN': item.nisn || '-',
+              'Nama Lengkap': item.nama_lengkap || '-',
+              'Asal Sekolah': item.asal_sekolah || '-',
+              'Jalur': item.jalur || '-',
+              'Status': item.status || '-',
+              'Tanggal Daftar': item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : '-'
+            };
+          } else {
+            return {
+              'NIS': item.nis || '-',
+              'Nama Lengkap': item.nama_lengkap || '-',
+              'Tahun Masuk': item.tahun_masuk || '-',
+              'Tahun Ajaran': item.tahunAjaran?.tahun || item.tahun_ajaran || '-',
+              'Status Aktif': item.is_active ? 'Aktif' : 'Tidak Aktif',
+              'Tanggal Data Dibuat': item.created_at ? new Date(item.created_at).toLocaleString('id-ID') : '-'
+            };
+          }
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, reportType === 'pendaftaran' ? 'Laporan Pendaftaran' : 'Laporan Siswa');
+
+        const filename = `laporan_${reportType}_${new Date().getTime()}.xlsx`;
+        XLSX.writeFile(workbook, filename);
+
+        showToast('Laporan berhasil diekspor ke XLSX', 'success');
+        return;
+      }
+
       let url = `${API_BASE_URL}/api/reports/${reportType}?format=${format}`;
       if (startDate && endDate) {
         url += `&start_date=${startDate}&end_date=${endDate}`;
@@ -610,7 +655,7 @@ const Laporan = () => {
       const a = document.createElement('a');
       a.href = downloadUrl;
       
-      const ext = format === 'csv' ? 'csv' : 'xls';
+      const ext = format === 'csv' ? 'csv' : 'xlsx';
       a.download = `laporan_${reportType}_${new Date().getTime()}.${ext}`;
       document.body.appendChild(a);
       a.click();
@@ -619,6 +664,7 @@ const Laporan = () => {
       
       showToast(`Laporan berhasil diekspor ke ${format.toUpperCase()}`, 'success');
     } catch (err) {
+      console.error(err);
       showToast('Terjadi kesalahan saat mengekspor laporan', 'error');
     } finally {
       setIsExporting(false);

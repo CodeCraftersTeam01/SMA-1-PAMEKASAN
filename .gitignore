@@ -28,6 +28,17 @@ design.md
 rules.md
 tasks.md
 
+
+vtour/
+
 # Manual book conversion
 convert_to_docx.py
 MANUAL_BOOK_USER.docx
+
+# Generator scripts (tools, not core source)
+generate_cpanel_guide.py
+generate_install_guide.py
+
+# Generated hosting guide documents
+PANDUAN_INSTALASI_HOSTING_CPANEL.docx
+PANDUAN_INSTALASI_HOSTING_SSH.docx

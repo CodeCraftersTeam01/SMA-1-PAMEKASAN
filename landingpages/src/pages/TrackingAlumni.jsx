@@ -19,7 +19,10 @@ import {
   Search,
   PenTool,
   MapPin,
-  Users
+  Users,
+  Camera,
+  Upload,
+  X
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import TestimonialForm from '../components/TestimonialForm';
@@ -82,6 +85,26 @@ export default function TrackingAlumni() {
     latitude: '',
     longitude: '',
   });
+
+  const [fotoFile, setFotoFile] = useState(null);
+  const [fotoPreview, setFotoPreview] = useState(null);
+
+  const handleFotoChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Ukuran file foto terlalu besar. Maksimal 5MB.');
+        return;
+      }
+      setFotoFile(file);
+      setFotoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleRemoveFoto = () => {
+    setFotoFile(null);
+    setFotoPreview(null);
+  };
 
   const [searchTerm, setSearchTerm] = useState('');
   const [yearFilter, setYearFilter] = useState('');
@@ -361,7 +384,7 @@ export default function TrackingAlumni() {
     setLoading(true);
     setStatus(null);
 
-    const payload = verifiedStudent?.is_manual
+    const payloadObj = verifiedStudent?.is_manual
       ? {
           is_manual: true,
           nama_lengkap: manualProfile.nama_lengkap,
@@ -408,15 +431,24 @@ export default function TrackingAlumni() {
           modal_awal: form.kategori_pilihan === 'bisnis' ? form.modal_awal : null,
         };
 
+    const formData = new FormData();
+    if (fotoFile) {
+      formData.append('foto', fotoFile);
+    }
+    Object.keys(payloadObj).forEach(key => {
+      if (payloadObj[key] !== null && payloadObj[key] !== undefined) {
+        formData.append(key, payloadObj[key]);
+      }
+    });
+
     try {
       const res = await fetch(`${API_BASE}/alumni-tracking/submit`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'x-api-key': import.meta.env.VITE_API_KEY || 'smansa123',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       const data = await res.json();
@@ -432,6 +464,7 @@ export default function TrackingAlumni() {
           });
         }
         setSubmitSuccess(true);
+        fetchAlumniData(null);
       } else {
         setStatus({ type: 'error', message: data.message || 'Terjadi kesalahan saat menyimpan data.' });
         if (verifiedStudent?.is_manual) {
@@ -680,16 +713,29 @@ export default function TrackingAlumni() {
                 {selectedAlumni && (
                   <div className="absolute bottom-6 right-6 z-1000 bg-white rounded-3xl p-6 border border-gray-100 shadow-2xl max-w-sm w-full animate-in slide-in-from-bottom duration-300">
                     <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <span className={`text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${
-                          selectedAlumni.status_saat_ini === 'kuliah' ? 'bg-blue-50 text-blue-700' :
-                          selectedAlumni.status_saat_ini === 'kerja' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                        }`}>
-                          {selectedAlumni.status_saat_ini === 'kuliah' ? 'Kuliah' :
-                           selectedAlumni.status_saat_ini === 'kerja' ? 'Kerja' : 'Wirausaha'}
-                        </span>
-                        <h4 className="text-lg font-bold text-smansa-navy mt-2">{selectedAlumni.nama_lengkap}</h4>
-                        <p className="text-xs text-gray-500 font-semibold">Lulusan {selectedAlumni.tahun_lulus} | {selectedAlumni.jurusan || 'Alumni'}</p>
+                      <div className="flex items-center gap-3">
+                        {selectedAlumni.foto_url ? (
+                          <img 
+                            src={selectedAlumni.foto_url} 
+                            alt={selectedAlumni.nama_lengkap} 
+                            className="w-12 h-12 rounded-2xl object-cover border border-gray-100 shadow-sm"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 shadow-xs">
+                            <User className="w-6 h-6 text-slate-400" />
+                          </div>
+                        )}
+                        <div>
+                          <span className={`text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full ${
+                            selectedAlumni.status_saat_ini === 'kuliah' ? 'bg-blue-50 text-blue-700' :
+                            selectedAlumni.status_saat_ini === 'kerja' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                          }`}>
+                            {selectedAlumni.status_saat_ini === 'kuliah' ? 'Kuliah' :
+                             selectedAlumni.status_saat_ini === 'kerja' ? 'Kerja' : 'Wirausaha'}
+                          </span>
+                          <h4 className="text-lg font-bold text-smansa-navy mt-1">{selectedAlumni.nama_lengkap}</h4>
+                          <p className="text-xs text-gray-500 font-semibold">Lulusan {selectedAlumni.tahun_lulus} | {selectedAlumni.jurusan || 'Alumni'}</p>
+                        </div>
                       </div>
                       <button 
                         type="button"
@@ -805,12 +851,17 @@ export default function TrackingAlumni() {
                     >
                       <div>
                         <div className="flex items-center gap-3 mb-4">
-                          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-white ${
-                            al.status_saat_ini === 'kuliah' ? 'bg-blue-600' :
-                            al.status_saat_ini === 'kerja' ? 'bg-emerald-600' : 'bg-amber-600'
-                          }`}>
-                            {(al.nama_lengkap || '?').charAt(0)}
-                          </div>
+                          {al.foto_url ? (
+                            <img 
+                              src={al.foto_url} 
+                              alt={al.nama_lengkap} 
+                              className="w-11 h-11 rounded-2xl object-cover border border-gray-100 shadow-sm"
+                            />
+                          ) : (
+                            <div className="w-11 h-11 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0 shadow-xs">
+                              <User className="w-6 h-6 text-slate-400" />
+                            </div>
+                          )}
                           <div>
                             <h4 className="font-bold text-smansa-navy text-base leading-tight">{al.nama_lengkap || '-'}</h4>
                             <span className="text-xs text-gray-400 font-semibold">Lulusan {al.tahun_lulus || '-'} | {al.jurusan || 'Alumni'}</span>
@@ -1496,6 +1547,54 @@ export default function TrackingAlumni() {
                         )}
                         
                       </AnimatePresence>
+                    </div>
+
+                    {/* FOTO ALUMNI SECTION (FOR BOTH PATHS) */}
+                    <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 space-y-4">
+                      <h3 className="font-bold text-xs text-blue-900 uppercase tracking-widest flex items-center gap-2">
+                        <Camera className="w-4 h-4 text-blue-700"/> Upload Foto Profil Alumni (Opsional)
+                      </h3>
+                      <p className="text-xs text-blue-700/80 leading-relaxed -mt-1">
+                        Foto profil akan ditampilkan di Direktori Alumni & Peta Sebaran agar rekan alumni dan pihak sekolah dapat mengenali Anda.
+                      </p>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-6 pt-2">
+                        <div className="relative group">
+                          {fotoPreview ? (
+                            <div className="relative w-24 h-24 rounded-2xl overflow-hidden border-2 border-blue-500 shadow-md">
+                              <img src={fotoPreview} alt="Preview Foto" className="w-full h-full object-cover" />
+                              <button
+                                type="button"
+                                onClick={handleRemoveFoto}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 shadow hover:bg-red-600 transition-colors cursor-pointer"
+                                title="Hapus foto"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="w-24 h-24 rounded-2xl bg-white border-2 border-dashed border-blue-200 flex flex-col items-center justify-center text-blue-400 group-hover:border-blue-400 group-hover:bg-blue-50/30 transition-all">
+                              <Camera className="w-8 h-8 mb-1" />
+                              <span className="text-[10px] font-bold">Upload Foto</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-2 text-center sm:text-left flex-1">
+                          <label className="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-full shadow-md transition-all">
+                            <Upload className="w-4 h-4" /> {fotoFile ? 'Ganti Foto' : 'Pilih File Foto'}
+                            <input 
+                              type="file" 
+                              accept="image/png, image/jpeg, image/jpg, image/webp" 
+                              onChange={handleFotoChange} 
+                              className="hidden" 
+                            />
+                          </label>
+                          <p className="text-[11px] text-gray-400">
+                            Format: JPG, PNG, WEBP. Maksimal 5 MB. (Kompresi otomatis WebP dilakukan di server).
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
                     {/* LOKASI KOORDINAT SECTION (FOR BOTH PATHS) */}

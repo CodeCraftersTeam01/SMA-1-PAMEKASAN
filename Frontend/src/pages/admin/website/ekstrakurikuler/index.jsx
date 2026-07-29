@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Toast from '../../../../components/Toast';
 
@@ -19,10 +19,9 @@ export default function AdminExtracurricular() {
   const [selectedItems, setSelectedItems] = useState([]);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
-  const showToast = (message, type = 'info') => setToast({ message, type });
+  const showToast = useCallback((message, type = 'info') => setToast({ message, type }), []);
 
-  const fetchItems = async () => {
-    setIsLoading(true);
+  const fetchItems = useCallback(async () => {
     const rawApiUrl = import.meta.env.VITE_API_BASE_URL || '';
     const API_BASE_URL = rawApiUrl.replace(/\/$/, '');
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -41,11 +40,20 @@ export default function AdminExtracurricular() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
-    fetchItems();
-  }, []);
+    let isMounted = true;
+    const load = async () => {
+      await fetchItems();
+    };
+    if (isMounted) {
+      load();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchItems]);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {

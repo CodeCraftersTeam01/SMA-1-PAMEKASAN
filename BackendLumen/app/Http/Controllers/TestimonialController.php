@@ -18,20 +18,36 @@ class TestimonialController extends Controller
      */
     public function getPublicTestimonials()
     {
-        $testimonials = Cache::remember('public_testimonials', 300, function () {
-            return Testimonial::select('id', 'name', 'message', 'role', 'avatar_url', 'graduation_year', 'current_occupation', 'rating')
-                ->where('status', 'approved')
-                ->orderBy('created_at', 'desc')
-                ->limit(10)
+        $testimonials = Testimonial::where('status', 'approved')
+            ->inRandomOrder()
+            ->limit(10)
+            ->get();
+
+        if ($testimonials->count() < 10) {
+            $existingIds = $testimonials->pluck('id')->toArray();
+            $additional = Testimonial::whereNotIn('id', $existingIds)
+                ->inRandomOrder()
+                ->limit(10 - $testimonials->count())
                 ->get();
+            $testimonials = $testimonials->concat($additional);
+        }
+
+        $testimonials->transform(function ($item) {
+            if ($item->avatar_url && !str_starts_with($item->avatar_url, 'http')) {
+                $path = ltrim($item->avatar_url, '/');
+                if (str_starts_with($path, 'storage/')) {
+                    $path = substr($path, 8);
+                }
+                $item->avatar_url = url('storage/' . $path);
+            }
+            return $item;
         });
-            
+
         return response()->json([
+            'status' => 'success',
             'success' => true,
-            'data' => $testimonials
-        ])
-        ->header('Cache-Control', "public, max-age=300, stale-while-revalidate=60")
-        ->header('Vary', 'Accept');
+            'data' => $testimonials->values()
+        ]);
     }
 
     /**
@@ -135,7 +151,7 @@ class TestimonialController extends Controller
                 ];
             });
 
-            $candidates = $candidatesSiswa->merge($candidatesAlumni)->take(10)->values();
+            $candidates = $candidatesSiswa->toBase()->concat($candidatesAlumni->toBase())->take(10)->values();
         }
 
         if ($candidates->isEmpty()) {

@@ -15,10 +15,18 @@ class Alumni extends Model
         'jurusan',
         'no_telepon',
         'email',
+        'foto',
         'alamat_domisili',
         'latitude',
         'longitude',
     ];
+
+    protected $appends = ['foto_url'];
+
+    public function getFotoUrlAttribute()
+    {
+        return $this->foto ? url('storage/' . $this->foto) : null;
+    }
 
     /**
      * Relasi ke RencanaKarir
