@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import UserList from './UserList';
@@ -18,7 +18,7 @@ const Toast = ({ message, type, onClose }) => {
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
+    <div className={`fixed bottom-6 right-6 z-100 flex items-center gap-3 px-5 py-3.5 rounded-2xl text-white shadow-2xl shadow-slate-900/20 animate-fade-up ${colors[type] || colors.info}`}>
       {type === 'success' && (
         <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -39,22 +39,32 @@ const Toast = ({ message, type, onClose }) => {
   );
 };
 
+// Safe JSON parser — won't crash if backend returns empty body or HTML error page
+const safeJson = async (response) => {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return response.json();
+  }
+  return { message: `Server error (HTTP ${response.status})` };
+};
+
 const UserManagement = () => {
   const { token, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
   const [users, setUsers] = useState([]);
-  const [isFetchingUsers, setIsFetchingUsers] = useState(false);
+  // Start as true so loading spinner shows immediately without synchronous setState in effect
+  const [isFetchingUsers, setIsFetchingUsers] = useState(true);
   const [toast, setToast] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [permModalUser, setPermModalUser] = useState(null);
 
-  // Fetch all users
-  const fetchUsers = async () => {
-    if (!token) return; // Mencegah fetch tanpa token yang memicu 401 & NetworkError
-    setIsFetchingUsers(true);
+  // Fetch all users — wrapped in useCallback so it's a stable reference for useEffect.
+  // No synchronous setState here (setIsFetchingUsers starts true from initial state).
+  const fetchUsers = useCallback(async () => {
+    if (!token) return;
     try {
       const response = await fetch(`${API_BASE_URL}/api/users`, {
         method: 'GET',
@@ -71,9 +81,9 @@ const UserManagement = () => {
     } catch (error) {
       setToast({ message: error.message, type: 'error' });
     } finally {
-      setIsFetchingUsers(false);
+      setIsFetchingUsers(false); // Only ever set false — always async (after await)
     }
-  };
+  }, [API_BASE_URL, token]);
 
   // Create new user
   const handleCreateUser = async (formData) => {
@@ -87,13 +97,18 @@ const UserManagement = () => {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok) {
+        // Show field-level validation errors if available
+        if (data.errors) {
+          const msgs = Object.values(data.errors).flat().join(' | ');
+          throw new Error(msgs || data.message || 'Validasi gagal');
+        }
         throw new Error(data.message || 'Gagal membuat pengguna');
       }
 
-      setToast({ message: data.message, type: 'success' });
+      setToast({ message: data.message || 'Pengguna berhasil ditambahkan', type: 'success' });
       setShowForm(false);
       fetchUsers();
     } catch (error) {
@@ -113,13 +128,17 @@ const UserManagement = () => {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok) {
+        if (data.errors) {
+          const msgs = Object.values(data.errors).flat().join(' | ');
+          throw new Error(msgs || data.message || 'Validasi gagal');
+        }
         throw new Error(data.message || 'Gagal memperbarui pengguna');
       }
 
-      setToast({ message: data.message, type: 'success' });
+      setToast({ message: data.message || 'Pengguna berhasil diperbarui', type: 'success' });
       setShowForm(false);
       setEditingUser(null);
       fetchUsers();
@@ -141,13 +160,13 @@ const UserManagement = () => {
         },
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok) {
         throw new Error(data.message || 'Gagal menghapus pengguna');
       }
 
-      setToast({ message: data.message, type: 'success' });
+      setToast({ message: data.message || 'Pengguna berhasil dihapus', type: 'success' });
       fetchUsers();
     } catch (error) {
       setToast({ message: error.message, type: 'error' });
@@ -168,7 +187,7 @@ const UserManagement = () => {
         body: JSON.stringify({ ids }),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok) {
         throw new Error(data.message || 'Gagal menghapus pengguna');
@@ -195,7 +214,7 @@ const UserManagement = () => {
         body: JSON.stringify({ permissions }),
       });
 
-      const data = await response.json();
+      const data = await safeJson(response);
 
       if (!response.ok) {
         throw new Error(data.message || 'Gagal menyimpan hak akses');
@@ -216,13 +235,32 @@ const UserManagement = () => {
     }
   }, [isLoading, user, navigate]);
 
-  // Load users
+  // Initial load — inline async IIFE to satisfy react-hooks/set-state-in-effect rule.
+  // For refetching after mutations, fetchUsers() is called directly from handlers (outside effect).
   useEffect(() => {
-    if (token) {
-      fetchUsers();
-    }
-  }, [token]);
-
+    if (!token) return;
+    let cancelled = false;
+    const initialLoad = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (!response.ok) throw new Error('Gagal mengambil data pengguna');
+        const data = await response.json();
+        if (!cancelled) setUsers(data.data || []);
+      } catch (error) {
+        if (!cancelled) setToast({ message: error.message, type: 'error' });
+      } finally {
+        if (!cancelled) setIsFetchingUsers(false);
+      }
+    };
+    initialLoad();
+    return () => { cancelled = true; };
+  }, [token, API_BASE_URL]);
   return (
     <div className="space-y-6">
       {/* Header Banner */}

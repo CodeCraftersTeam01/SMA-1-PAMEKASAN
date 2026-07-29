@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import Lenis from 'lenis';
-import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users, Building, ChevronRight, Play, BookOpen, Monitor, Award, Heart, LayoutGrid, Users2 } from 'lucide-react';
+import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users, Building, ChevronRight, Play, BookOpen, Monitor, Award, Heart, LayoutGrid, Users2, Compass } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -66,7 +66,7 @@ const LoadingScreen = () => (
       initial={{ opacity: 1, y: "0%" }}
       exit={{ opacity: 1, y: "-100%" }}
       transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }} // smooth curtain-like slide up
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-smansa-navy origin-top"
+      className="fixed inset-0 z-9999 flex flex-col items-center justify-center bg-smansa-navy origin-top"
     >
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -361,7 +361,7 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }
             }}
-            className="fixed bottom-24 right-6 lg:right-10 z-[70] w-12 h-12 bg-smansa-navy text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-blue-800 hover:scale-110 transition-all border border-white/20"
+            className="fixed bottom-24 right-6 lg:right-10 z-70 w-12 h-12 bg-smansa-navy text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-blue-800 hover:scale-110 transition-all border border-white/20"
             aria-label="Scroll to top"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -376,7 +376,7 @@ export default function App() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: !isLoading ? 0 : -100, opacity: !isLoading ? 1 : 0 }}
         transition={{ duration: 0.8, delay: 0.8, ease: [0.76, 0, 0.24, 1] }}
-        className="relative z-[60]"
+        className="relative z-60"
       >
         <Navbar isScrolled={isScrolled} navItems={navItems} onLoginClick={() => setShowLoginModal(true)} />
       </motion.div>
@@ -499,8 +499,8 @@ export default function App() {
                 <a href={data.settings?.ppdb_link || FRONTEND_URL} className="bg-smansa-gold text-white font-bold px-6 py-3 rounded-full hover:bg-yellow-500 transition-all duration-300 hover:scale-105 shadow-lg flex items-center justify-center gap-2 text-sm">
                   Daftar Sekarang <ArrowRight className="w-4 h-4" />
                 </a>
-                <a href={data.settings?.video_link || "#video-profil"} className="bg-transparent border border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white hover:text-smansa-navy transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
-                  <Play className="w-4 h-4" fill="currentColor"/> Video Profil
+                <a href="/vtour/index.htm" target="_blank" rel="noopener noreferrer" className="bg-transparent border border-white text-white font-bold px-6 py-3 rounded-full hover:bg-white hover:text-smansa-navy transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 text-sm">
+                  <Compass className="w-4 h-4" /> Virtual Tour 360°
                 </a>
               </motion.div>
             </motion.div>
@@ -517,12 +517,12 @@ export default function App() {
           >
             <div 
               ref={statsCardRef}
-              className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-[2rem] shadow-lg p-3 md:p-6 w-[95%] md:w-full max-w-4xl mx-auto flex flex-row justify-around divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
+              className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-4xl shadow-lg p-3 md:p-6 w-[95%] md:w-full max-w-4xl mx-auto flex flex-row justify-around divide-x divide-gray-100 border border-gray-100 origin-center relative overflow-hidden"
             >
               {/* Shiny Overlay */}
               <div 
                 ref={shinyRef}
-                className="absolute -top-[50%] -bottom-[50%] w-64 bg-gradient-to-r from-transparent via-blue-400/30 to-transparent rotate-[25deg] pointer-events-none z-20"
+                className="absolute top-[-50%] bottom-[-50%] w-64 bg-linear-to-r from-transparent via-blue-400/30 to-transparent rotate-25 pointer-events-none z-20"
                 style={{ filter: 'blur(2px)' }}
               ></div>
               
@@ -547,9 +547,9 @@ export default function App() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center gap-16">
               <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="w-full lg:w-5/12">
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-[4/5] bg-gray-200">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-4/5 bg-gray-200">
                   <img src={data.settings?.headmaster_photo ? `${STORAGE_BASE}/${data.settings.headmaster_photo}` : "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop"} alt="Kepala Sekolah" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/80 to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/80 to-transparent"></div>
                   <div className="absolute bottom-6 left-6 text-white">
                     <p className="font-bold text-xl">{data.settings?.headmaster_name || 'Drs. Moh. Ali, M.Pd'}</p>
                     <p className="text-blue-200 text-sm">{data.settings?.headmaster_title || 'Kepala SMAN 1 Pamekasan'}</p>
@@ -602,9 +602,9 @@ export default function App() {
                 >
                   <SpotlightCard
                     spotlightColor={i === 0 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(37, 99, 235, 0.08)'}
-                    className={`p-7 rounded-[1.75rem] border shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37, 99, 235, 0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] group flex flex-col justify-between h-full ${
+                    className={`p-7 rounded-[1.75rem] border shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37, 99, 235, 0.06)] hover:border-blue-200/80 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] group flex flex-col justify-between h-full ${
                       i === 0 
-                        ? 'bg-gradient-to-br from-smansa-navy to-blue-950 text-white border-transparent' 
+                        ? 'bg-linear-to-br from-smansa-navy to-blue-950 text-white border-transparent' 
                         : 'bg-white text-slate-800 border-slate-200/50'
                     }`}
                   >
@@ -643,9 +643,9 @@ export default function App() {
                 >
                   <SpotlightCard
                     spotlightColor={i === 0 ? 'rgba(251, 191, 36, 0.15)' : 'rgba(37, 99, 235, 0.08)'}
-                    className={`p-7 rounded-[1.75rem] border shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] group flex flex-col justify-between h-full ${
+                    className={`p-7 rounded-[1.75rem] border shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] group flex flex-col justify-between h-full ${
                       i === 0 
-                        ? 'bg-gradient-to-br from-smansa-navy to-blue-950 text-white border-transparent' 
+                        ? 'bg-linear-to-br from-smansa-navy to-blue-950 text-white border-transparent' 
                         : 'bg-white text-slate-800 border-slate-200/50'
                     }`}
                   >
@@ -685,7 +685,7 @@ export default function App() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-7 py-3.5 rounded-full text-sm lg:text-base font-bold transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] shadow-[0_2px_10px_rgba(0,0,0,0.01)] ${
+                  className={`px-7 py-3.5 rounded-full text-sm lg:text-base font-bold transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_2px_10px_rgba(0,0,0,0.01)] ${
                     activeTab === tab 
                       ? 'bg-blue-600 text-white shadow-[0_4px_20px_rgba(37,99,235,0.25)] scale-105' 
                       : 'bg-white text-gray-600 hover:bg-blue-50 border border-slate-200 hover:text-blue-600'
@@ -713,7 +713,7 @@ export default function App() {
                   <div className="space-y-6">
                     {(programs[activeTab]?.features || programs['MIPA'].features).map((feat, i) => (
                       <div key={i} className="flex gap-5 items-start">
-                        <div className="bg-blue-50/70 p-3.5 rounded-[1rem] text-blue-600">
+                        <div className="bg-blue-50/70 p-3.5 rounded-2xl text-blue-600">
                           {feat.icon}
                         </div>
                         <div>
@@ -725,7 +725,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="lg:w-1/2 w-full">
-                  <div className="aspect-[4/3] rounded-[1.75rem] overflow-hidden shadow-lg relative">
+                  <div className="aspect-4/3 rounded-[1.75rem] overflow-hidden shadow-lg relative">
                     <img 
                       src={
                         activeTab === 'MIPA' 
@@ -760,7 +760,7 @@ export default function App() {
                     <button
                       key={cat}
                       onClick={() => { setActiveCategory(cat); setNewsPage(1); }}
-                      className={`w-full text-left px-5 py-3 rounded-xl font-bold transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] flex justify-between items-center group/cat ${
+                      className={`w-full text-left px-5 py-3 rounded-xl font-bold transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex justify-between items-center group/cat ${
                         activeCategory === cat 
                           ? 'bg-blue-600 text-white shadow-[0_4px_20px_rgba(37,99,235,0.2)] scale-[1.02]' 
                           : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600'
@@ -787,9 +787,9 @@ export default function App() {
                       <Link 
                         to={`/berita/${item.id}`}
                         key={i}
-                        className="group bg-white rounded-[1.75rem] border border-slate-200/50 overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] flex flex-col"
+                        className="group bg-white rounded-[1.75rem] border border-slate-200/50 overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] flex flex-col"
                       >
-                        <div className="aspect-[16/10] overflow-hidden relative">
+                        <div className="aspect-16/10 overflow-hidden relative">
                           <img 
                             src={
                               item.image_url 
@@ -864,9 +864,9 @@ export default function App() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1, duration: 0.5 }}
-                    className="group bg-white rounded-[1.75rem] border border-slate-200/50 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] overflow-hidden flex flex-col"
+                    className="group bg-white rounded-[1.75rem] border border-slate-200/50 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] overflow-hidden flex flex-col"
                   >
-                    <div className="aspect-[16/10] overflow-hidden relative">
+                    <div className="aspect-16/10 overflow-hidden relative">
                       {item.image_url ? (
                         <img 
                           src={`${STORAGE_BASE}/${item.image_url}`} 
@@ -881,7 +881,7 @@ export default function App() {
                       <div className="absolute top-4 right-4 bg-slate-900/60 backdrop-blur-md px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase tracking-widest text-white z-20 border border-white/10">
                         Fasilitas {index + 1 < 10 ? `0${index + 1}` : index + 1}
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <div className="p-6 flex-1 flex flex-col">
                       <h3 className="text-[17px] font-bold text-smansa-navy mb-2 group-hover:text-blue-600 transition-colors">{item.name}</h3>
@@ -911,16 +911,16 @@ export default function App() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {data.achievements.slice(0, 3).map((item, index) => (
-                <div key={index} className="group relative bg-slate-900 rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.12)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] h-[400px] flex flex-col justify-end">
+                <div key={index} className="group relative bg-slate-900 rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.12)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] h-100 flex flex-col justify-end">
                   {/* Background Image */}
                   {item.image_url ? (
                     <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
                   ) : (
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-600 to-indigo-800 group-hover:scale-110 transition-transform duration-700 opacity-90"></div>
+                    <div className="absolute inset-0 w-full h-full bg-linear-to-br from-blue-600 to-indigo-800 group-hover:scale-110 transition-transform duration-700 opacity-90"></div>
                   )}
                   
                   {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
 
                   {/* Content */}
                   <div className="relative p-6 flex flex-col justify-end h-full text-white z-10">
@@ -938,7 +938,7 @@ export default function App() {
                     </div>
 
                     {/* Expanded Details on Hover */}
-                    <div className="max-h-0 opacity-0 group-hover:max-h-[300px] group-hover:opacity-100 group-hover:mt-4 transition-all duration-500 overflow-hidden flex flex-col gap-3">
+                    <div className="max-h-0 opacity-0 group-hover:max-h-75 group-hover:opacity-100 group-hover:mt-4 transition-all duration-500 overflow-hidden flex flex-col gap-3">
                         {/* Student Name */}
                         {item.siswas && item.siswas.length > 0 ? (
                           <div className="flex flex-wrap gap-2">
@@ -993,9 +993,9 @@ export default function App() {
             </motion.div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {data.teachers.length > 0 ? data.teachers.slice(0, 4).map((teacher, index) => (
-                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-[3/4]">
+                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4">
                   <img src={teacher.photo ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=128`} className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" alt={teacher.name} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30">
                     <h3 className="text-[15px] font-bold">{teacher.name}</h3>
                     <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
@@ -1008,9 +1008,9 @@ export default function App() {
                 { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" },
                 { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop" }
               ].map((teacher, index) => (
-                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-[3/4]">
+                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4">
                   <img src={teacher.img} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={teacher.name} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30">
                     <h3 className="text-[15px] font-bold">{teacher.name}</h3>
                     <p className="text-blue-200 text-xs mt-0.5">{teacher.subject}</p>
@@ -1024,7 +1024,7 @@ export default function App() {
         {/* KATA KATA GURU */}
         {data.quote && data.quote.quote && (
           <section className="py-16 bg-white relative overflow-hidden">
-            <div className="absolute inset-0 bg-smansa-navy/[0.02] pointer-events-none" />
+            <div className="absolute inset-0 bg-smansa-navy/2 pointer-events-none" />
             <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -1100,7 +1100,7 @@ export default function App() {
                 return (
                   <div key={i} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-white/20 transition-all duration-300 group">
                     <div className="flex items-center gap-6 w-full">
-                      <div className="bg-smansa-gold text-white text-center rounded-xl p-3 w-20 flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
+                      <div className="bg-smansa-gold text-white text-center rounded-xl p-3 w-20 shrink-0 shadow-lg group-hover:scale-105 transition-transform">
                         <span className="block text-2xl font-bold">{day}</span>
                         <span className="block text-xs uppercase">{month}</span>
                       </div>

@@ -6,6 +6,7 @@ use App\Models\Alumni;
 use App\Models\RencanaKarir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\ImageHelper;
 
 class AlumniController extends Controller
 {
@@ -52,6 +53,10 @@ class AlumniController extends Controller
         ]);
 
         return DB::transaction(function() use ($request) {
+            $fotoPath = $request->hasFile('foto') 
+                ? ImageHelper::compressAndStore($request->file('foto'), 'alumni_photos', 75)
+                : null;
+
             // 1. Create Alumnus record
             $alumni = Alumni::create([
                 'nisn' => $request->nisn,
@@ -60,6 +65,7 @@ class AlumniController extends Controller
                 'jurusan' => $request->jurusan,
                 'no_telepon' => $request->no_telepon,
                 'email' => $request->email,
+                'foto' => $fotoPath,
                 'alamat_domisili' => $request->alamat_domisili,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
@@ -124,6 +130,10 @@ class AlumniController extends Controller
         ]);
 
         return DB::transaction(function() use ($request, $alumni) {
+            if ($request->hasFile('foto')) {
+                $alumni->foto = ImageHelper::compressAndStore($request->file('foto'), 'alumni_photos', 75);
+            }
+
             // 1. Update Alumnus
             $alumni->update([
                 'nisn' => $request->nisn,
@@ -132,6 +142,7 @@ class AlumniController extends Controller
                 'jurusan' => $request->jurusan,
                 'no_telepon' => $request->no_telepon,
                 'email' => $request->email,
+                'foto' => $alumni->foto,
                 'alamat_domisili' => $request->alamat_domisili,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,

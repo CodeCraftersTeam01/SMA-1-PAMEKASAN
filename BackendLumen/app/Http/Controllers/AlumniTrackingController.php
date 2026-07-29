@@ -223,14 +223,78 @@ class AlumniTrackingController extends Controller
                     'pilihan_1' => $pilihan1,
                     'rencana_detail' => $rk,
                     'tahun_ajaran' => $siswa->tahunAjaran->tahun ?? '-',
+                    'foto_url' => $alumniRec ? $alumniRec->foto_url : null,
                     
-                    // Extra fields for details
-                    'nisn' => $siswa->pendaftaran->nisn ?? 'Tidak tersedia',
+                    // Extra fields for details & contact
+                    'nisn' => $siswa->nisn ?: ($siswa->pendaftaran->nisn ?? 'Tidak tersedia'),
                     'no_pendaftaran' => $siswa->pendaftaran->no_pendaftaran ?? 'Tidak tersedia',
                     'asal_sekolah' => $siswa->pendaftaran->asal_sekolah ?? 'Tidak tersedia',
-                    'alamat' => $siswa->pendaftaran->alamat ?? 'Tidak tersedia',
+                    'alamat' => $alumniRec ? $alumniRec->alamat_domisili : ($siswa->alamat ?? 'Tidak tersedia'),
+                    'alamat_domisili' => $alumniRec ? $alumniRec->alamat_domisili : ($siswa->alamat ?? 'Tidak tersedia'),
+                    'no_telepon' => $alumniRec ? $alumniRec->no_telepon : ($siswa->nomor_hp ?? '-'),
+                    'email' => $alumniRec ? $alumniRec->email : ($siswa->email ?? '-'),
+                    'latitude' => $alumniRec ? $alumniRec->latitude : ($siswa->lintang ?? null),
+                    'longitude' => $alumniRec ? $alumniRec->longitude : ($siswa->bujur ?? null),
                 ];
             });
+
+            // Include standalone manual alumni from alumnis table
+            $existingNisns = $formatted->pluck('nisn')->filter()->toArray();
+            $standaloneAlumni = \App\Models\Alumni::with('rencanaKarir')->get()->filter(function($al) use ($existingNisns) {
+                return !in_array($al->nisn, $existingNisns);
+            });
+
+            $standaloneFormatted = $standaloneAlumni->map(function($al) {
+                $rk = $al->rencanaKarir;
+                $pilihan1 = null;
+                if ($rk) {
+                    if ($rk->kategori_pilihan === 'kuliah') {
+                        $pilihan1 = [
+                            'universitas' => $rk->univ_pilihan_1,
+                            'jurusan' => $rk->jurusan_pilihan_1,
+                        ];
+                    } elseif ($rk->kategori_pilihan === 'kerja') {
+                        $pilihan1 = [
+                            'universitas' => $rk->nama_perusahaan,
+                            'jurusan' => $rk->posisi_pekerjaan,
+                        ];
+                    } elseif ($rk->kategori_pilihan === 'bisnis') {
+                        $pilihan1 = [
+                            'universitas' => $rk->nama_bisnis,
+                            'jurusan' => $rk->bidang_bisnis,
+                        ];
+                    }
+                }
+
+                return [
+                    'id' => 'MANUAL-' . $al->id,
+                    'alumni_id' => $al->id,
+                    'nama' => $al->nama_lengkap,
+                    'nis' => '-',
+                    'kelas_asal' => $al->jurusan ?: 'Manual',
+                    'tahun_masuk' => $al->tahun_lulus ? ($al->tahun_lulus - 3) : '-',
+                    'tahun_lulus' => $al->tahun_lulus ?? '-',
+                    'status_pengisian' => $rk ? 'Lengkap' : 'Pending',
+                    'kategori_pilihan' => $rk ? $rk->kategori_pilihan : 'belum',
+                    'pilihan_1' => $pilihan1,
+                    'rencana_detail' => $rk,
+                    'tahun_ajaran' => '-',
+                    'foto_url' => $al->foto_url,
+                    
+                    // Extra fields for details & contact
+                    'nisn' => $al->nisn ?: 'Tidak tersedia',
+                    'no_pendaftaran' => '-',
+                    'asal_sekolah' => 'Manual Entry',
+                    'alamat' => $al->alamat_domisili ?: 'Tidak tersedia',
+                    'alamat_domisili' => $al->alamat_domisili ?: 'Tidak tersedia',
+                    'no_telepon' => $al->no_telepon ?? '-',
+                    'email' => $al->email ?? '-',
+                    'latitude' => $al->latitude ?? null,
+                    'longitude' => $al->longitude ?? null,
+                ];
+            });
+
+            $formatted = $formatted->concat($standaloneFormatted)->values();
 
             return response()->json([
                 'status' => 'success',

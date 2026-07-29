@@ -196,6 +196,7 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->get('alumni', ['middleware' => 'permission:alumni,view', 'uses' => 'AlumniController@index']);
     $router->post('alumni', ['middleware' => 'permission:alumni,create', 'uses' => 'AlumniController@store']);
     $router->put('alumni/{id}', ['middleware' => 'permission:alumni,edit', 'uses' => 'AlumniController@update']);
+    $router->post('alumni/{id}', ['middleware' => 'permission:alumni,edit', 'uses' => 'AlumniController@update']); // Spoofed PUT for file upload
     $router->delete('alumni/{id}', ['middleware' => 'permission:alumni,delete', 'uses' => 'AlumniController@destroy']);
 
     // Routes untuk Website Content Management (CMS)

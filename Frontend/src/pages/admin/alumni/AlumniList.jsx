@@ -418,29 +418,6 @@ const AlumniList = () => {
     return matchesSearch && matchesTahun && matchesKategori;
   });
 
-  // Avatar Initials Helpers
-  const getInitials = (name) => {
-    if (!name) return 'A';
-    const parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return parts[0][0].toUpperCase();
-  };
-
-  const getAvatarBg = (name) => {
-    const code = (name || '').charCodeAt(0) || 65;
-    const colors = [
-      'bg-indigo-50 text-indigo-700 border border-indigo-100',
-      'bg-blue-50 text-blue-700 border border-blue-100',
-      'bg-purple-50 text-purple-700 border border-purple-100',
-      'bg-emerald-50 text-emerald-700 border border-emerald-100',
-      'bg-rose-50 text-rose-700 border border-rose-100',
-      'bg-amber-50 text-amber-700 border border-amber-100',
-    ];
-    return colors[code % colors.length];
-  };
-
   // Radial Ring Properties for Stats Ring
   const radius = 18;
   const strokeWidth = 3.5;
@@ -676,9 +653,15 @@ const AlumniList = () => {
                       <td className="py-3 px-4 font-bold text-slate-700">{item.nis || '-'}</td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8.5 h-8.5 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${getAvatarBg(item.nama)}`}>
-                            {getInitials(item.nama)}
-                          </div>
+                          {item.foto_url ? (
+                            <img src={item.foto_url} alt={item.nama} className="w-8.5 h-8.5 rounded-xl object-cover border border-slate-100 shrink-0" />
+                          ) : (
+                            <div className="w-8.5 h-8.5 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
+                              <svg className="w-5 h-5 text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                              </svg>
+                            </div>
+                          )}
                           <div>
                             <div className="font-extrabold text-slate-800 leading-tight">{item.nama}</div>
                             <div className="text-[10px] text-slate-400 mt-1 leading-none">NISN: {item.nisn || '-'} | Kelas Asal: {item.kelas_asal || '-'}</div>
@@ -801,23 +784,23 @@ const AlumniList = () => {
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400">No. Telepon / WhatsApp</p>
-                    <p className="font-semibold text-slate-750 mt-0.5">{selectedAlumni.rencana_detail?.no_telepon || selectedAlumni.no_telepon || '-'}</p>
+                    <p className="font-semibold text-slate-750 mt-0.5">{selectedAlumni.no_telepon || selectedAlumni.rencana_detail?.no_telepon || '-'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400">Email</p>
-                    <p className="font-semibold text-slate-750 mt-0.5">{selectedAlumni.rencana_detail?.email || selectedAlumni.email || '-'}</p>
+                    <p className="font-semibold text-slate-750 mt-0.5">{selectedAlumni.email || selectedAlumni.rencana_detail?.email || '-'}</p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-[10px] text-slate-400">Alamat Domisili</p>
-                    <p className="font-medium text-slate-700 mt-0.5">{selectedAlumni.rencana_detail?.alamat_domisili || selectedAlumni.alamat || '-'}</p>
+                    <p className="font-medium text-slate-700 mt-0.5">{selectedAlumni.alamat_domisili || selectedAlumni.alamat || selectedAlumni.rencana_detail?.alamat_domisili || '-'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400">Latitude (Lintang)</p>
-                    <p className="font-semibold text-slate-700 mt-0.5">{selectedAlumni.rencana_detail?.latitude || '-'}</p>
+                    <p className="font-semibold text-slate-700 mt-0.5">{selectedAlumni.latitude || selectedAlumni.rencana_detail?.latitude || '-'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-slate-400">Longitude (Bujur)</p>
-                    <p className="font-semibold text-slate-700 mt-0.5">{selectedAlumni.rencana_detail?.longitude || '-'}</p>
+                    <p className="font-semibold text-slate-700 mt-0.5">{selectedAlumni.longitude || selectedAlumni.rencana_detail?.longitude || '-'}</p>
                   </div>
                 </div>
               </div>

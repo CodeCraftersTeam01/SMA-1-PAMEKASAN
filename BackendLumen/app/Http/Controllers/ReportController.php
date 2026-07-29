@@ -156,8 +156,8 @@ class ReportController extends Controller
         $html .= '</tbody></table>';
 
         return response($html, 200, [
-            "Content-type"        => "application/vnd.ms-excel",
-            "Content-Disposition" => "attachment; filename={$filename}.xls",
+            "Content-type"        => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition" => "attachment; filename={$filename}.xlsx",
             "Pragma"              => "no-cache",
             "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
             "Expires"             => "0"

@@ -120,8 +120,8 @@ export default function TestimonialSection() {
   };
 
   // Distribute testimonials between two rows for staggered marquee
-  const baseRow1 = baseTestimonials.filter((_, idx) => idx % 2 === 0);
-  const baseRow2 = baseTestimonials.filter((_, idx) => idx % 2 !== 0);
+  const baseRow1 = baseTestimonials.length <= 4 ? baseTestimonials : baseTestimonials.filter((_, idx) => idx % 2 === 0);
+  const baseRow2 = baseTestimonials.length <= 4 ? [...baseTestimonials].reverse() : baseTestimonials.filter((_, idx) => idx % 2 !== 0);
 
   const row1 = fillMarquee(baseRow1, 6);
   const row2 = fillMarquee(baseRow2, 6);
@@ -166,7 +166,7 @@ export default function TestimonialSection() {
             </span>
             
             {item.current_occupation && (
-              <span className="text-[10.5px] text-slate-400 font-medium max-w-[120px] line-clamp-1">
+              <span className="text-[10.5px] text-slate-400 font-medium max-w-30 line-clamp-1">
                 • {item.current_occupation}
               </span>
             )}
@@ -253,8 +253,8 @@ export default function TestimonialSection() {
       `}</style>
       
       {/* Elegant side gradient overlay shields to fade edges */}
-      <div className="absolute inset-y-0 left-0 w-20 sm:w-40 bg-gradient-to-r from-gray-50 to-transparent pointer-events-none z-10"></div>
-      <div className="absolute inset-y-0 right-0 w-20 sm:w-40 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-10"></div>
+      <div className="absolute inset-y-0 left-0 w-20 sm:w-40 bg-linear-to-r from-gray-50 to-transparent pointer-events-none z-10"></div>
+      <div className="absolute inset-y-0 right-0 w-20 sm:w-40 bg-linear-to-l from-gray-50 to-transparent pointer-events-none z-10"></div>
     </div>
   );
 }
