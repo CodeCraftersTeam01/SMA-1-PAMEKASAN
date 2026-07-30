@@ -16,6 +16,12 @@ class LandingPageController extends Controller
 {
     private function cached($data, int $seconds = 60)
     {
+        if (env('APP_ENV') === 'local') {
+            return response()->json(['success' => true, 'data' => $data])
+                ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                ->header('Pragma', 'no-cache');
+        }
+
         return response()->json(['success' => true, 'data' => $data])
             ->header('Cache-Control', "public, max-age={$seconds}, stale-while-revalidate=60")
             ->header('Vary', 'Accept');
@@ -69,7 +75,7 @@ class LandingPageController extends Controller
             $features = \App\Models\Feature::select('id', 'title', 'description', 'icon')
                 ->orderBy('order', 'asc')->get();
 
-            $programs = \App\Models\Program::select('id', 'title', 'description', 'features_json')
+            $programs = \App\Models\Program::select('id', 'title', 'description', 'features_json', 'image_path')
                 ->orderBy('order', 'asc')->get();
 
             $agendas = \Illuminate\Support\Facades\DB::table('academic_calendars')
@@ -247,7 +253,7 @@ class LandingPageController extends Controller
     public function getPrograms()
     {
         $programs = Cache::remember('public_programs', 600, function () {
-            return \App\Models\Program::select('id', 'title', 'description', 'features_json')
+            return \App\Models\Program::select('id', 'title', 'description', 'features_json', 'image_path')
                 ->orderBy('order', 'asc')
                 ->get();
         });

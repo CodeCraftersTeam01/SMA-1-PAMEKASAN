@@ -12,7 +12,7 @@ class AdminTeacherController extends Controller
     {
         // Custom order based on jabatan
         $teachers = Teacher::all()->sortBy(function($teacher) {
-            $jabatan = strtolower($teacher->jabatan);
+            $jabatan = strtolower($teacher->jabatan ?? '');
             if (str_contains($jabatan, 'kepala sekolah') && !str_contains($jabatan, 'wakil')) return 1;
             if (str_contains($jabatan, 'wakil kepala') || str_contains($jabatan, 'wakasek')) return 2;
             return 3;
@@ -38,6 +38,11 @@ class AdminTeacherController extends Controller
         }
 
         $teacher = Teacher::create($data);
+
+        // Clear teachers and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_teachers');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($teacher, 201);
     }
 
@@ -69,6 +74,11 @@ class AdminTeacherController extends Controller
         }
 
         $teacher->update($data);
+
+        // Clear teachers and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_teachers');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($teacher);
     }
 
@@ -79,6 +89,11 @@ class AdminTeacherController extends Controller
             Storage::disk('public')->delete($teacher->photo);
         }
         $teacher->delete();
+
+        // Clear teachers and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_teachers');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json(['message' => 'Deleted successfully']);
     }
 
@@ -115,6 +130,10 @@ class AdminTeacherController extends Controller
                 $count++;
             }
         }
+
+        // Clear teachers and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_teachers');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
 
         return response()->json(['message' => "{$count} data guru berhasil diperbarui"]);
     }

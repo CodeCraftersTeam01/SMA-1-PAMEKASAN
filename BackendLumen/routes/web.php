@@ -204,30 +204,35 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->post('admin/news', ['middleware' => 'permission:berita,create', 'uses' => 'AdminNewsController@store']);
     $router->get('admin/news/{id}', ['middleware' => 'permission:berita,view', 'uses' => 'AdminNewsController@show']);
     $router->put('admin/news/{id}', ['middleware' => 'permission:berita,edit', 'uses' => 'AdminNewsController@update']);
+    $router->post('admin/news/{id}', ['middleware' => 'permission:berita,edit', 'uses' => 'AdminNewsController@update']);
     $router->delete('admin/news/{id}', ['middleware' => 'permission:berita,delete', 'uses' => 'AdminNewsController@destroy']);
 
     $router->get('admin/achievements', ['middleware' => 'permission:prestasi,view', 'uses' => 'AdminAchievementController@index']);
     $router->post('admin/achievements', ['middleware' => 'permission:prestasi,create', 'uses' => 'AdminAchievementController@store']);
     $router->get('admin/achievements/{id}', ['middleware' => 'permission:prestasi,view', 'uses' => 'AdminAchievementController@show']);
     $router->put('admin/achievements/{id}', ['middleware' => 'permission:prestasi,edit', 'uses' => 'AdminAchievementController@update']);
+    $router->post('admin/achievements/{id}', ['middleware' => 'permission:prestasi,edit', 'uses' => 'AdminAchievementController@update']);
     $router->delete('admin/achievements/{id}', ['middleware' => 'permission:prestasi,delete', 'uses' => 'AdminAchievementController@destroy']);
 
     $router->get('admin/facilities', ['middleware' => 'permission:fasilitas,view', 'uses' => 'AdminFacilityController@index']);
     $router->post('admin/facilities', ['middleware' => 'permission:fasilitas,create', 'uses' => 'AdminFacilityController@store']);
     $router->get('admin/facilities/{id}', ['middleware' => 'permission:fasilitas,view', 'uses' => 'AdminFacilityController@show']);
     $router->put('admin/facilities/{id}', ['middleware' => 'permission:fasilitas,edit', 'uses' => 'AdminFacilityController@update']);
+    $router->post('admin/facilities/{id}', ['middleware' => 'permission:fasilitas,edit', 'uses' => 'AdminFacilityController@update']);
     $router->delete('admin/facilities/{id}', ['middleware' => 'permission:fasilitas,delete', 'uses' => 'AdminFacilityController@destroy']);
 
     $router->get('admin/pages', ['middleware' => 'permission:halaman,view', 'uses' => 'AdminPageController@index']);
     $router->post('admin/pages', ['middleware' => 'permission:halaman,create', 'uses' => 'AdminPageController@store']);
     $router->get('admin/pages/{id}', ['middleware' => 'permission:halaman,view', 'uses' => 'AdminPageController@show']);
     $router->put('admin/pages/{id}', ['middleware' => 'permission:halaman,edit', 'uses' => 'AdminPageController@update']);
+    $router->post('admin/pages/{id}', ['middleware' => 'permission:halaman,edit', 'uses' => 'AdminPageController@update']);
     $router->delete('admin/pages/{id}', ['middleware' => 'permission:halaman,delete', 'uses' => 'AdminPageController@destroy']);
 
     $router->get('admin/teachers', ['middleware' => 'permission:teachers,view', 'uses' => 'AdminTeacherController@index']);
     $router->post('admin/teachers', ['middleware' => 'permission:teachers,create', 'uses' => 'AdminTeacherController@store']);
     $router->put('admin/teachers/bulk-update-per-user', ['middleware' => 'permission:teachers,edit', 'uses' => 'AdminTeacherController@bulkUpdatePerUser']);
     $router->get('admin/teachers/{id}', ['middleware' => 'permission:teachers,view', 'uses' => 'AdminTeacherController@show']);
+    $router->put('admin/teachers/{id}', ['middleware' => 'permission:teachers,edit', 'uses' => 'AdminTeacherController@update']);
     $router->post('admin/teachers/{id}', ['middleware' => 'permission:teachers,edit', 'uses' => 'AdminTeacherController@update']); // Use POST with _method=PUT for file upload
     $router->delete('admin/teachers/{id}', ['middleware' => 'permission:teachers,delete', 'uses' => 'AdminTeacherController@destroy']);
 
@@ -241,6 +246,7 @@ $router->group(['prefix' => 'api', 'middleware' => ['throttle:300,60', 'auth']],
     $router->post('admin/programs', ['middleware' => 'permission:programs,create', 'uses' => 'AdminProgramController@store']);
     $router->get('admin/programs/{id}', ['middleware' => 'permission:programs,view', 'uses' => 'AdminProgramController@show']);
     $router->put('admin/programs/{id}', ['middleware' => 'permission:programs,edit', 'uses' => 'AdminProgramController@update']);
+    $router->post('admin/programs/{id}', ['middleware' => 'permission:programs,edit', 'uses' => 'AdminProgramController@update']);
     $router->delete('admin/programs/{id}', ['middleware' => 'permission:programs,delete', 'uses' => 'AdminProgramController@destroy']);
 
     $router->get('admin/extracurriculars', ['middleware' => 'permission:ekstrakurikuler,view', 'uses' => 'ExtracurricularController@index']);

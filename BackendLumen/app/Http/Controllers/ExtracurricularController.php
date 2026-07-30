@@ -43,6 +43,10 @@ class ExtracurricularController extends Controller
             'image_path' => $imagePath,
         ]);
 
+        // Clear extracurriculars and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_extracurriculars');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($item, 201);
     }
 
@@ -82,6 +86,10 @@ class ExtracurricularController extends Controller
             'image_path' => $imagePath,
         ]);
 
+        // Clear extracurriculars and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_extracurriculars');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($item);
     }
 
@@ -92,6 +100,11 @@ class ExtracurricularController extends Controller
     {
         $item = Extracurricular::findOrFail($id);
         $item->delete();
+
+        // Clear extracurriculars and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_extracurriculars');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json(['message' => 'Deleted successfully']);
     }
 

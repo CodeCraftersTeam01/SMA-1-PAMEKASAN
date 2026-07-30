@@ -30,6 +30,11 @@ class AdminFacilityController extends Controller
         }
 
         $facility = Facility::create($data);
+
+        // Clear facilities and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_facilities');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($facility, 201);
     }
 
@@ -61,6 +66,11 @@ class AdminFacilityController extends Controller
         }
 
         $facility->update($data);
+
+        // Clear facilities and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_facilities');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($facility);
     }
 
@@ -71,6 +81,11 @@ class AdminFacilityController extends Controller
             \Illuminate\Support\Facades\Storage::disk('public')->delete($facility->image_url);
         }
         $facility->delete();
+
+        // Clear facilities and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_facilities');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json(['message' => 'Deleted successfully']);
     }
 

@@ -274,6 +274,7 @@ export default function AdminNews() {
                     <option>Berita Sekolah</option>
                     <option>Kegiatan Siswa</option>
                     <option>Pengumuman</option>
+                    <option>Kemitraan & Kerja Sama</option>
                   </select>
                 </div>
                 <div>

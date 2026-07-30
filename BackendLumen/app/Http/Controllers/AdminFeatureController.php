@@ -22,6 +22,11 @@ class AdminFeatureController extends Controller
         ]);
 
         $feature = Feature::create($request->all());
+
+        // Clear features and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_features');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($feature, 201);
     }
 
@@ -42,6 +47,11 @@ class AdminFeatureController extends Controller
         ]);
 
         $feature->update($request->all());
+
+        // Clear features and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_features');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($feature);
     }
 
@@ -49,6 +59,11 @@ class AdminFeatureController extends Controller
     {
         $feature = Feature::findOrFail($id);
         $feature->delete();
+
+        // Clear features and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_features');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json(['message' => 'Deleted successfully']);
     }
 

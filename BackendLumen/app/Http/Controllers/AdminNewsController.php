@@ -38,6 +38,10 @@ class AdminNewsController extends Controller
             'published_at' => \Carbon\Carbon::now(),
         ]);
 
+        // Clear news and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+        \Illuminate\Support\Facades\Cache::forget('public_news');
+
         return response()->json($news, 201);
     }
 
@@ -71,12 +75,23 @@ class AdminNewsController extends Controller
             'image_url' => $imageUrl,
         ]);
 
+        // Clear news and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+        \Illuminate\Support\Facades\Cache::forget('public_news');
+        \Illuminate\Support\Facades\Cache::forget("public_news_detail_{$id}");
+
         return response()->json($news);
     }
 
     public function destroy($id)
     {
         News::findOrFail($id)->delete();
+
+        // Clear news and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+        \Illuminate\Support\Facades\Cache::forget('public_news');
+        \Illuminate\Support\Facades\Cache::forget("public_news_detail_{$id}");
+
         return response()->json(['message' => 'Deleted successfully']);
     }
 
