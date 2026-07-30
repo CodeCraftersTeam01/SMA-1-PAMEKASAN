@@ -7,7 +7,7 @@ export default function AdminTeachers() {
     id: null,
     name: '',
     subject: '',
-    jabatan: '',
+    jabatan: 'Guru Mata Pelajaran',
     photoFile: null,
   });
 
@@ -149,7 +149,7 @@ export default function AdminTeachers() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => { setFormData({ id: null, name: '', subject: '', jabatan: '', photoFile: null }); setIsModalOpen(true); }} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-slate-900/20 font-semibold flex items-center gap-2 shrink-0">
+            <button onClick={() => { setFormData({ id: null, name: '', subject: '', jabatan: 'Guru Mata Pelajaran', photoFile: null }); setIsModalOpen(true); }} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-slate-900/20 font-semibold flex items-center gap-2 shrink-0">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Tambah Guru
             </button>
@@ -252,7 +252,18 @@ export default function AdminTeachers() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Jabatan / Posisi</label>
-                <input type="text" value={formData.jabatan} onChange={e => setFormData({...formData, jabatan: e.target.value})} className="w-full border p-2 rounded-lg" placeholder="Contoh: Kepala Sekolah / Guru Mata Pelajaran" />
+                <select 
+                  value={formData.jabatan} 
+                  onChange={e => setFormData({...formData, jabatan: e.target.value})} 
+                  className="w-full border p-2 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-400"
+                  required
+                >
+                  <option>Kepala Sekolah</option>
+                  <option>Wakil Kepala Sekolah</option>
+                  <option>Guru Mata Pelajaran</option>
+                  <option>Staf Tata Usaha</option>
+                  <option>Komite Sekolah</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Foto Profile (Opsional)</label>

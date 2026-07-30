@@ -12,5 +12,7 @@ class Teacher extends Model
         'photo',
         'jabatan',
         'kelas',
+        'category',
+        'order',
     ];
 }

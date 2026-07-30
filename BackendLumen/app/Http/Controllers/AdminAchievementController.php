@@ -41,6 +41,10 @@ class AdminAchievementController extends Controller
             $this->generateAnnouncement($achievement);
         }
 
+        // Clear achievements and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_achievements');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($achievement->load('siswas:id,nama_lengkap,kelas'), 201);
     }
 
@@ -79,6 +83,10 @@ class AdminAchievementController extends Controller
             $this->generateAnnouncement($achievement);
         }
 
+        // Clear achievements and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_achievements');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json($achievement->load('siswas:id,nama_lengkap,kelas'));
     }
 
@@ -87,6 +95,11 @@ class AdminAchievementController extends Controller
         $achievement = Achievement::findOrFail($id);
         $achievement->siswas()->detach();
         $achievement->delete();
+
+        // Clear achievements and landing page caches
+        \Illuminate\Support\Facades\Cache::forget('public_achievements');
+        \Illuminate\Support\Facades\Cache::forget('landing_page_data');
+
         return response()->json(['message' => 'Deleted successfully']);
     }
 

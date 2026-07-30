@@ -9,6 +9,7 @@ class Program extends Model
     protected $fillable = [
         'title',
         'description',
+        'image_path',
         'features_json',
         'order',
     ];

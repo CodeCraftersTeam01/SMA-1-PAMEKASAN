@@ -7,6 +7,8 @@ export default function AdminPrograms() {
     id: null,
     title: '',
     description: '',
+    image_path: '',
+    image: null,
     features_json: [],
     order: 0,
   });
@@ -84,15 +86,28 @@ export default function AdminPrograms() {
       ? `${import.meta.env.VITE_API_BASE_URL}/api/admin/programs/${formData.id}`
       : `${import.meta.env.VITE_API_BASE_URL}/api/admin/programs`;
       
+    const payload = new FormData();
+    payload.append('title', formData.title);
+    payload.append('description', formData.description);
+    payload.append('order', formData.order);
+    payload.append('features_json', JSON.stringify(formData.features_json));
+    
+    if (formData.image) {
+      payload.append('image', formData.image);
+    }
+
+    if (isEditing) {
+      payload.append('_method', 'PUT');
+    }
+      
     try {
       const response = await fetch(url, {
-        method: isEditing ? 'PUT' : 'POST',
+        method: 'POST', // Use POST with _method=PUT in payload for FormData support
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token') || sessionStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: payload
       });
       if (response.ok) {
         setIsModalOpen(false);
@@ -106,6 +121,8 @@ export default function AdminPrograms() {
   const handleEdit = (item) => {
     setFormData({ 
       ...item, 
+      image_path: item.image_path || '',
+      image: null,
       features_json: Array.isArray(item.features_json) ? item.features_json : [] 
     });
     setIsModalOpen(true);
@@ -153,7 +170,7 @@ export default function AdminPrograms() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => { setFormData({ id: null, title: '', description: '', features_json: [], order: 0 }); setIsModalOpen(true); }} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-slate-900/20 font-semibold flex items-center gap-2 shrink-0">
+            <button onClick={() => { setFormData({ id: null, title: '', description: '', image_path: '', image: null, features_json: [], order: 0 }); setIsModalOpen(true); }} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-slate-900/20 font-semibold flex items-center gap-2 shrink-0">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
               Tambah Program
             </button>
@@ -191,6 +208,7 @@ export default function AdminPrograms() {
                   <input type="checkbox" className="rounded border-slate-300" checked={programs.length > 0 && selectedItems.length === programs.length} onChange={handleSelectAll} />
                 </th>
                 <th className="pb-3 pl-2 w-16">Urutan</th>
+                <th className="pb-3 w-20">Gambar</th>
                 <th className="pb-3">Judul Program</th>
                 <th className="pb-3">Deskripsi Utama</th>
                 <th className="pb-3 text-right pr-2">Aksi</th>
@@ -203,6 +221,13 @@ export default function AdminPrograms() {
                     <input type="checkbox" className="rounded border-slate-300" checked={selectedItems.includes(item.id)} onChange={() => handleSelectItem(item.id)} />
                   </td>
                   <td className="py-4 pl-2 font-medium"><span className="px-2 py-1 rounded-md text-[10px] font-bold border bg-slate-50 text-slate-600 border-slate-200">{item.order}</span></td>
+                  <td className="py-4">
+                    {item.image_path ? (
+                      <img src={item.image_path} alt={item.title} className="w-12 h-12 object-cover rounded-lg border border-slate-200" />
+                    ) : (
+                      <span className="text-xs text-slate-400 italic">No image</span>
+                    )}
+                  </td>
                   <td className="py-4 font-bold text-slate-700">{item.title}</td>
                   <td className="py-4 truncate max-w-xs text-slate-500">{item.description}</td>
                   <td className="py-4 text-right pr-2">
@@ -219,7 +244,7 @@ export default function AdminPrograms() {
               ))}
               {programs.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="py-16 text-center">
+                  <td colSpan="6" className="py-16 text-center">
                     <p className="font-semibold text-slate-500">Belum ada data program</p>
                   </td>
                 </tr>
@@ -250,6 +275,20 @@ export default function AdminPrograms() {
                 <div>
                   <label className="block text-sm font-medium mb-1">Urutan Tampil (Order)</label>
                   <input type="number" value={formData.order} onChange={e => setFormData({...formData, order: e.target.value})} className="w-full border p-2 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5 text-slate-700">Foto / Gambar Program (Opsional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => setFormData({...formData, image: e.target.files[0]})}
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition-all cursor-pointer"
+                  />
+                  {formData.image_path && !formData.image && (
+                    <p className="text-xs text-slate-400 mt-2 truncate">
+                      File saat ini: <a href={formData.image_path} target="_blank" rel="noreferrer" className="text-blue-500 underline">{formData.image_path}</a>
+                    </p>
+                  )}
                 </div>
               </div>
 

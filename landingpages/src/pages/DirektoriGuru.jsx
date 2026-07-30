@@ -37,20 +37,99 @@ export default function DirektoriGuru() {
       });
   }, []);
 
-  // Hierarchy grouping logic
-  const kepalaSekolah = [];
-  const wakilKepala = [];
-  const guruMapel = [];
+  // Predefined hierarchical category order
+  const categoryOrder = [
+    'Pimpinan Sekolah',
+    'Wakil Kepala Sekolah',
+    'Guru Mata Pelajaran',
+    'Staf Tata Usaha',
+    'Komite Sekolah'
+  ];
 
+  // Helper to get styling config for each category
+  const getCategoryTheme = (cat) => {
+    switch (cat) {
+      case 'Pimpinan Sekolah':
+        return {
+          icon: <Trophy className="w-6 h-6" />,
+          bgColor: 'bg-amber-100',
+          textColor: 'text-amber-600',
+          lineColor: 'from-amber-400 to-blue-200',
+          dotColor: 'bg-blue-500'
+        };
+      case 'Wakil Kepala Sekolah':
+        return {
+          icon: <Users className="w-6 h-6" />,
+          bgColor: 'bg-blue-100',
+          textColor: 'text-blue-600',
+          lineColor: 'from-blue-200 to-emerald-200',
+          dotColor: 'bg-emerald-500'
+        };
+      case 'Guru Mata Pelajaran':
+        return {
+          icon: <BookOpen className="w-6 h-6" />,
+          bgColor: 'bg-emerald-100',
+          textColor: 'text-emerald-600',
+          lineColor: 'from-emerald-200 to-slate-200',
+          dotColor: 'bg-slate-500'
+        };
+      case 'Staf Tata Usaha':
+        return {
+          icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+          bgColor: 'bg-slate-100',
+          textColor: 'text-slate-600',
+          lineColor: 'from-slate-200 to-indigo-200',
+          dotColor: 'bg-indigo-500'
+        };
+      case 'Komite Sekolah':
+        return {
+          icon: <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>,
+          bgColor: 'bg-indigo-100',
+          textColor: 'text-indigo-600',
+          lineColor: 'from-indigo-200 to-slate-200',
+          dotColor: 'bg-slate-500'
+        };
+      default:
+        return {
+          icon: <BookOpen className="w-6 h-6" />,
+          bgColor: 'bg-gray-100',
+          textColor: 'text-gray-600',
+          lineColor: 'from-gray-200 to-gray-100',
+          dotColor: 'bg-gray-400'
+        };
+    }
+  };
+
+  // Group teachers by category dynamically based on their parsed jabatan
+  const groupedTeachers = {};
   teachers.forEach(teacher => {
     const jabatan = (teacher.jabatan || '').toLowerCase();
+    let cat = 'Guru Mata Pelajaran';
     if (jabatan.includes('kepala sekolah') && !jabatan.includes('wakil')) {
-      kepalaSekolah.push(teacher);
+      cat = 'Pimpinan Sekolah';
     } else if (jabatan.includes('wakil kepala') || jabatan.includes('wakasek')) {
-      wakilKepala.push(teacher);
-    } else {
-      guruMapel.push(teacher);
+      cat = 'Wakil Kepala Sekolah';
+    } else if (jabatan.includes('tata usaha') || jabatan.includes('staf') || jabatan.includes('tu')) {
+      cat = 'Staf Tata Usaha';
+    } else if (jabatan.includes('komite')) {
+      cat = 'Komite Sekolah';
     }
+    
+    if (!groupedTeachers[cat]) {
+      groupedTeachers[cat] = [];
+    }
+    groupedTeachers[cat].push(teacher);
+  });
+
+  // Sort categories based on predefined order list, unrecognized categories go to the end alphabetically
+  const sortedCategories = Object.keys(groupedTeachers).sort((a, b) => {
+    const indexA = categoryOrder.indexOf(a);
+    const indexB = categoryOrder.indexOf(b);
+    
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    return a.localeCompare(b);
   });
 
   const fadeUp = {
@@ -114,78 +193,41 @@ export default function DirektoriGuru() {
           </div>
         ) : (
           <div className="space-y-12">
-            {/* Kepala Sekolah */}
-            {kepalaSekolah.length > 0 && (
-              <motion.div initial="hidden" animate="visible" variants={stagger} className="flex flex-col items-center">
-                <h2 className="text-2xl font-bold text-smansa-navy mb-8 flex flex-col items-center gap-2">
-                  <div className="bg-yellow-100 p-3 rounded-full text-smansa-gold shadow-sm">
-                    <Trophy className="w-6 h-6" />
-                  </div>
-                  <span>Pimpinan Sekolah</span>
-                  <div className="w-16 h-1 bg-smansa-gold rounded-full mt-2"></div>
-                </h2>
-                <div className="flex flex-wrap justify-center gap-8 w-full">
-                  {kepalaSekolah.map((teacher, idx) => (
-                    <TeacherCard key={idx} teacher={teacher} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
+            {sortedCategories.map((cat, catIdx) => {
+              const categoryTeachers = groupedTeachers[cat] || [];
+              const theme = getCategoryTheme(cat);
+              const hasNextCategory = catIdx < sortedCategories.length - 1;
 
-            {/* Connecting Line 1 */}
-            {kepalaSekolah.length > 0 && (wakilKepala.length > 0 || guruMapel.length > 0) && (
-              <div className="flex flex-col items-center my-4">
-                <div className="w-0.5 h-16 bg-linear-to-b from-blue-400 to-blue-200"></div>
-                <div className="w-3 h-3 rounded-full bg-blue-500 shadow-sm -mt-1.5"></div>
-              </div>
-            )}
+              return (
+                <React.Fragment key={cat}>
+                  <motion.div initial="hidden" animate="visible" variants={stagger} className="flex flex-col items-center animate-fade-in">
+                    <h2 className="text-2xl font-bold text-smansa-navy mb-8 flex flex-col items-center gap-2">
+                      <div className={`${theme.bgColor} p-3 rounded-full ${theme.textColor} shadow-sm`}>
+                        {theme.icon}
+                      </div>
+                      <span>{cat}</span>
+                      <div className={`w-16 h-1 ${theme.textColor.replace('text', 'bg')} rounded-full mt-2`}></div>
+                    </h2>
+                    <div className="flex flex-wrap justify-center gap-8 w-full">
+                      {categoryTeachers.map((teacher, idx) => (
+                        <TeacherCard key={idx} teacher={teacher} />
+                      ))}
+                    </div>
+                  </motion.div>
 
-            {/* Wakil Kepala Sekolah */}
-            {wakilKepala.length > 0 && (
-              <motion.div initial="hidden" animate="visible" variants={stagger} className="flex flex-col items-center">
-                <h2 className="text-2xl font-bold text-smansa-navy mb-8 flex flex-col items-center gap-2">
-                  <div className="bg-blue-100 p-3 rounded-full text-blue-600 shadow-sm">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <span>Wakil Kepala Sekolah</span>
-                  <div className="w-16 h-1 bg-blue-500 rounded-full mt-2"></div>
-                </h2>
-                <div className="flex flex-wrap justify-center gap-8 w-full">
-                  {wakilKepala.map((teacher, idx) => (
-                    <TeacherCard key={idx} teacher={teacher} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Connecting Line 2 */}
-            {wakilKepala.length > 0 && guruMapel.length > 0 && (
-              <div className="flex flex-col items-center my-4">
-                <div className="w-0.5 h-16 bg-linear-to-b from-blue-200 to-emerald-200"></div>
-                <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm -mt-1.5"></div>
-              </div>
-            )}
-
-            {/* Guru Mata Pelajaran */}
-            {guruMapel.length > 0 && (
-              <motion.div initial="hidden" animate="visible" variants={stagger} className="flex flex-col items-center">
-                <h2 className="text-2xl font-bold text-smansa-navy mb-8 flex flex-col items-center gap-2">
-                  <div className="bg-emerald-100 p-3 rounded-full text-emerald-600 shadow-sm">
-                    <BookOpen className="w-6 h-6" />
-                  </div>
-                  <span>Guru Mata Pelajaran</span>
-                  <div className="w-16 h-1 bg-emerald-500 rounded-full mt-2"></div>
-                </h2>
-                <div className="flex flex-wrap justify-center gap-8 w-full">
-                  {guruMapel.map((teacher, idx) => (
-                    <TeacherCard key={idx} teacher={teacher} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
+                  {/* Connecting Line to Next Category */}
+                  {hasNextCategory && (
+                    <div className="flex flex-col items-center my-4">
+                      <div className={`w-0.5 h-16 bg-linear-to-b ${theme.lineColor}`}></div>
+                      <div className={`w-3 h-3 rounded-full ${theme.dotColor} shadow-sm -mt-1.5`}></div>
+                    </div>
+                  )}
+                </React.Fragment>
+              );
+            })}
 
             {teachers.length === 0 && (
-              <div className="text-center text-gray-500 py-12 bg-white rounded-3xl border border-gray-100">
+              <div className="text-center text-gray-500 py-12 bg-white rounded-3xl border border-gray-100 animate-fade-up">
                 <p>Belum ada data tenaga pendidik.</p>
               </div>
             )}

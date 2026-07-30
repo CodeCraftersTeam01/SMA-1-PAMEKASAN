@@ -29,6 +29,7 @@ class CmsSeeder extends Seeder
                 ['icon' => 'bi-book-half', 'title' => 'Olimpiade Sains', 'desc' => 'Pembinaan khusus olimpiade rutin.'],
                 ['icon' => 'bi-award', 'title' => 'Riset Terapan', 'desc' => 'Proyek penelitian siswa setiap semester.']
             ],
+            'image_path' => null,
             'order' => 1
         ]);
         \App\Models\Program::create([
@@ -39,6 +40,7 @@ class CmsSeeder extends Seeder
                 ['icon' => 'bi-heart', 'title' => 'Community Service', 'desc' => 'Program pengabdian masyarakat.'],
                 ['icon' => 'bi-building-add', 'title' => 'Business Plan', 'desc' => 'Praktek kewirausahaan siswa.']
             ],
+            'image_path' => null,
             'order' => 2
         ]);
         \App\Models\Program::create([
@@ -49,13 +51,38 @@ class CmsSeeder extends Seeder
                 ['icon' => 'bi-trophy', 'title' => 'Debate Club', 'desc' => 'Ekskul debat bahasa Inggris aktif.'],
                 ['icon' => 'bi-globe', 'title' => 'Cultural Exchange', 'desc' => 'Program pertukaran pelajar.']
             ],
+            'image_path' => null,
             'order' => 3
         ]);
 
         // 3. Seed Teachers
-        \App\Models\Teacher::create(['name' => 'Dr. H. Muhammad Budi, M.Pd.', 'subject' => 'Fisika', 'jabatan' => 'Kepala Sekolah']);
-        \App\Models\Teacher::create(['name' => 'Drs. Supriyanto, M.M.', 'subject' => 'Matematika', 'jabatan' => 'Wakil Kepala Sekolah Bidang Kurikulum']);
-        \App\Models\Teacher::create(['name' => 'Siti Aminah, S.Pd., M.Si.', 'subject' => 'Biologi', 'jabatan' => 'Guru Mata Pelajaran']);
-        \App\Models\Teacher::create(['name' => 'Rina Kusumawati, S.S., M.A.', 'subject' => 'Bahasa Inggris', 'jabatan' => 'Guru Mata Pelajaran']);
+        \App\Models\Teacher::create([
+            'name' => 'Dr. H. Muhammad Budi, M.Pd.', 
+            'subject' => 'Fisika', 
+            'jabatan' => 'Kepala Sekolah',
+            'category' => 'Pimpinan Sekolah',
+            'order' => 1
+        ]);
+        \App\Models\Teacher::create([
+            'name' => 'Drs. Supriyanto, M.M.', 
+            'subject' => 'Matematika', 
+            'jabatan' => 'Wakil Kepala Sekolah Bidang Kurikulum',
+            'category' => 'Wakil Kepala Sekolah',
+            'order' => 2
+        ]);
+        \App\Models\Teacher::create([
+            'name' => 'Siti Aminah, S.Pd., M.Si.', 
+            'subject' => 'Biologi', 
+            'jabatan' => 'Guru Mata Pelajaran',
+            'category' => 'Guru Mata Pelajaran',
+            'order' => 3
+        ]);
+        \App\Models\Teacher::create([
+            'name' => 'Rina Kusumawati, S.S., M.A.', 
+            'subject' => 'Bahasa Inggris', 
+            'jabatan' => 'Guru Mata Pelajaran',
+            'category' => 'Guru Mata Pelajaran',
+            'order' => 4
+        ]);
     }
 }

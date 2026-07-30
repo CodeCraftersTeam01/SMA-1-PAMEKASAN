@@ -306,6 +306,7 @@ export default function App() {
     data.programs.forEach(prog => {
       dynamicPrograms[prog.title] = {
         desc: prog.description,
+        image_path: prog.image_path,
         features: (prog.features_json || []).map(feat => ({
           icon: <i className={`bi ${feat.icon || 'bi-star'} text-2xl text-smansa-navy`}></i>,
           title: feat.title,
@@ -325,6 +326,15 @@ export default function App() {
   }, [programTabs, activeTab]);
 
   const categories = ['Semua', 'Berita Sekolah', 'Kegiatan Siswa', 'Pengumuman', 'Kemitraan & Kerja Sama'];
+
+  const fillMarquee = (arr, minLength = 8) => {
+    if (!arr || arr.length === 0) return [];
+    let result = [...arr];
+    while (result.length < minLength) {
+      result = [...result, ...arr];
+    }
+    return result;
+  };
 
   const getCategoryCount = (cat) => {
     if (!data.news) return 0;
@@ -728,11 +738,13 @@ export default function App() {
                   <div className="aspect-4/3 rounded-[1.75rem] overflow-hidden shadow-lg relative">
                     <img 
                       src={
-                        activeTab === 'MIPA' 
-                          ? "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop" 
-                          : activeTab === 'IPS' 
-                          ? "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=800&auto=format&fit=crop" 
-                          : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop"
+                        programs[activeTab]?.image_path || (
+                          activeTab === 'MIPA' 
+                            ? "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop" 
+                            : activeTab === 'IPS' 
+                            ? "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=800&auto=format&fit=crop" 
+                            : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop"
+                        )
                       } 
                       alt={activeTab}
                       className="w-full h-full object-cover"
@@ -981,44 +993,103 @@ export default function App() {
 
         {/* DIREKTORI GURU */}
         <section id="guru" className="py-24 bg-gray-50 border-t border-gray-200">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex justify-between items-end mb-16">
-              <div>
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex flex-col md:flex-row justify-between items-center md:items-end mb-8 gap-4">
+              <div className="text-left w-full md:w-auto">
                 <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>Tenaga Pendidik</h2>
                 <p className="text-gray-600 text-lg">Guru-guru berdedikasi tinggi pembimbing generasi cerdas.</p>
               </div>
-              <Link to="/direktori-guru" className="hidden md:inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800">
+              <Link to="/direktori-guru" className="inline-flex items-center gap-2 font-bold text-blue-600 hover:text-blue-800 self-start md:self-auto transition-colors">
                 Lihat Semua <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {data.teachers.length > 0 ? data.teachers.slice(0, 4).map((teacher, index) => (
-                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4">
-                  <img src={teacher.photo ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=128`} className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" alt={teacher.name} />
-                  <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30">
-                    <h3 className="text-[15px] font-bold">{teacher.name}</h3>
-                    <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
-                    <p className="text-blue-200 text-xs mt-0.5">{teacher.subject || 'Mata Pelajaran'}</p>
+
+            {/* Horizontal Infinite Marquee Wrapper */}
+            <div className="relative w-full overflow-hidden py-4 bg-transparent mt-8">
+              {/* Elegant side gradient overlays to fade edges */}
+              <div className="absolute inset-y-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-gray-50 to-transparent pointer-events-none z-40"></div>
+              <div className="absolute inset-y-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-40"></div>
+
+              <div className="relative flex w-full overflow-hidden group">
+                <div className="flex w-max gap-6 animate-teacher-marquee group-hover:[animation-play-state:paused] py-4 items-stretch">
+                  {/* Main set */}
+                  <div className="flex gap-6 px-3 shrink-0">
+                    {fillMarquee(
+                      data.teachers.length > 0 ? data.teachers : [
+                        { name: "Drs. H. Ahmad Sudrajat, M.Pd.", subject: "Kepala Sekolah & Guru Fisika", photo: null, img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop", jabatan: "Kepala Sekolah" },
+                        { name: "Siti Aminah, S.Pd.", subject: "Guru Matematika Peminatan", photo: null, img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
+                        { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", photo: null, img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
+                        { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", photo: null, img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" }
+                      ], 8
+                    ).map((teacher, index) => (
+                      <div key={`t-${index}`} className="group relative rounded-[1.75rem] overflow-hidden shadow-md hover:shadow-xl border border-slate-200/50 hover:border-blue-300/50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4 w-60 sm:w-68 shrink-0">
+                        <img 
+                          src={teacher.photo 
+                            ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` 
+                            : (teacher.img ? teacher.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=256`)
+                          } 
+                          className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" 
+                          alt={teacher.name} 
+                          loading="eager"
+                          decoding="async"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30 text-left">
+                          <h3 className="text-[14px] sm:text-[15px] font-bold leading-tight line-clamp-1">{teacher.name}</h3>
+                          <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
+                          <p className="text-blue-200 text-xs mt-0.5 line-clamp-1">{teacher.subject || 'Mata Pelajaran'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Duplicate set for infinite loop */}
+                  <div className="flex gap-6 px-3 shrink-0" aria-hidden="true">
+                    {fillMarquee(
+                      data.teachers.length > 0 ? data.teachers : [
+                        { name: "Drs. H. Ahmad Sudrajat, M.Pd.", subject: "Kepala Sekolah & Guru Fisika", photo: null, img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop", jabatan: "Kepala Sekolah" },
+                        { name: "Siti Aminah, S.Pd.", subject: "Guru Matematika Peminatan", photo: null, img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
+                        { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", photo: null, img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
+                        { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", photo: null, img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" }
+                      ], 8
+                    ).map((teacher, index) => (
+                      <div key={`t-dup-${index}`} className="group relative rounded-[1.75rem] overflow-hidden shadow-md hover:shadow-xl border border-slate-200/50 hover:border-blue-300/50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4 w-60 sm:w-68 shrink-0">
+                        <img 
+                          src={teacher.photo 
+                            ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` 
+                            : (teacher.img ? teacher.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=256`)
+                          } 
+                          className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" 
+                          alt={teacher.name} 
+                          loading="eager"
+                          decoding="async"
+                        />
+                        <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30 text-left">
+                          <h3 className="text-[14px] sm:text-[15px] font-bold leading-tight line-clamp-1">{teacher.name}</h3>
+                          <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
+                          <p className="text-blue-200 text-xs mt-0.5 line-clamp-1">{teacher.subject || 'Mata Pelajaran'}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              )) : [
-                { name: "Drs. H. Ahmad Sudrajat, M.Pd.", subject: "Kepala Sekolah & Guru Fisika", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop" },
-                { name: "Siti Aminah, S.Pd.", subject: "Guru Matematika Peminatan", img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop" },
-                { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop" },
-                { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop" }
-              ].map((teacher, index) => (
-                <div key={index} className="group relative rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.08)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4">
-                  <img src={teacher.img} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={teacher.name} />
-                  <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30">
-                    <h3 className="text-[15px] font-bold">{teacher.name}</h3>
-                    <p className="text-blue-200 text-xs mt-0.5">{teacher.subject}</p>
-                  </div>
-                </div>
-              ))}
+              </div>
             </div>
           </div>
+
+          {/* Marquee Keyframes Styling */}
+          <style>{`
+            @keyframes teacher-marquee-left {
+              0% { transform: translateX(0%); }
+              100% { transform: translateX(-50%); }
+            }
+            .animate-teacher-marquee {
+              animation: teacher-marquee-left 40s linear infinite;
+              will-change: transform;
+              transform: translate3d(0, 0, 0);
+              backface-visibility: hidden;
+            }
+          `}</style>
         </section>
 
         {/* KATA KATA GURU */}
