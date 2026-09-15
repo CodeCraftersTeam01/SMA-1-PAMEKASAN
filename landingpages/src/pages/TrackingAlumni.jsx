@@ -27,7 +27,7 @@ import {
 import { Link } from 'react-router-dom';
 import TestimonialForm from '../components/TestimonialForm';
 
-const API_BASE = 'http://localhost:8000/api/public';
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '/api/public';
 
 export default function TrackingAlumni() {
   // Portal Status

@@ -9,6 +9,17 @@ const stripHtml = (html) => {
   return text.length > 155 ? text.substring(0, 155) + '...' : text;
 };
 
+const formatNewsDate = (dateStr) => {
+  if (!dateStr) return 'Baru saja';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr).split('T')[0].split(' ')[0];
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch {
+    return String(dateStr).split('T')[0].split(' ')[0];
+  }
+};
+
 const SkeletonLoader = () => (
   <div className="pt-24 pb-20 bg-gray-50 min-h-screen animate-pulse">
     <div className="bg-white py-10 mb-12 border-b border-gray-200">
@@ -141,7 +152,7 @@ export default function NewsDetail({ settings }) {
             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full">{news.category || 'Berita Sekolah'}</span>
             <span className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              {news.published_at ? news.published_at.split(' ')[0] : 'Baru saja'}
+              {formatNewsDate(news.published_at)}
             </span>
           </div>
         </div>
@@ -151,8 +162,12 @@ export default function NewsDetail({ settings }) {
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Main Article Section */}
           <div className="lg:w-2/3">
-            <div className="w-full aspect-video rounded-2xl overflow-hidden mb-8 shadow-md relative group">
-              <img src={imgUrl} alt={news.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            <div className="w-full rounded-2xl overflow-hidden mb-8 shadow-sm border border-slate-100 bg-slate-100 relative group">
+              <img 
+                src={imgUrl} 
+                alt={news.title} 
+                className="w-full h-auto block rounded-2xl group-hover:scale-[1.01] transition-transform duration-700" 
+              />
             </div>
             <div className="bg-white rounded-2xl p-6 sm:p-10 shadow-sm border border-gray-100 prose prose-lg prose-blue max-w-none text-gray-700 prose-img:rounded-xl prose-headings:text-gray-900" dangerouslySetInnerHTML={{ __html: news.content }} />
           </div>
@@ -201,7 +216,7 @@ export default function NewsDetail({ settings }) {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3"></div>
                 <h4 className="text-xl font-bold mb-2 relative z-10">Penerimaan Siswa Baru</h4>
                 <p className="text-blue-100 text-sm mb-4 relative z-10">Daftarkan diri Anda sekarang dan jadilah bagian dari generasi cerdas SMAN 1 Pamekasan.</p>
-                <a href={settings?.ppdb_link || `${import.meta.env.VITE_FRONTEND_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5173' : window.location.origin)}/dashboard`} className="inline-block bg-smansa-gold text-smansa-navy font-bold text-sm px-5 py-2.5 rounded-full hover:bg-yellow-400 transition-colors relative z-10">Daftar Sekarang</a>
+                <a href={settings?.ppdb_link || `${import.meta.env.VITE_FRONTEND_URL || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5174' : 'https://dashboard.smansa.m-tech.fun')}/dashboard`} className="inline-block bg-smansa-gold text-smansa-navy font-bold text-sm px-5 py-2.5 rounded-full hover:bg-yellow-400 transition-colors relative z-10">Daftar Sekarang</a>
               </div>
             </div>
           </div>

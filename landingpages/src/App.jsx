@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import Lenis from 'lenis';
-import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users, Building, ChevronRight, Play, BookOpen, Monitor, Award, Heart, LayoutGrid, Users2, Compass } from 'lucide-react';
+import { ArrowRight, Calendar, MessageSquare, MapPin, Mail, Phone, Trophy, Users, Building, ChevronRight, Play, BookOpen, Monitor, Award, Heart, LayoutGrid, Users2, Compass, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -26,6 +26,8 @@ const FormPrestasi = React.lazy(() => import('./pages/FormPrestasi'));
 const TrackingAlumni = React.lazy(() => import('./pages/TrackingAlumni'));
 const TestimoniAlumni = React.lazy(() => import('./pages/TestimoniAlumni'));
 const DirektoriGuru = React.lazy(() => import('./pages/DirektoriGuru'));
+const AgendaSekolah = React.lazy(() => import('./pages/AgendaSekolah'));
+const SemuaEkstrakurikuler = React.lazy(() => import('./pages/SemuaEkstrakurikuler'));
 
 // Shared minimal loading fallback for dynamic routes
 const MinimalLoader = () => (
@@ -57,7 +59,18 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 const API_KEY = import.meta.env.VITE_API_KEY || 'smansa123';
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '/api/public';
 const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || (isLocalhost ? 'http://localhost:5173' : window.location.origin);
+const FRONTEND_URL = import.meta.env.VITE_FRONTEND_URL || (isLocalhost ? 'http://localhost:5174' : 'https://dashboard.smansa.m-tech.fun');
+
+const formatNewsDate = (dateStr) => {
+  if (!dateStr) return 'Baru';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr).split('T')[0].split(' ')[0];
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch {
+    return String(dateStr).split('T')[0].split(' ')[0];
+  }
+};
 
 // Full-page loading screen component
 const LoadingScreen = () => (
@@ -137,6 +150,7 @@ export default function App() {
   const [showAllNews, setShowAllNews] = useState(false);
   const [showTeacherHierarchy, setShowTeacherHierarchy] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [selectedAchievement, setSelectedAchievement] = useState(null);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -274,57 +288,6 @@ export default function App() {
     visible: { opacity: 1, transition: { delayChildren: 0.8, staggerChildren: 0.2 } }
   }), []);
 
-  const defaultPrograms = {
-    'MIPA': {
-      desc: 'Fokus pada Matematika dan Ilmu Pengetahuan Alam, mencetak siswa dengan nalar analitis dan riset yang kuat.',
-      features: [
-        { icon: <Monitor className="w-6 h-6 text-smansa-navy"/>, title: 'Science Lab Modern', desc: 'Fasilitas praktikum berstandar nasional.' },
-        { icon: <BookOpen className="w-6 h-6 text-smansa-navy"/>, title: 'Olimpiade Sains', desc: 'Pembinaan khusus olimpiade rutin.' },
-        { icon: <Award className="w-6 h-6 text-smansa-navy"/>, title: 'Riset Terapan', desc: 'Proyek penelitian siswa setiap semester.' }
-      ]
-    },
-    'IPS': {
-      desc: 'Fokus pada Ilmu Pengetahuan Sosial, membentuk jiwa kepemimpinan, sosial, dan kewirausahaan yang tangguh.',
-      features: [
-        { icon: <Users2 className="w-6 h-6 text-smansa-navy"/>, title: 'Social Studies', desc: 'Analisis masalah sosial kultural.' },
-        { icon: <Heart className="w-6 h-6 text-smansa-navy"/>, title: 'Community Service', desc: 'Program pengabdian masyarakat.' },
-        { icon: <Building className="w-6 h-6 text-smansa-navy"/>, title: 'Business Plan', desc: 'Praktek kewirausahaan siswa.' }
-      ]
-    },
-    'Bahasa': {
-      desc: 'Program khusus untuk penguasaan bahasa dan sastra internasional sebagai bekal global.',
-      features: [
-        { icon: <MessageSquare className="w-6 h-6 text-smansa-navy"/>, title: 'Native Speakers', desc: 'Pembelajaran dengan penutur asli.' },
-        { icon: <Trophy className="w-6 h-6 text-smansa-navy"/>, title: 'Debate Club', desc: 'Ekskul debat bahasa Inggris aktif.' },
-        { icon: <LayoutGrid className="w-6 h-6 text-smansa-navy"/>, title: 'Cultural Exchange', desc: 'Program pertukaran pelajar.' }
-      ]
-    }
-  };
-
-  const dynamicPrograms = {};
-  if (data.programs && data.programs.length > 0) {
-    data.programs.forEach(prog => {
-      dynamicPrograms[prog.title] = {
-        desc: prog.description,
-        image_path: prog.image_path,
-        features: (prog.features_json || []).map(feat => ({
-          icon: <i className={`bi ${feat.icon || 'bi-star'} text-2xl text-smansa-navy`}></i>,
-          title: feat.title,
-          desc: feat.desc
-        }))
-      };
-    });
-  }
-
-  const programs = Object.keys(dynamicPrograms).length > 0 ? dynamicPrograms : defaultPrograms;
-  const programTabs = Object.keys(programs);
-
-  useEffect(() => {
-    if (programTabs.length > 0 && !programTabs.includes(activeTab)) {
-      setActiveTab(programTabs[0]);
-    }
-  }, [programTabs, activeTab]);
-
   const categories = ['Semua', 'Berita Sekolah', 'Kegiatan Siswa', 'Pengumuman', 'Kemitraan & Kerja Sama'];
 
   const fillMarquee = (arr, minLength = 8) => {
@@ -442,6 +405,20 @@ export default function App() {
             <React.Suspense fallback={<MinimalLoader />}>
               <PageTransition>
                 <DirektoriGuru />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/agenda" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <AgendaSekolah />
+              </PageTransition>
+            </React.Suspense>
+          } />
+          <Route path="/ekstrakurikuler" element={
+            <React.Suspense fallback={<MinimalLoader />}>
+              <PageTransition>
+                <SemuaEkstrakurikuler />
               </PageTransition>
             </React.Suspense>
           } />
@@ -681,81 +658,6 @@ export default function App() {
           </div>
         </section>
 
-        {/* PROGRAM KEAHLIAN / PEMINATAN (Tabs Layout) */}
-        <section id="program" className="py-24 bg-gray-50 border-t border-gray-200">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8">
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-smansa-navy mb-4 tracking-tight">Program Peminatan</h2>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">Kami menyediakan berbagai program penjurusan yang disesuaikan dengan minat dan bakat siswa untuk melanjutkan studi ke Perguruan Tinggi.</p>
-            </motion.div>
-
-            {/* Tab Navigation */}
-            <div className="flex flex-wrap justify-center gap-3 mb-16">
-              {programTabs.map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-7 py-3.5 rounded-full text-sm lg:text-base font-bold transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_2px_10px_rgba(0,0,0,0.01)] ${
-                    activeTab === tab 
-                      ? 'bg-blue-600 text-white shadow-[0_4px_20px_rgba(37,99,235,0.25)] scale-105' 
-                      : 'bg-white text-gray-600 hover:bg-blue-50 border border-slate-200 hover:text-blue-600'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
- 
-            {/* Tab Content */}
-            <motion.div 
-              key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="bg-white rounded-[2.25rem] p-10 lg:p-14 shadow-[0_12px_40px_rgba(0,0,0,0.03)] border border-slate-200/50"
-            >
-              <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
-                <div className="lg:w-1/2">
-                  <h3 className="text-3xl font-bold text-smansa-navy mb-6 tracking-tight">{activeTab}</h3>
-                  <p className="text-lg text-slate-600 mb-10 leading-relaxed">
-                    {programs[activeTab]?.desc || 'Program unggulan dengan kurikulum komprehensif untuk mempersiapkan siswa bersaing di kancah nasional maupun internasional.'}
-                  </p>
-                  <div className="space-y-6">
-                    {(programs[activeTab]?.features || programs['MIPA'].features).map((feat, i) => (
-                      <div key={i} className="flex gap-5 items-start">
-                        <div className="bg-blue-50/70 p-3.5 rounded-2xl text-blue-600">
-                          {feat.icon}
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-bold text-smansa-navy mb-1">{feat.title}</h4>
-                          <p className="text-slate-600 text-sm">{feat.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="lg:w-1/2 w-full">
-                  <div className="aspect-4/3 rounded-[1.75rem] overflow-hidden shadow-lg relative">
-                    <img 
-                      src={
-                        programs[activeTab]?.image_path || (
-                          activeTab === 'MIPA' 
-                            ? "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop" 
-                            : activeTab === 'IPS' 
-                            ? "https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=800&auto=format&fit=crop" 
-                            : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop"
-                        )
-                      } 
-                      alt={activeTab}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
         {/* BERITA & INFORMASI (Split Layout) */}
         <section id="berita" className="py-24 bg-white relative">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
@@ -794,14 +696,15 @@ export default function App() {
               {/* News Grid */}
               <div className="lg:w-3/4">
                 {filteredNews.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {currentNews.map((item, i) => (
+                  (() => {
+                    const renderNewsCard = (item, i) => (
                       <Link 
                         to={`/berita/${item.id}`}
-                        key={i}
-                        className="group bg-white rounded-[1.75rem] border border-slate-200/50 overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] flex flex-col"
+                        key={item.id || i}
+                        className="group bg-white rounded-[1.75rem] border border-slate-200/50 overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.06)] hover:border-blue-200/80 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] flex flex-col w-full"
                       >
-                        <div className="aspect-16/10 overflow-hidden relative">
+                        {/* Dynamic Natural Image Frame (Full Width, Height follows Aspect Ratio) */}
+                        <div className="relative w-full overflow-hidden bg-slate-100">
                           <img 
                             src={
                               item.image_url 
@@ -811,22 +714,36 @@ export default function App() {
                                 : "https://images.unsplash.com/photo-1546410531-b4c69811dc31?q=80&w=800&auto=format&fit=crop"
                             } 
                             alt={item.title} 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            className="w-full h-auto block object-cover group-hover:scale-105 transition-transform duration-700"
                           />
-                          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-smansa-navy">
-                            {item.published_at?.split(' ')[0] || 'Baru'}
+                          <div className="absolute top-4 left-4 z-20 bg-white/95 backdrop-blur px-3 py-1.5 rounded-lg text-xs font-bold text-smansa-navy shadow-sm">
+                            {formatNewsDate(item.published_at)}
                           </div>
                         </div>
-                        <div className="p-7 flex-1 flex flex-col">
-                          <span className="text-blue-600 font-extrabold text-[10px] uppercase tracking-wider mb-2">{item.category || 'Berita Sekolah'}</span>
+                        <div className="p-7 flex flex-col">
+                          <span className="text-blue-600 font-extrabold text-[10px] uppercase tracking-wider mb-2 block">{item.category || 'Berita Sekolah'}</span>
                           <h3 className="font-bold text-lg text-smansa-navy mb-3 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">
                             {item.title}
                           </h3>
-                          <div className="text-slate-500 line-clamp-2 mt-auto text-xs sm:text-sm" dangerouslySetInnerHTML={{ __html: item.content }} />
+                          <div className="text-slate-500 line-clamp-3 text-xs sm:text-sm" dangerouslySetInnerHTML={{ __html: item.content }} />
                         </div>
                       </Link>
-                    ))}
-                  </div>
+                    );
+
+                    const col1 = currentNews.filter((_, idx) => idx % 2 === 0);
+                    const col2 = currentNews.filter((_, idx) => idx % 2 === 1);
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                        <div className="flex flex-col gap-8">
+                          {col1.map(renderNewsCard)}
+                        </div>
+                        <div className="flex flex-col gap-8">
+                          {col2.map(renderNewsCard)}
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : (
                   <div className="bg-gray-50 rounded-3xl p-16 text-center border border-gray-100">
                     <p className="text-gray-500 font-medium text-lg">Belum ada berita dalam kategori {activeCategory}.</p>
@@ -923,7 +840,11 @@ export default function App() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {data.achievements.slice(0, 3).map((item, index) => (
-                <div key={index} className="group relative bg-slate-900 rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.12)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] h-100 flex flex-col justify-end">
+                <div 
+                  key={index} 
+                  onClick={() => setSelectedAchievement(item)}
+                  className="group relative bg-slate-900 rounded-[1.75rem] overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_20px_45px_rgba(37,99,235,0.12)] border border-slate-200/50 hover:border-blue-200/50 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] h-100 flex flex-col justify-end cursor-pointer"
+                >
                   {/* Background Image */}
                   {item.image_url ? (
                     <img src={`${STORAGE_BASE}/${item.image_url}`} alt={item.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100" />
@@ -932,48 +853,47 @@ export default function App() {
                   )}
                   
                   {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-black/95 via-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
 
                   {/* Content */}
                   <div className="relative p-6 flex flex-col justify-end h-full text-white z-10">
                     {/* Always visible (Title, Level, Icon) */}
                     <div className="flex justify-between items-end mb-2">
                        <div className="flex-1 pr-4">
-                         <h3 className="text-2xl font-bold mb-1 drop-shadow-md line-clamp-2">{item.title} ({item.year})</h3>
+                         <h3 className="text-xl sm:text-2xl font-bold mb-1 drop-shadow-md line-clamp-2">{item.title} ({item.year})</h3>
                        </div>
-                       <div className="flex flex-col items-end gap-3 shrink-0">
-                         <div className="w-12 h-12 bg-yellow-400/20 backdrop-blur-md text-yellow-400 rounded-full flex items-center justify-center border border-yellow-400/30">
-                            <Trophy className="w-6 h-6" />
+                       <div className="flex flex-col items-end gap-2 shrink-0">
+                         <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-400/20 backdrop-blur-md text-yellow-400 rounded-full flex items-center justify-center border border-yellow-400/30">
+                            <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
                          </div>
-                         <span className="text-xs font-bold bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/20">{item.level}</span>
+                         <span className="text-[11px] sm:text-xs font-bold bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/20">{item.level}</span>
                        </div>
                     </div>
 
-                    {/* Expanded Details on Hover */}
-                    <div className="max-h-0 opacity-0 group-hover:max-h-75 group-hover:opacity-100 group-hover:mt-4 transition-all duration-500 overflow-hidden flex flex-col gap-3">
-                        {/* Student Name */}
-                        {item.siswas && item.siswas.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {item.siswas.map((s, idx) => (
-                              <div key={idx} className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                {s.nama_lengkap}
-                                {s.jenis_kelamin === 'L' && <span className="text-blue-300 font-black ml-1">(L)</span>}
-                                {s.jenis_kelamin === 'P' && <span className="text-pink-300 font-black ml-1">(P)</span>}
-                                {s.kelas && <span className="ml-1 text-xs font-semibold bg-white/20 text-white px-1.5 py-0.5 rounded">Kelas {s.kelas}</span>}
-                              </div>
-                            ))}
+                    {/* Student Name */}
+                    {item.siswas && item.siswas.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {item.siswas.slice(0, 2).map((s, idx) => (
+                          <div key={idx} className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg font-medium text-xs border border-white/20">
+                            <Users className="w-3 h-3" />
+                            <span>{s.nama_lengkap}</span>
                           </div>
-                        ) : item.student_name ? (
-                          <div className="flex flex-wrap gap-2">
-                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-3 py-1.5 rounded-xl font-medium text-sm border border-white/20">
-                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                              {item.student_name}
-                            </div>
-                          </div>
-                        ) : null}
+                        ))}
+                        {item.siswas.length > 2 && (
+                          <span className="text-xs text-blue-200 self-center font-bold">+{item.siswas.length - 2} siswa</span>
+                        )}
+                      </div>
+                    ) : item.student_name ? (
+                      <div className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white px-2.5 py-1 rounded-lg font-medium text-xs border border-white/20 mb-2">
+                        <Users className="w-3 h-3" />
+                        <span>{item.student_name}</span>
+                      </div>
+                    ) : null}
 
-                        <p className="text-gray-200 text-sm line-clamp-3 leading-relaxed drop-shadow-sm">{item.description}</p>
+                    {/* Click CTA */}
+                    <div className="pt-3 border-t border-white/15 flex items-center text-xs font-bold text-yellow-400 group-hover:text-yellow-300 transition-colors">
+                      <span>Lihat Selengkapnya</span>
+                      <ArrowRight className="w-4 h-4 ml-1.5 transform group-hover:translate-x-1.5 transition-transform" />
                     </div>
                   </div>
                 </div>
@@ -986,6 +906,125 @@ export default function App() {
               </Link>
             </div>
           </div>
+
+          {/* Modal Detail Prestasi */}
+          <AnimatePresence>
+            {selectedAchievement && (
+              <div 
+                className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-6 bg-slate-950/70 backdrop-blur-md" 
+                onClick={() => setSelectedAchievement(null)}
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-100"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Header Image (Supports flexible resolution portrait & landscape) */}
+                  <div className="relative w-full max-h-[380px] bg-slate-950 overflow-hidden shrink-0 flex items-center justify-center">
+                    {selectedAchievement.image_url ? (
+                      <>
+                        <img 
+                          src={`${STORAGE_BASE}/${selectedAchievement.image_url}`} 
+                          alt="" 
+                          aria-hidden="true" 
+                          className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-125 select-none pointer-events-none" 
+                        />
+                        <img 
+                          src={`${STORAGE_BASE}/${selectedAchievement.image_url}`} 
+                          alt={selectedAchievement.title} 
+                          className="relative z-10 max-h-[380px] w-auto max-w-full object-contain" 
+                        />
+                      </>
+                    ) : (
+                      <div className="w-full h-48 bg-linear-to-br from-blue-600 to-indigo-800 flex items-center justify-center">
+                        <Trophy className="w-16 h-16 text-yellow-400 opacity-80" />
+                      </div>
+                    )}
+                    
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAchievement(null)}
+                      className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-slate-900/60 hover:bg-slate-900 text-white flex items-center justify-center backdrop-blur-sm transition-colors cursor-pointer"
+                      title="Tutup"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Modal Body */}
+                  <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-5">
+                    {/* Badges */}
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="bg-yellow-50 text-yellow-800 border border-yellow-200/80 font-bold px-3 py-1 rounded-full text-xs flex items-center gap-1.5 shadow-xs">
+                        <Trophy className="w-3.5 h-3.5 text-yellow-600" />
+                        {selectedAchievement.level || 'Tingkat Nasional'}
+                      </span>
+                      <span className="bg-blue-50 text-blue-700 font-bold px-3 py-1 rounded-full text-xs">
+                        Tahun {selectedAchievement.year}
+                      </span>
+                      {selectedAchievement.category && (
+                        <span className="bg-slate-100 text-slate-700 font-semibold px-3 py-1 rounded-full text-xs">
+                          {selectedAchievement.category}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-2xl md:text-3xl font-extrabold text-smansa-navy tracking-tight leading-snug">
+                      {selectedAchievement.title}
+                    </h3>
+
+                    {/* Students List */}
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Peraih Prestasi / Tim</h4>
+                      {selectedAchievement.siswas && selectedAchievement.siswas.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {selectedAchievement.siswas.map((s, idx) => (
+                            <div key={idx} className="inline-flex items-center gap-2 bg-slate-100 text-slate-800 px-3.5 py-2 rounded-xl font-medium text-sm border border-slate-200/60 shadow-xs">
+                              <Users className="w-4 h-4 text-blue-600" />
+                              <span>{s.nama_lengkap}</span>
+                              {s.jenis_kelamin === 'L' && <span className="text-blue-600 font-bold text-xs">(L)</span>}
+                              {s.jenis_kelamin === 'P' && <span className="text-pink-600 font-bold text-xs">(P)</span>}
+                              {s.kelas && <span className="text-xs font-semibold bg-white text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">Kelas {s.kelas}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : selectedAchievement.student_name ? (
+                        <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-800 px-3.5 py-2 rounded-xl font-medium text-sm border border-slate-200/60 shadow-xs">
+                          <Users className="w-4 h-4 text-blue-600" />
+                          <span>{selectedAchievement.student_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-slate-500 italic">Siswa SMAN 1 Pamekasan</span>
+                      )}
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2.5">Deskripsi Lengkap</h4>
+                      <p className="text-slate-700 leading-relaxed whitespace-pre-line text-sm md:text-base">
+                        {selectedAchievement.description || 'Tidak ada deskripsi tambahan.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="p-4 md:px-8 md:py-5 border-t border-slate-100 bg-slate-50 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedAchievement(null)}
+                      className="px-6 py-2.5 bg-smansa-navy hover:bg-blue-900 text-white rounded-xl font-bold text-sm transition-all shadow-md cursor-pointer"
+                    >
+                      Tutup
+                    </button>
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
         </section>
 
         {/* EKSTRAKURIKULER */}
@@ -1004,77 +1043,80 @@ export default function App() {
               </Link>
             </motion.div>
 
-            {/* Horizontal Infinite Marquee Wrapper */}
-            <div className="relative w-full overflow-hidden py-4 bg-transparent mt-8">
-              {/* Elegant side gradient overlays to fade edges */}
-              <div className="absolute inset-y-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-gray-50 to-transparent pointer-events-none z-40"></div>
-              <div className="absolute inset-y-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-40"></div>
+            {/* Horizontal Infinite Marquee Wrapper with Dynamic Smooth Slow Speed */}
+            {(() => {
+              const rawTeachers = data.teachers && data.teachers.length > 0 ? data.teachers : [
+                { name: "Drs. H. Ahmad Sudrajat, M.Pd.", subject: "Kepala Sekolah & Guru Fisika", photo: null, img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop", jabatan: "Kepala Sekolah" },
+                { name: "Siti Aminah, S.Pd.", subject: "Guru Matematika Peminatan", photo: null, img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
+                { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", photo: null, img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
+                { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", photo: null, img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" }
+              ];
+              const teacherList = fillMarquee(rawTeachers, 8);
+              // Kecepatan konstan tenang & pelan: ~11 detik per kartu guru agar selalu berjalan pelan dan nyaman dibaca berapapun jumlah datanya
+              const marqueeDuration = Math.max(teacherList.length * 11, 70);
 
-              <div className="relative flex w-full overflow-hidden group">
-                <div className="flex w-max gap-6 animate-teacher-marquee group-hover:[animation-play-state:paused] py-4 items-stretch">
-                  {/* Main set */}
-                  <div className="flex gap-6 px-3 shrink-0">
-                    {fillMarquee(
-                      data.teachers.length > 0 ? data.teachers : [
-                        { name: "Drs. H. Ahmad Sudrajat, M.Pd.", subject: "Kepala Sekolah & Guru Fisika", photo: null, img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop", jabatan: "Kepala Sekolah" },
-                        { name: "Siti Aminah, S.Pd.", subject: "Guru Matematika Peminatan", photo: null, img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
-                        { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", photo: null, img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
-                        { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", photo: null, img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" }
-                      ], 8
-                    ).map((teacher, index) => (
-                      <div key={`t-${index}`} className="group relative rounded-[1.75rem] overflow-hidden shadow-md hover:shadow-xl border border-slate-200/50 hover:border-blue-300/50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4 w-60 sm:w-68 shrink-0">
-                        <img 
-                          src={teacher.photo 
-                            ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` 
-                            : (teacher.img ? teacher.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=256`)
-                          } 
-                          className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" 
-                          alt={teacher.name} 
-                          loading="eager"
-                          decoding="async"
-                        />
-                        <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30 text-left">
-                          <h3 className="text-[14px] sm:text-[15px] font-bold leading-tight line-clamp-1">{teacher.name}</h3>
-                          <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
-                          <p className="text-blue-200 text-xs mt-0.5 line-clamp-1">{teacher.subject || 'Mata Pelajaran'}</p>
-                        </div>
+              return (
+                <div className="relative w-full overflow-hidden py-4 bg-transparent mt-8">
+                  {/* Elegant side gradient overlays to fade edges */}
+                  <div className="absolute inset-y-0 left-0 w-16 sm:w-32 bg-gradient-to-r from-gray-50 to-transparent pointer-events-none z-40"></div>
+                  <div className="absolute inset-y-0 right-0 w-16 sm:w-32 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none z-40"></div>
+
+                  <div className="relative flex w-full overflow-hidden group">
+                    <div 
+                      className="flex w-max gap-6 animate-teacher-marquee group-hover:[animation-play-state:paused] py-4 items-stretch"
+                      style={{ animationDuration: `${marqueeDuration}s` }}
+                    >
+                      {/* Main set */}
+                      <div className="flex gap-6 px-3 shrink-0">
+                        {teacherList.map((teacher, index) => (
+                          <div key={`t-${index}`} className="group relative rounded-[1.75rem] overflow-hidden shadow-md hover:shadow-xl border border-slate-200/50 hover:border-blue-300/50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4 w-60 sm:w-68 shrink-0">
+                            <img 
+                              src={teacher.photo 
+                                ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` 
+                                : (teacher.img ? teacher.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=256`)
+                              } 
+                              className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" 
+                              alt={teacher.name} 
+                              loading="eager"
+                              decoding="async"
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                            <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30 text-left">
+                              <h3 className="text-[14px] sm:text-[15px] font-bold leading-tight line-clamp-1">{teacher.name}</h3>
+                              <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
+                              <p className="text-blue-200 text-xs mt-0.5 line-clamp-1">{teacher.subject || 'Mata Pelajaran'}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  {/* Duplicate set for infinite loop */}
-                  <div className="flex gap-6 px-3 shrink-0" aria-hidden="true">
-                    {fillMarquee(
-                      data.teachers.length > 0 ? data.teachers : [
-                        { name: "Drs. H. Ahmad Sudrajat, M.Pd.", subject: "Kepala Sekolah & Guru Fisika", photo: null, img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop", jabatan: "Kepala Sekolah" },
-                        { name: "Siti Aminah, S.Pd.", subject: "Guru Matematika Peminatan", photo: null, img: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
-                        { name: "Rudi Hermawan, M.Si.", subject: "Guru Biologi & Pembina OSN", photo: null, img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" },
-                        { name: "Dewi Lestari, S.S.", subject: "Guru Bahasa & Sastra Inggris", photo: null, img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format&fit=crop", jabatan: "Guru" }
-                      ], 8
-                    ).map((teacher, index) => (
-                      <div key={`t-dup-${index}`} className="group relative rounded-[1.75rem] overflow-hidden shadow-md hover:shadow-xl border border-slate-200/50 hover:border-blue-300/50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4 w-60 sm:w-68 shrink-0">
-                        <img 
-                          src={teacher.photo 
-                            ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` 
-                            : (teacher.img ? teacher.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=256`)
-                          } 
-                          className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" 
-                          alt={teacher.name} 
-                          loading="eager"
-                          decoding="async"
-                        />
-                        <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
-                        <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30 text-left">
-                          <h3 className="text-[14px] sm:text-[15px] font-bold leading-tight line-clamp-1">{teacher.name}</h3>
-                          <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
-                          <p className="text-blue-200 text-xs mt-0.5 line-clamp-1">{teacher.subject || 'Mata Pelajaran'}</p>
-                        </div>
+                      {/* Duplicate set for seamless infinite loop */}
+                      <div className="flex gap-6 px-3 shrink-0" aria-hidden="true">
+                        {teacherList.map((teacher, index) => (
+                          <div key={`t-dup-${index}`} className="group relative rounded-[1.75rem] overflow-hidden shadow-md hover:shadow-xl border border-slate-200/50 hover:border-blue-300/50 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1.5 hover:scale-[1.01] bg-gray-100 aspect-3/4 w-60 sm:w-68 shrink-0">
+                            <img 
+                              src={teacher.photo 
+                                ? `${API_BASE.replace('/api/public', '')}/storage/${teacher.photo}` 
+                                : (teacher.img ? teacher.img : `https://ui-avatars.com/api/?name=${encodeURIComponent(teacher.name)}&background=f1f5f9&color=1e293b&bold=true&size=256`)
+                              } 
+                              className="absolute inset-0 w-full h-full object-cover z-10 group-hover:scale-105 transition-transform duration-700" 
+                              alt={teacher.name} 
+                              loading="eager"
+                              decoding="async"
+                            />
+                            <div className="absolute inset-0 bg-linear-to-t from-smansa-navy/90 via-smansa-navy/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-500 z-20"></div>
+                            <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 z-30 text-left">
+                              <h3 className="text-[14px] sm:text-[15px] font-bold leading-tight line-clamp-1">{teacher.name}</h3>
+                              <p className="text-smansa-gold font-bold text-[10px] uppercase tracking-wider mt-1">{teacher.jabatan || 'Guru'}</p>
+                              <p className="text-blue-200 text-xs mt-0.5 line-clamp-1">{teacher.subject || 'Mata Pelajaran'}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
 
           {/* Marquee Keyframes Styling */}
@@ -1084,7 +1126,9 @@ export default function App() {
               100% { transform: translateX(-50%); }
             }
             .animate-teacher-marquee {
-              animation: teacher-marquee-left 40s linear infinite;
+              animation-name: teacher-marquee-left;
+              animation-timing-function: linear;
+              animation-iteration-count: infinite;
               will-change: transform;
               transform: translate3d(0, 0, 0);
               backface-visibility: hidden;
@@ -1185,6 +1229,12 @@ export default function App() {
                 );
               })}
             </div>
+
+            <div className="text-center mt-10">
+              <Link to="/agenda" className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-full font-bold text-base transition-all shadow-xl hover:scale-105 border border-white/20">
+                <Calendar className="w-5 h-5 text-white" /> Lihat Seluruh Agenda & Kalender Sekolah →
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -1241,7 +1291,6 @@ export default function App() {
               <ul className="space-y-3 text-blue-100/80 mb-8">
                 <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Beranda</a></li>
                 <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Profil Sekolah</a></li>
-                <li><a href="#" className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Program Peminatan</a></li>
                 <li><a href={data.settings?.ppdb_link || FRONTEND_URL} className="hover:text-smansa-gold transition-colors inline-block hover:translate-x-1 transform duration-200">Info PPDB</a></li>
               </ul>
               

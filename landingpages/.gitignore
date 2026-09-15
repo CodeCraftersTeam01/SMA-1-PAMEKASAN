@@ -21,6 +21,9 @@ dist-ssr
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
-
 .env
+.env.*
+.env.production
+.env.production.*
+!.env.example
+
